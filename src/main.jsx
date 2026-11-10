@@ -730,7 +730,7 @@ function App() {
     <>
       {view === "landing" && (
         <>
-          <header className="site-header">
+          <header className={`site-header ${classic ? "" : "gallery-header"}`}>
             <button className="brand" onClick={home}>
               Benno’s Light
             </button>

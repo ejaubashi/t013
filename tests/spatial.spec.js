@@ -18,7 +18,7 @@ test.describe("Gaussian-splat room", () => {
       50000,
     );
     await expect(
-      page.getByRole("heading", { name: "A room of memories." }),
+      page.getByRole("heading", { name: "Memory, in space." }),
     ).toBeVisible();
     expect(
       await page.evaluate(

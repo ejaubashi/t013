@@ -1,9 +1,9 @@
 export const viewpoints = [
   {
     id: "arrival",
-    label: "The room",
-    subtitle: "An imagined archive",
-    position: [0, 1.75, 4.35],
+    label: "The gallery",
+    subtitle: "An imagined gallery",
+    position: [3.8, 2.3, 4.2],
     target: [0, 1.9, -3.3],
   },
   {

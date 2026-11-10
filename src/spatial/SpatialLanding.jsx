@@ -123,7 +123,7 @@ export default function SpatialLanding({
       <div className="spatial-vignette" aria-hidden="true" />
       <div className="spatial-topline">
         <span className="spatial-kicker">
-          <i /> A space for remembering
+          <i /> An exhibition of memory
         </span>
         <button onClick={onOriginal} className="spatial-original">
           Original view <Arrow />
@@ -132,12 +132,12 @@ export default function SpatialLanding({
       <div className="room-coordinate" aria-hidden="true">
         <span>48° 12′ N</span>
         <span>16° 22′ E</span>
-        <span>VIENNA · MEMORY STUDY</span>
+        <span>VIENNA · THE MEMORY GALLERY</span>
       </div>
       {!error && !ready && (
         <div className="room-loader" role="status">
           <span className="room-loader-mark" />
-          <span>Opening the room</span>
+          <span>Opening the gallery</span>
           <span className="room-load-progress">{progress}%</span>
         </div>
       )}
@@ -165,11 +165,13 @@ export default function SpatialLanding({
           <div
             className={`spatial-introduction ${active !== "arrival" || capture ? "introduction-small" : ""}`}
           >
-            <p className="spatial-kicker">Benno Kern · A life remembered</p>
+            <p className="spatial-kicker">
+              Benno Kern · The permanent collection
+            </p>
             <h1>
-              A room of
+              Memory,
               <br />
-              <span>memories.</span>
+              <span>in space.</span>
             </h1>
             <p className="spatial-description">
               Step inside. Look closer.
@@ -306,10 +308,10 @@ export default function SpatialLanding({
                 entrance.
               </p>
               <p className="room-provenance">
-                The bundled scene is an imagined archive rendered with Gaussian
-                splats. It is not a capture of a historical location. You can
-                open your own .spz, .splat, or .ply file; it stays on your
-                device.
+                The bundled scene is an imagined contemporary gallery with
+                Gaussian-splat exhibits. It is not a capture of a historical
+                location. You can open your own .spz, .splat, or .ply file; it
+                stays on your device.
               </p>
             </aside>
           )}
@@ -351,7 +353,7 @@ export default function SpatialLanding({
           <p className="room-caption">
             {capture
               ? "LOCAL CAPTURE · YOUR DEVICE ONLY"
-              : "SPATIAL STUDY · IMAGINED ARCHIVE"}
+              : "SPATIAL STUDY · IMAGINED GALLERY"}
             <span>Drag to look · Scroll to explore</span>
           </p>
           {loadingCapture && (

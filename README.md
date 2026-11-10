@@ -1,10 +1,10 @@
 # Benno’s Light
 
-A responsive React experience based on the supplied Benno’s Light recordings. The opening is now a navigable archive rendered with Gaussian splats. The saved paper cover, six-card chapter index, testimony player, and scrollable archive remain available.
+A responsive React experience based on the supplied Benno’s Light recordings. The opening is a navigable contemporary art gallery, combining precise architectural geometry with Gaussian-splat exhibits. The saved paper cover, six-card chapter index, testimony player, and scrollable archive remain available.
 
 ## 3D archive experiment
 
-The default opening uses Three.js and Spark 2.4.0 to render approximately 65,000 Gaussian splats. The room, photographs, display frames, paper, and furniture are authored Gaussian surfaces. This is an **imagined archive and technical study**, not a captured historical location. It uses the supplied photographs and runs locally without requesting external scene assets.
+The default opening uses Three.js and Spark 2.4.0 to render approximately 70,000 Gaussian splats in the photographic exhibits. Crisp white architecture, polished mineral flooring, floating displays, recessed lighting, a suspended elliptical luminaire, and a chrome sculpture form an imagined contemporary gallery. Lighting uses a locally generated environment map, a directional shadow, and exhibit spotlights. This is an **imagined gallery and technical study**, not a captured historical location. It uses the supplied photographs and runs locally without requesting external scene assets.
 
 - Drag to orbit, scroll or pinch to move closer, and use the four composed viewpoint buttons.
 - Focus the canvas and hold W/A/S/D or the arrow keys to move. The on-screen direction controls also work with pointer, touch, and keyboard input. Reset returns to the entrance.
@@ -19,7 +19,9 @@ The 3D renderer is a separate, lazy-loaded JavaScript chunk, about 1.1 MB gzippe
 
 The complete version before the experiment is saved under the Git tag **`checkpoint-before-3d-location`**, commit `fe873f9`. That checkpoint includes the research document and reference screenshots. The original deployed application is commit `596b4e8`.
 
-To inspect the checkpoint without changing files, use `git show checkpoint-before-3d-location:<path>`. To undo the experiment after it is committed, revert the commit titled **Add navigable Gaussian-splat archive experience** and push the resulting revert commit; the existing Pages workflow will deploy the restored version. This preserves subsequent history.
+The warmer, first 3D archive is also saved under **`checkpoint-before-modern-gallery`**, commit `1843ed6`.
+
+To inspect either checkpoint without changing files, use `git show <tag>:<path>`. Reverting **Transform archive into a contemporary art gallery** restores the first 3D room. To restore the paper version in Git history, revert the gallery update first and then **Add navigable Gaussian-splat archive experience**, and push the resulting revert commits. The Pages workflow deploys the restored version. **Original view** offers an immediate visual comparison without changing Git history.
 
 ## Develop
 

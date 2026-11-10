@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { SparkRenderer, SplatMesh } from "@sparkjsdev/spark";
 import { createArchiveRoom } from "./archiveRoom";
 import { viewpoints } from "./viewpoints";
@@ -23,6 +24,7 @@ export default function RoomCanvas({
       spark,
       room,
       controls,
+      environmentTarget,
       disposed = false,
       failed = false,
       dirty = true,
@@ -94,7 +96,24 @@ export default function RoomCanvas({
             matchMedia("(pointer: coarse)").matches ? 1 : 1.35,
           ),
         );
-        renderer.setClearColor(0x17120e, 1);
+        renderer.setClearColor(0xf0f2ef, 1);
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 0.95;
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        const environmentGenerator = new THREE.PMREMGenerator(renderer);
+        const environmentRoom = new RoomEnvironment();
+        environmentTarget = environmentGenerator.fromScene(
+          environmentRoom,
+          0.04,
+        );
+        scene.environment = environmentTarget.texture;
+        scene.environmentIntensity = 0.65;
+        environmentRoom.dispose();
+        environmentGenerator.dispose();
+        // Architecture and lights are static: camera movement can reuse the shadow map.
+        renderer.shadowMap.autoUpdate = false;
+        renderer.shadowMap.needsUpdate = true;
         const canvas = renderer.domElement;
         canvas.tabIndex = 0;
         canvas.setAttribute("role", "img");
@@ -341,6 +360,7 @@ export default function RoomCanvas({
       controls?.dispose();
       room?.dispose();
       spark?.dispose();
+      environmentTarget?.dispose();
       renderer?.dispose();
       renderer?.forceContextLoss();
       if (renderer?.domElement.parentNode === host)
