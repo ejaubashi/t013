@@ -14,7 +14,7 @@ export default defineConfig({
     screenshot: "only-on-failure",
     launchOptions: {
       ...(existsSync(chromiumPath) ? { executablePath: chromiumPath } : {}),
-      args: ["--no-sandbox"],
+      args: ["--no-sandbox", "--enable-unsafe-swiftshader"],
     },
   },
   projects: [

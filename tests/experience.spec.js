@@ -1,5 +1,10 @@
 import { test, expect } from "@playwright/test";
 
+// Keep regression coverage of the saved paper experience alongside the new 3D tests.
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => sessionStorage.setItem("benno-classic", "1"));
+});
+
 test("cover, content notice, and usable local video", async ({ page }) => {
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));

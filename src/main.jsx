@@ -4,7 +4,10 @@ import "@fontsource/archivo-black/400.css";
 import "@fontsource/archivo/400.css";
 import "@fontsource/archivo/500.css";
 import "@fontsource/archivo/600.css";
+import "@fontsource/cormorant-garamond/latin-500.css";
+import "@fontsource/cormorant-garamond/latin-500-italic.css";
 import { chapters, archive } from "./chapters";
+import SpatialLanding from "./spatial/SpatialLanding";
 import "./base.css";
 import "./styles.css";
 
@@ -608,6 +611,16 @@ function ArchiveViewer({ chapter, onClose, onNextChapter }) {
 }
 
 function App() {
+  const [classic, setClassic] = useState(() => {
+    try {
+      return (
+        sessionStorage.getItem("benno-classic") === "1" ||
+        new URLSearchParams(location.search).get("view") === "classic"
+      );
+    } catch {
+      return false;
+    }
+  });
   const [view, setView] = useState("landing");
   const [chapterId, setChapterId] = useState(() => {
     const id = Number(location.hash.match(/^#chapter-(\d)/)?.[1]);
@@ -731,10 +744,37 @@ function App() {
               </span>
             </button>
           </header>
-          <Landing
-            onEnter={() => setInfo("notice")}
-            onChapters={() => setOverlay("chapters")}
-          />
+          {classic ? (
+            <>
+              <Landing
+                onEnter={() => setInfo("notice")}
+                onChapters={() => setOverlay("chapters")}
+              />
+              <button
+                className="classic-room-link"
+                onClick={() => {
+                  setClassic(false);
+                  try {
+                    sessionStorage.removeItem("benno-classic");
+                  } catch {}
+                }}
+              >
+                Enter the 3D room <Icon />
+              </button>
+            </>
+          ) : (
+            <SpatialLanding
+              onEnter={() => setInfo("notice")}
+              onChapters={() => setOverlay("chapters")}
+              onOriginal={() => {
+                setClassic(true);
+                try {
+                  sessionStorage.setItem("benno-classic", "1");
+                } catch {}
+              }}
+              reducedMotion={reducedMotion}
+            />
+          )}
         </>
       )}
       {view === "film" && (

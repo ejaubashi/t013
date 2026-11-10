@@ -1,0 +1,802 @@
+.spatial-stage {
+  position: relative;
+  height: 100svh;
+  min-height: 640px;
+  background: #18130f;
+  color: #f1e8d5;
+  overflow: hidden;
+  isolation: isolate;
+}
+.spatial-canvas,
+.spatial-fallback,
+.spatial-vignette {
+  position: absolute;
+  inset: 0;
+}
+.spatial-canvas canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  outline-offset: -5px !important;
+  touch-action: none;
+}
+.spatial-fallback {
+  background:
+    linear-gradient(180deg, #221b15aa, #17120be6),
+    url("/assets/vienna-panorama.webp") center/cover;
+  filter: blur(5px);
+  transition: opacity 1.5s;
+  z-index: -1;
+}
+.room-ready .spatial-fallback {
+  opacity: 0;
+}
+.spatial-vignette {
+  background:
+    linear-gradient(90deg, rgba(16, 13, 10, 0.7), transparent 53%),
+    linear-gradient(
+      180deg,
+      #100c0966,
+      transparent 25%,
+      transparent 53%,
+      #100c09ed
+    );
+  pointer-events: none;
+}
+.spatial-topline {
+  position: absolute;
+  top: 90px;
+  left: 30px;
+  right: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  pointer-events: none;
+}
+.spatial-topline button {
+  pointer-events: auto;
+}
+.spatial-kicker {
+  font:
+    500 9px/1.5 "Archivo",
+    sans-serif;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin: 0;
+  color: #d8c9ac;
+}
+.spatial-kicker i {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin: 0 10px 1px 0;
+  background: #cdaa65;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #cdaa6544;
+}
+.spatial-original {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  text-transform: uppercase;
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: #cdbfa6;
+  padding: 8px 0;
+}
+.spatial-original:hover {
+  color: white;
+}
+.spatial-original svg {
+  width: 12px;
+  height: 12px;
+}
+.room-coordinate {
+  position: absolute;
+  right: 30px;
+  top: 176px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  font-size: 8px;
+  letter-spacing: 1px;
+  color: #c7bda688;
+  pointer-events: none;
+}
+.room-coordinate span:last-child {
+  margin-top: 8px;
+  font-size: 7px;
+  letter-spacing: 1.6px;
+}
+.spatial-introduction {
+  position: absolute;
+  left: 5%;
+  bottom: 230px;
+  pointer-events: none;
+  transition:
+    transform 0.8s,
+    opacity 0.8s;
+  animation: spatial-appear 1.2s both;
+}
+.spatial-introduction .spatial-kicker {
+  font-size: 8px;
+  letter-spacing: 2.4px;
+}
+.spatial-introduction h1 {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-weight: 500;
+  font-size: clamp(58px, 7.9vw, 145px);
+  line-height: 0.81;
+  letter-spacing: -0.045em;
+  margin: 23px 0 24px;
+  text-shadow: 0 2px 20px #0002;
+}
+.spatial-introduction h1 span {
+  font-style: italic;
+  color: #e2d1ae;
+}
+.spatial-description {
+  font-size: 11px;
+  line-height: 1.8;
+  letter-spacing: 0.35px;
+  color: #cdbfa7;
+  margin: 0 0 25px;
+  max-width: 230px;
+}
+.spatial-enter {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 218px;
+  padding: 14px 0;
+  border-top: 1px solid #d8cbb34a;
+  border-bottom: 1px solid #d8cbb34a;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 1.6px;
+  color: #f1e8d5;
+  transition:
+    border-color 0.3s,
+    color 0.3s;
+}
+.spatial-enter svg {
+  width: 17px;
+  height: 17px;
+  transition: transform 0.3s;
+}
+.spatial-enter:hover {
+  color: #e8c992;
+  border-color: #e8c992;
+}
+.spatial-enter:hover svg {
+  transform: translate(3px, -3px);
+}
+.spatial-introduction.introduction-small {
+  transform: translateX(-15px);
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+}
+.room-view-label {
+  position: absolute;
+  left: 5%;
+  bottom: 180px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  pointer-events: none;
+}
+.room-view-label > span {
+  font-size: 8px;
+  letter-spacing: 2px;
+  color: #bba585;
+}
+.room-view-label strong {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-weight: 500;
+  font-size: 29px;
+  line-height: 1;
+  letter-spacing: 0.1px;
+}
+.room-listen {
+  position: absolute;
+  left: 5%;
+  bottom: 232px;
+  display: flex;
+  align-items: center;
+  gap: 36px;
+  padding: 13px 0;
+  border-bottom: 1px solid #d6c9ae55;
+  text-transform: uppercase;
+  font-size: 9px;
+  letter-spacing: 1.3px;
+  color: #f1e8d5;
+}
+.room-listen svg {
+  width: 17px;
+  height: 17px;
+}
+.room-viewpoints {
+  position: absolute;
+  left: 50%;
+  bottom: 80px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: calc(100% - 220px);
+  background: #201b16bb;
+  backdrop-filter: blur(14px);
+  border: 1px solid #dac7a61f;
+  border-radius: 4px;
+  padding: 5px;
+}
+.room-viewpoints button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-width: 135px;
+  padding: 17px 16px;
+  font-size: 10px;
+  white-space: nowrap;
+  transition: background 0.3s;
+  color: #bfb4a0;
+  border-radius: 2px;
+}
+.room-viewpoints button > span {
+  font-size: 7px;
+  color: #ad9878;
+}
+.room-viewpoints button i {
+  position: absolute;
+  bottom: 7px;
+  left: 17px;
+  width: 13px;
+  height: 1px;
+  background: transparent;
+  transition:
+    width 0.4s,
+    background 0.4s;
+}
+.room-viewpoints button[aria-pressed="true"] {
+  background: #d6c9ae0c;
+  color: #f5e8d0;
+}
+.room-viewpoints button[aria-pressed="true"] i {
+  background: #c4a66d;
+  width: calc(100% - 34px);
+}
+.room-viewpoints button:hover {
+  background: #d6c9ae12;
+  color: #f5e8d0;
+}
+.room-viewpoints button:disabled {
+  opacity: 0.3;
+}
+.room-tools {
+  position: absolute;
+  right: 30px;
+  top: 50%;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.room-tools > button {
+  width: 37px;
+  height: 37px;
+  border: 1px solid #d6c9ae30;
+  background: #1a160f66;
+  backdrop-filter: blur(8px);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font:
+    400 15px Georgia,
+    serif;
+  color: #d2c4ab;
+  transition: background 0.25s;
+}
+.room-tools > button:hover {
+  background: #d6c9ae20;
+}
+.room-tools > button:disabled {
+  opacity: 0.3;
+}
+.room-tools svg {
+  width: 15px;
+  height: 15px;
+}
+.room-help {
+  position: absolute;
+  top: 50%;
+  right: 85px;
+  transform: translateY(-50%);
+  width: 330px;
+  padding: 30px;
+  background: #f1e8d5;
+  color: #49372c;
+  border: 1px solid #e1c79f;
+  box-shadow: 0 15px 80px #0005;
+  z-index: 7;
+}
+.room-help .spatial-kicker {
+  color: #8b7151;
+  font-size: 8px;
+  letter-spacing: 1.4px;
+}
+.room-help h2 {
+  font:
+    500 36px/1 "Cormorant Garamond",
+    Georgia,
+    serif;
+  letter-spacing: -0.7px;
+  margin: 12px 0 20px;
+}
+.room-help p {
+  font-size: 11px;
+  line-height: 1.8;
+  letter-spacing: 0.2px;
+}
+.room-help .room-provenance {
+  font-size: 10px;
+  color: #856f58;
+  border-top: 1px solid #ad8d6d44;
+  padding-top: 16px;
+  margin-bottom: 0;
+}
+.room-help-close {
+  position: absolute;
+  right: 12px;
+  top: 8px;
+  font:
+    22px/1 Georgia,
+    serif;
+  padding: 7px;
+}
+.room-movement {
+  position: absolute;
+  right: 27px;
+  bottom: 173px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  touch-action: none;
+}
+.room-movement > div {
+  display: flex;
+  gap: 4px;
+}
+.room-movement button {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  background: #211a13a3;
+  border: 1px solid #d6c9ae27;
+  border-radius: 3px;
+  color: #c8b797;
+  touch-action: none;
+}
+.room-movement button:hover,
+.room-movement button:active {
+  background: #bba58533;
+}
+.room-movement button:disabled {
+  opacity: 0.25;
+}
+.room-movement svg {
+  width: 15px;
+  height: 15px;
+}
+.spatial-chapters {
+  position: absolute;
+  right: 30px;
+  bottom: 112px;
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  text-transform: uppercase;
+  font-size: 8px;
+  letter-spacing: 1px;
+  padding: 10px 0;
+  border-bottom: 1px solid #d6c9ae35;
+}
+.spatial-chapters svg {
+  width: 13px;
+  height: 13px;
+}
+.spatial-chapters:hover {
+  color: #e9c789;
+}
+.room-caption {
+  position: absolute;
+  left: 90px;
+  bottom: 22px;
+  font-size: 7px;
+  font-weight: 400;
+  letter-spacing: 1.5px;
+  line-height: 1.5;
+  color: #b8a68a;
+  display: flex;
+  gap: 30px;
+  margin: 0;
+  pointer-events: none;
+}
+.room-caption span {
+  color: #c8bda288;
+  letter-spacing: 0.5px;
+  text-transform: none;
+  font-size: 8px;
+}
+.room-loader {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  font-size: 8px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #dcc9a7;
+}
+.room-loader-mark {
+  width: 30px;
+  height: 30px;
+  border: 1px solid #bda27a33;
+  border-top-color: #e4ceaa;
+  border-radius: 50%;
+  animation: room-spin 1.6s linear infinite;
+}
+.room-load-progress {
+  font-size: 9px;
+  letter-spacing: 1px;
+  opacity: 0.6;
+}
+.room-error {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 35px;
+  background: #19130caa;
+}
+.room-error h2 {
+  font:
+    500 70px/0.9 "Cormorant Garamond",
+    Georgia,
+    serif;
+  margin: 25px 0;
+  letter-spacing: -2px;
+}
+.room-error p {
+  font-size: 12px;
+  line-height: 1.8;
+  max-width: 350px;
+  color: #c6b79f;
+  margin: 0 0 30px;
+}
+.room-error > div {
+  display: flex;
+  gap: 15px;
+}
+.room-error button {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  font-size: 9px;
+  padding: 12px 16px;
+  border: 1px solid #baa28055;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.room-error svg {
+  width: 14px;
+  height: 14px;
+}
+.capture-status {
+  position: absolute;
+  left: 50%;
+  top: 140px;
+  transform: translateX(-50%);
+  padding: 14px 22px;
+  background: #f1e8d5;
+  color: #4b382b;
+  max-width: 80%;
+  font-size: 11px;
+  line-height: 1.5;
+  z-index: 7;
+}
+.spatial-stage ~ .utility-bar {
+  color: #c7b99f;
+}
+.spatial-stage ~ .utility-bar .accessibility-button {
+  background: #382c23;
+  color: #dfd1b5;
+  border: 1px solid #d6c9ae22;
+}
+.classic-room-link {
+  position: absolute;
+  left: 50%;
+  top: 25px;
+  transform: translateX(-50%);
+  z-index: 4;
+  text-transform: uppercase;
+  font-size: 8px;
+  letter-spacing: 1.3px;
+  color: #f1e8d5;
+  border-bottom: 1px solid #f1e8d550;
+  padding: 8px;
+}
+@keyframes room-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes spatial-appear {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (max-width: 900px) {
+  .room-viewpoints button {
+    min-width: 110px;
+    padding: 15px 12px;
+    font-size: 9px;
+    gap: 9px;
+  }
+  .spatial-introduction {
+    left: 35px;
+    bottom: 235px;
+  }
+  .room-view-label {
+    left: 35px;
+  }
+  .spatial-introduction h1 {
+    font-size: 90px;
+  }
+  .room-viewpoints {
+    bottom: 75px;
+    max-width: calc(100% - 65px);
+  }
+  .spatial-chapters {
+    bottom: 151px;
+    right: 30px;
+  }
+  .room-movement {
+    bottom: 210px;
+  }
+  .room-caption span {
+    display: none;
+  }
+}
+@media (max-width: 600px) {
+  .room-listen {
+    left: 24px;
+    bottom: 256px;
+    font-size: 8px;
+    gap: 28px;
+  }
+  .spatial-stage {
+    min-height: 640px;
+  }
+  .spatial-topline {
+    left: 20px;
+    right: 20px;
+    top: 76px;
+  }
+  .spatial-kicker {
+    font-size: 7px;
+    letter-spacing: 1.3px;
+  }
+  .spatial-original {
+    font-size: 7px;
+    gap: 8px;
+    letter-spacing: 0.7px;
+  }
+  .spatial-original svg {
+    width: 10px;
+    height: 10px;
+  }
+  .room-coordinate {
+    display: none;
+  }
+  .spatial-introduction {
+    left: 24px;
+    bottom: 258px;
+  }
+  .spatial-introduction .spatial-kicker {
+    font-size: 7px;
+    letter-spacing: 1.4px;
+  }
+  .spatial-introduction h1 {
+    font-size: 70px;
+    line-height: 0.84;
+    margin: 18px 0 20px;
+  }
+  .spatial-description {
+    font-size: 10px;
+    margin-bottom: 18px;
+  }
+  .spatial-enter {
+    width: 180px;
+    font-size: 8px;
+    padding: 12px 0;
+  }
+  .room-view-label {
+    left: 24px;
+    bottom: 214px;
+    gap: 14px;
+  }
+  .room-view-label > span {
+    font-size: 7px;
+    letter-spacing: 1px;
+  }
+  .room-view-label strong {
+    font-size: 23px;
+  }
+  .room-tools {
+    right: 16px;
+    top: 128px;
+    gap: 8px;
+  }
+  .room-tools > button {
+    width: 32px;
+    height: 32px;
+  }
+  .room-tools svg {
+    width: 13px;
+    height: 13px;
+  }
+  .room-help {
+    right: 16px;
+    top: 166px;
+    transform: none;
+    width: calc(100% - 32px);
+    max-width: 330px;
+    padding: 25px;
+    max-height: calc(100svh - 220px);
+    overflow-y: auto;
+  }
+  .room-help h2 {
+    font-size: 32px;
+  }
+  .room-viewpoints {
+    left: 20px;
+    right: 20px;
+    bottom: 91px;
+    max-width: none;
+    transform: none;
+    justify-content: space-between;
+    gap: 2px;
+    padding: 3px;
+  }
+  .room-viewpoints button {
+    min-width: 0;
+    flex: 1;
+    flex-direction: column;
+    gap: 5px;
+    padding: 12px 7px 14px;
+    font-size: 8px;
+    letter-spacing: 0;
+  }
+  .room-viewpoints button > span {
+    font-size: 6px;
+    letter-spacing: 1px;
+  }
+  .room-viewpoints button i {
+    left: 10px;
+    bottom: 6px;
+  }
+  .room-viewpoints button[aria-pressed="true"] i {
+    width: calc(100% - 20px);
+  }
+  .spatial-chapters {
+    bottom: 174px;
+    right: 20px;
+    font-size: 7px;
+    gap: 10px;
+    letter-spacing: 0.6px;
+  }
+  .room-movement {
+    right: 20px;
+    bottom: 227px;
+  }
+  .room-movement button {
+    width: 33px;
+    height: 33px;
+  }
+  .room-caption {
+    left: 67px;
+    bottom: 35px;
+    font-size: 5px;
+    letter-spacing: 0.7px;
+    width: 140px;
+  }
+  .spatial-stage ~ .utility-bar .utility-right {
+    gap: 9px;
+  }
+  .spatial-stage ~ .utility-bar .text-button {
+    font-size: 6px;
+  }
+  .spatial-stage ~ .utility-bar .sound-button {
+    width: 23px;
+  }
+  .spatial-stage ~ .utility-bar .sound-bars {
+    transform: scale(0.8);
+  }
+  .classic-room-link {
+    top: 64px;
+    white-space: nowrap;
+    font-size: 7px;
+  }
+  .room-loader {
+    top: 28%;
+    font-size: 7px;
+    white-space: nowrap;
+  }
+  .capture-status {
+    top: 110px;
+    font-size: 10px;
+    width: calc(100% - 40px);
+    max-width: none;
+  }
+  .room-error h2 {
+    font-size: 57px;
+  }
+  .room-error button {
+    font-size: 7px;
+    gap: 8px;
+    padding: 12px;
+  }
+}
+@media (max-height: 690px) and (min-width: 601px) {
+  .spatial-stage {
+    min-height: 480px;
+  }
+  .spatial-topline {
+    top: 75px;
+  }
+  .spatial-introduction {
+    bottom: 175px;
+  }
+  .spatial-introduction h1 {
+    font-size: 75px;
+    margin: 15px 0;
+  }
+  .spatial-description {
+    display: none;
+  }
+  .room-view-label {
+    bottom: 130px;
+  }
+  .room-viewpoints {
+    bottom: 66px;
+  }
+  .room-viewpoints button {
+    padding: 12px 14px;
+  }
+  .room-movement {
+    bottom: 145px;
+  }
+  .spatial-chapters {
+    bottom: 90px;
+  }
+  .room-caption {
+    font-size: 6px;
+  }
+}
