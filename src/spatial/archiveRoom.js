@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { SplatMesh } from "@sparkjsdev/spark";
 import { createGalleryArchitecture } from "./galleryArchitecture";
+import { exhibits } from "./exhibits";
 
 const asset = (name) => `${import.meta.env.BASE_URL}assets/${name}`;
 
@@ -33,35 +34,19 @@ export function createArchiveRoom({ onProgress, reflectionSize, reflectionSample
   const reflections = new THREE.Group();
   reflections.name = "reflection-artworks";
   room.add(reflections);
+  const hitMaterial = new THREE.MeshBasicMaterial({ side: THREE.FrontSide });
+  room.userData.hitTargets = exhibits.map((exhibit) => {
+    const target = new THREE.Mesh(new THREE.PlaneGeometry(exhibit.width, exhibit.height), hitMaterial);
+    target.position.set(exhibit.x, 2.75, -7.445);
+    target.layers.set(3);
+    target.userData.exhibit = exhibit.id;
+    room.add(target);
+    return target;
+  });
   const artwork = new SplatMesh({
     lod: false,
     constructSplats: async (splats) => {
-      const works = [
-        {
-          name: "benno-family.webp",
-          columns: 176,
-          rows: 132,
-          x: -4.5,
-          width: 2.7,
-          height: 2.06,
-        },
-        {
-          name: "benno-interview.webp",
-          columns: 200,
-          rows: 114,
-          x: 0,
-          width: 2.8,
-          height: 1.6,
-        },
-        {
-          name: "vienna-panorama.webp",
-          columns: 208,
-          rows: 114,
-          x: 4.5,
-          width: 2.8,
-          height: 1.52,
-        },
-      ];
+      const works = exhibits;
       const images = await Promise.all(
         works.map((work) => imagePixels(work.name, work.columns, work.rows)),
       );

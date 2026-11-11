@@ -4,6 +4,7 @@ import { RectAreaLightUniformsLib } from "three/addons/lights/RectAreaLightUnifo
 import { createLightInstallation } from "./lightInstallation";
 import { stoneTexture } from "./pavilionMaterials";
 import { createGalleryAtmosphere } from "./galleryAtmosphere";
+import { createGalleryVista } from "./galleryVista";
 
 export function createGalleryArchitecture({ reflectionSize, reflectionSamples, balancedLighting = false } = {}) {
   if (!balancedLighting) RectAreaLightUniformsLib.init();
@@ -69,9 +70,8 @@ export function createGalleryArchitecture({ reflectionSize, reflectionSamples, b
   const oculus = new THREE.Mesh(new THREE.TorusGeometry(3.64, 0.035, 8, 144), bronze);
   oculus.position.set(2.2, 5.1, -9.78);
   gallery.add(oculus);
-  const horizon = new THREE.Mesh(new THREE.PlaneGeometry(45, 26), new THREE.MeshBasicMaterial({ map: skyTexture(), toneMapped: false }));
-  horizon.position.set(0, 6, -13);
-  gallery.add(horizon);
+  const vista = createGalleryVista();
+  gallery.add(vista);
   // A deep central skylight, framed by stone slabs and bronze cross members.
   box(-6.7, 8.8, 0, 8.6, 0.45, 27, limestone, true);
   box(6.7, 8.8, 0, 8.6, 0.45, 27, limestone, true);
@@ -217,7 +217,6 @@ export function createGalleryArchitecture({ reflectionSize, reflectionSamples, b
   const sculptureLight = new THREE.PointLight(0xffc874, 24, 8, 1.7);
   sculptureLight.position.set(2.2, 3.2, 0.2);
   gallery.add(ambient, sun, sun.target, fill, sculptureLight);
-  const daySky = new THREE.Color(0xffffff), nightSky = new THREE.Color(0x344b61);
   const dayCeiling = coolLight.color.clone(), nightCeiling = new THREE.Color(0x284b68).multiplyScalar(0.8);
   gallery.userData.setLighting = (level) => {
     const blend = Number(level);
@@ -227,23 +226,11 @@ export function createGalleryArchitecture({ reflectionSize, reflectionSamples, b
     sun.intensity = THREE.MathUtils.lerp(3.5, 0.35, blend);
     fill.intensity = THREE.MathUtils.lerp(balancedLighting ? 0.85 : 3.2, balancedLighting ? 0.25 : 1.1, blend);
     sculptureLight.intensity = THREE.MathUtils.lerp(24, 36, blend);
-    horizon.material.color.lerpColors(daySky, nightSky, blend);
+    vista.userData.setLighting(blend);
     coolLight.color.lerpColors(dayCeiling, nightCeiling, blend);
     exhibitLights.forEach((light) => (light.intensity = THREE.MathUtils.lerp(35, 42, blend)));
   };
   return gallery;
-}
-
-function skyTexture() {
-  const canvas = document.createElement("canvas");
-  canvas.width = 32; canvas.height = 512;
-  const context = canvas.getContext("2d"), gradient = context.createLinearGradient(0, 0, 0, 512);
-  gradient.addColorStop(0, "#294b65"); gradient.addColorStop(0.55, "#86b7bb");
-  gradient.addColorStop(0.83, "#f2c296"); gradient.addColorStop(1, "#477079");
-  context.fillStyle = gradient; context.fillRect(0, 0, 32, 512);
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.colorSpace = THREE.SRGBColorSpace;
-  return texture;
 }
 
 function labelMesh(title, detail, ink = "#292d27") {

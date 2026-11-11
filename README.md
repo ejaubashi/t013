@@ -4,10 +4,12 @@ A responsive React experience based on the supplied Benno’s Light recordings. 
 
 ## 3D archive experiment
 
-The default opening uses Three.js and Spark 2.4.0 to render approximately 70,000 Gaussian splats in the photographic exhibits. A monumental circular opening, textured stone, glass exhibition wings, and a luminous canopy frame a suspended installation of 2,420 mirrors. **Shape the light** transforms the mirrors between a rising ribbon and a constellation. A larger reflecting pool follows the transformation, with softened reflections and viewing-angle-dependent strength. Light shafts, floating motes, an HDR rendering pipeline, and an opening camera arc complete the scene. This is an **imagined gallery and technical study**, not a captured historical location. It uses the supplied photographs and runs locally without requesting external scene assets. See the [reference study and art direction](docs/research/pavilion-art-direction.md).
+The default opening uses Three.js and Spark 2.4.0 to render approximately 70,000 Gaussian splats in the photographic exhibits. A monumental circular opening, a sculpted canopy, glass exhibition wings, and a distant sunrise frame a suspended installation of 2,420 mirrors. Bloom is the opening composition; **Shape the light** cycles through Ribbon, Constellation, and Bloom. A larger reflecting pool follows the transformation, with softened reflections and viewing-angle-dependent strength. Light shafts, floating motes, an HDR rendering pipeline, and an opening camera arc complete the scene. This is an **imagined gallery and technical study**, not a captured historical location. It uses the supplied photographs and runs locally without requesting external scene assets. See the [reference study and art direction](docs/research/pavilion-art-direction.md).
 
 - Drag to orbit, scroll or pinch to move closer, and use six composed viewpoints, including the installation close-up and an elevated canopy view.
-- **Shape the light** transforms the installation in 1.35 seconds, or immediately with reduced motion. The camera entrance includes an initial unfolding when motion is allowed.
+- **Shape the light** transforms the installation in 1.5 seconds, or immediately with reduced motion. The camera entrance opens the constellation into Bloom when motion is allowed.
+- **Take the journey** follows six camera stops with editorial captions and coordinated artwork/lighting. Next, previous, stop, Escape, and manual navigation keep the route interruptible. It stops when another dialog opens and does not advance while the tab is hidden.
+- Select a photograph in the room or use its **+** marker to open the archive reader. Native modal focus, keyboard access, Escape, and a route into Benno’s testimony are supported. Dragging and pinching do not select an image.
 - **Daylight / After hours** changes the sky, skylight, studio environment, and exhibition lighting. Reduced motion makes this change immediate.
 - Focus the canvas and hold W/A/S/D or the arrow keys to move. The on-screen direction controls also work with pointer, touch, and keyboard input. Reset returns to the entrance.
 - Use the upload control to open your own `.spz`, `.splat`, or `.ply` capture, up to 90 MB. Files stay on the device and are normalized into the viewer. The orientation control turns an upside-down capture over.
@@ -15,7 +17,7 @@ The default opening uses Three.js and Spark 2.4.0 to render approximately 70,000
 - **Original view** restores the paper cover for the browser session. **Enter the 3D room** switches back. `?view=classic` explicitly opens the saved cover.
 - Reduced motion makes viewpoint transitions immediate. Rendering pauses when the tab is hidden and updates on demand while the room is still. A graphics failure offers the original experience.
 
-The 3D renderer is a separate, lazy-loaded JavaScript chunk, about 1.2 MB gzipped. The initial interface can render while it loads. The planar reflection uses a separate camera with native photograph planes, keeping Spark's main-camera sorting separate from the mirror pass. Static shadows and unchanged mirror views are cached and rendering stops updating at rest. Software graphics use a lighter render tier without bloom/MSAA. Browser checks use software WebGL and touch emulation; actual mobile hardware performance still needs evaluation.
+The 3D renderer is a separate, lazy-loaded JavaScript chunk, about 1.2 MB gzipped. The initial interface can render while it loads. The planar reflection uses a separate camera with native photograph planes, keeping Spark's main-camera sorting separate from the mirror pass. Static shadows and unchanged mirror views are cached and rendering stops updating at rest. Software graphics use a lighter render tier without bloom/MSAA, reduce resolution during movement, and restore full detail at rest. Browser checks use software WebGL and touch emulation; actual mobile hardware performance still needs evaluation.
 
 ### Return point
 
@@ -28,6 +30,8 @@ The white contemporary gallery before the sculptural atrium is saved under Git t
 The unpublished pastel atrium before the reference-led pavilion redesign is also saved locally in `/workspace/benno-atrium-before-research-redesign.tar.gz`.
 
 The first Lumen Pavilion before the kinetic installation is saved under **`checkpoint-before-kinetic-gallery`**, commit `bb550a2`.
+
+The kinetic gallery before the guided journey and Bloom update is saved under **`checkpoint-before-gallery-journey`**, commit `de37abd`.
 
 To inspect a checkpoint without changing files, use `git show <tag>:<path>`. **Original view** offers an immediate visual comparison without changing Git history. To restore an earlier version in Git history, revert subsequent updates in reverse order. Pushing changes to `main` triggers the Pages deployment; leave draft changes local until publication is requested.
 

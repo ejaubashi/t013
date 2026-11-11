@@ -11,6 +11,8 @@ import { SparkRenderer, SplatMesh } from "@sparkjsdev/spark";
 import { createArchiveRoom } from "./archiveRoom";
 import { viewpoints } from "./viewpoints";
 import { createPavilionEnvironment } from "./pavilionMaterials";
+import { exhibits } from "./exhibits";
+import { journey } from "./journey";
 
 export default function RoomCanvas({
   onReady,
@@ -18,6 +20,9 @@ export default function RoomCanvas({
   onProgress,
   controlRef,
   reducedMotion,
+  onJourneyChange,
+  onExhibitSelect,
+  onExhibitPositions,
 }) {
   const hostRef = useRef(null);
   const motionRef = useRef(reducedMotion);
@@ -43,8 +48,10 @@ export default function RoomCanvas({
       transition = null,
       lightingTransition = null,
       artTransition = null,
-      artPhase = 0,
+      artPhase = 2,
       lightLevel = 0,
+      journeyState = null,
+      orbiting = false,
       imported = false;
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(65, 1, 0.03, 100);
@@ -55,6 +62,13 @@ export default function RoomCanvas({
       delta = new THREE.Vector3();
     const callbacks = [];
     let currentView = viewpoints[0];
+    const stopJourney = () => {
+      if (!journeyState) return;
+      journeyState = null;
+      transition = null;
+      dirty = true;
+      onJourneyChange?.(null);
+    };
     const listen = (target, type, listener, options) => {
       target.addEventListener(type, listener, options);
       callbacks.push(() => target.removeEventListener(type, listener, options));
@@ -100,6 +114,37 @@ export default function RoomCanvas({
         1 / (height * renderer.getPixelRatio()),
       );
       dirty = true;
+    };
+    const setLighting = (night) => {
+      if (imported) return;
+      if (motionRef.current) {
+        lightLevel = Number(night);
+        room.userData.setLighting(lightLevel);
+        scene.environmentIntensity = night ? 0.18 : 0.38;
+        lightingTransition = null;
+      } else lightingTransition = { from: lightLevel, to: Number(night), started: performance.now() };
+      renderer.domElement.dataset.lighting = night ? "night" : "day";
+      dirty = true;
+    };
+    const setArtForm = (form) => {
+      if (imported) return;
+      const next = THREE.MathUtils.clamp(Number(form), 0, 2);
+      if (motionRef.current) {
+        artPhase = next;
+        room.userData.setArtPhase(artPhase);
+        artTransition = null;
+      } else artTransition = { from: artPhase, to: next, started: performance.now(), duration: 1500 };
+      dirty = true;
+    };
+    const showJourneyStep = (index) => {
+      if (index >= journey.length) { stopJourney(); return; }
+      const step = journey[Math.max(0, index)];
+      journeyState = { index: Math.max(0, index), remaining: null };
+      keys.clear(); movement.set(0, 0);
+      moveTo(viewpoints.find((view) => view.id === step.view));
+      setArtForm(step.form);
+      setLighting(step.night);
+      onJourneyChange?.({ index: journeyState.index, ...step });
     };
     const initialize = async () => {
       try {
@@ -175,14 +220,48 @@ export default function RoomCanvas({
           dirty = true;
         });
         controls.addEventListener("start", () => {
+          orbiting = true;
+          stopJourney();
           transition = null;
         });
+        controls.addEventListener("end", () => { orbiting = false; });
         moveTo(viewpoints[0], true);
         resize();
+        const raycaster = new THREE.Raycaster();
+        raycaster.layers.set(3);
+        const cursor = new THREE.Vector2();
+        const activePointers = new Set();
+        let pointerDown = null;
+        const pickExhibit = (event) => {
+          if (!ready || imported) return null;
+          const rect = canvas.getBoundingClientRect();
+          cursor.set(((event.clientX - rect.left) / rect.width) * 2 - 1, 1 - ((event.clientY - rect.top) / rect.height) * 2);
+          raycaster.setFromCamera(cursor, camera);
+          return raycaster.intersectObjects(room.userData.hitTargets || [], false)[0]?.object.userData.exhibit;
+        };
+        listen(canvas, "pointerdown", (event) => {
+          activePointers.add(event.pointerId);
+          pointerDown = activePointers.size === 1 ? [event.clientX, event.clientY] : null;
+        });
+        listen(canvas, "pointermove", (event) => {
+          if (!pointerDown) canvas.style.cursor = pickExhibit(event) ? "pointer" : "grab";
+        });
+        listen(canvas, "pointerup", (event) => {
+          const isTap = activePointers.size === 1 && pointerDown && Math.hypot(event.clientX - pointerDown[0], event.clientY - pointerDown[1]) < 7;
+          activePointers.delete(event.pointerId);
+          pointerDown = null;
+          if (!isTap) return;
+          const selected = pickExhibit(event);
+          if (selected) { stopJourney(); onExhibitSelect?.(selected); }
+        });
+        listen(canvas, "pointercancel", (event) => { activePointers.delete(event.pointerId); pointerDown = null; });
+        listen(window, "keydown", (event) => { if (event.code === "Escape") stopJourney(); });
         room = createArchiveRoom({
           onProgress,
           ...(softwareGraphics ? { reflectionSize: 512, reflectionSamples: 0, balancedLighting: true } : {}),
         });
+        artPhase = motionRef.current ? 2 : 1;
+        room.userData.setArtPhase(artPhase);
         scene.add(room);
         const renderTarget = new THREE.WebGLRenderTarget(1, 1, {
           type: THREE.HalfFloatType,
@@ -196,6 +275,21 @@ export default function RoomCanvas({
         antialiasPass = new ShaderPass(FXAAShader);
         composer.addPass(antialiasPass);
         resize();
+        const fullPixelRatio = renderer.getPixelRatio();
+        let motionQuality = false;
+        const updateMotionQuality = (moving) => {
+          if (motionQuality === moving) {
+            if (!canvas.dataset.motion) canvas.dataset.motion = moving ? "active" : "idle";
+            return;
+          }
+          motionQuality = moving;
+          canvas.dataset.motion = moving ? "active" : "idle";
+          if (softwareGraphics) {
+            renderer.setPixelRatio(moving ? fullPixelRatio * 0.7 : fullPixelRatio);
+            composer.setPixelRatio(renderer.getPixelRatio());
+            resize();
+          }
+        };
         listen(canvas, "webglcontextlost", (e) => {
           e.preventDefault();
           fail(
@@ -216,10 +310,11 @@ export default function RoomCanvas({
             ].includes(e.code)
           ) {
             e.preventDefault();
+            stopJourney();
             keys.add(e.code);
             transition = null;
           }
-          if (e.code === "KeyR") moveTo(currentView);
+          if (e.code === "KeyR") { stopJourney(); moveTo(currentView); }
         });
         listen(canvas, "keyup", (e) => keys.delete(e.code));
         listen(canvas, "blur", () => {
@@ -229,11 +324,15 @@ export default function RoomCanvas({
         listen(window, "blur", () => {
           keys.clear();
           movement.set(0, 0);
+          orbiting = false;
+          activePointers.clear(); pointerDown = null;
         });
         listen(window, "resize", resize);
         listen(document, "visibilitychange", () => {
           keys.clear();
           movement.set(0, 0);
+          orbiting = false;
+          activePointers.clear(); pointerDown = null;
           dirty = true;
           lastTime = performance.now();
         });
@@ -243,9 +342,17 @@ export default function RoomCanvas({
         const tick = (time) => {
           if (disposed || failed) return;
           frame = requestAnimationFrame(tick);
-          const dt = Math.min((time - (lastTime || time)) / 1000, 0.045);
+          const elapsed = (time - (lastTime || time)) / 1000;
+          const dt = Math.min(elapsed, 0.045);
           lastTime = time;
           if (document.hidden) return;
+          if (journeyState && document.querySelector("dialog[open]")) stopJourney();
+          if (journeyState && !transition && !artTransition && !lightingTransition) {
+            if (journeyState.remaining === null) journeyState.remaining = 6.5;
+            else journeyState.remaining -= Math.min(elapsed, 1);
+            if (journeyState.remaining <= 0) showJourneyStep(journeyState.index + 1);
+          }
+          updateMotionQuality(Boolean(orbiting || keys.size || movement.lengthSq() || transition || artTransition || lightingTransition));
           if (artTransition) {
             const p = Math.min(1, (time - artTransition.started) / artTransition.duration);
             artPhase = THREE.MathUtils.lerp(artTransition.from, artTransition.to, p * p * (3 - 2 * p));
@@ -321,8 +428,14 @@ export default function RoomCanvas({
               canvas.dataset.drawnSplats = String(spark.activeSplats);
               if (!imported) {
                 canvas.dataset.artPhase = artPhase.toFixed(3);
-                canvas.dataset.artForm = artPhase < 0.001 ? "ribbon" : artPhase > 0.999 ? "constellation" : "transforming";
+                canvas.dataset.artForm = artPhase < 0.001 ? "ribbon" : Math.abs(artPhase - 1) < 0.001 ? "constellation" : artPhase > 1.999 ? "bloom" : "transforming";
               }
+              canvas.dataset.journey = journeyState ? String(journeyState.index) : "stopped";
+              onExhibitPositions?.(imported ? [] : exhibits.map((exhibit) => {
+                const point = new THREE.Vector3(exhibit.x + exhibit.width / 2 - 0.18, 2.75, -7.43).project(camera);
+                return { id: exhibit.id, x: (point.x + 1) * host.clientWidth / 2, y: (1 - point.y) * host.clientHeight / 2,
+                  visible: camera.position.z > -7.43 && point.z > -1 && point.z < 1 && Math.abs(point.x) < 0.94 && Math.abs(point.y) < 0.88 };
+              }));
               canvas.dataset.camera = camera.position
                 .toArray()
                 .map((n) => n.toFixed(3))
@@ -343,46 +456,30 @@ export default function RoomCanvas({
         frame = requestAnimationFrame(tick);
         controlRef.current = {
           navigate: (id) => {
+            stopJourney();
             if (!imported)
               moveTo(viewpoints.find((v) => v.id === id) || viewpoints[0]);
           },
-          reset: () =>
+          reset: () => {
+            stopJourney();
             moveTo(
               imported
                 ? { position: [0, 0.5, 5.5], target: [0, 0, 0] }
                 : viewpoints[0],
-            ),
+            );
+          },
           move: (x, z) => {
-            transition = null;
+            if (x || z) { stopJourney(); transition = null; }
             movement.set(x, z);
           },
           focus: () => canvas.focus({ preventScroll: true }),
-          setLighting: (night) => {
-            if (imported) return;
-            if (motionRef.current) {
-              lightLevel = Number(night);
-              room.userData.setLighting(lightLevel);
-              scene.environmentIntensity = night ? 0.18 : 0.38;
-              lightingTransition = null;
-            } else {
-              lightingTransition = { from: lightLevel, to: Number(night), started: performance.now() };
-            }
-            canvas.dataset.lighting = night ? "night" : "day";
-            dirty = true;
-          },
-          setArtForm: (constellation) => {
-            if (imported) return;
-            const next = Number(constellation);
-            if (motionRef.current) {
-              artPhase = next;
-              room.userData.setArtPhase(artPhase);
-              artTransition = null;
-            } else {
-              artTransition = { from: artPhase, to: next, started: performance.now(), duration: 1350 };
-            }
-            dirty = true;
-          },
+          setLighting: (night) => { stopJourney(); setLighting(night); },
+          setArtForm: (form) => { stopJourney(); setArtForm(form); },
+          startJourney: () => { if (ready && !imported) showJourneyStep(0); },
+          stopJourney,
+          advanceJourney: (direction) => { if (journeyState) showJourneyStep(journeyState.index + direction); },
           loadCapture: async (file) => {
+            stopJourney();
             const next = new SplatMesh({
               fileBytes: await file.arrayBuffer(),
               fileName: file.name,
@@ -444,7 +541,7 @@ export default function RoomCanvas({
         if (!motionRef.current) {
           artPhase = 1;
           room.userData.setArtPhase(artPhase);
-          artTransition = { from: 1, to: 0, started: performance.now(), duration: 2700 };
+          artTransition = { from: 1, to: 2, started: performance.now(), duration: 3100 };
           camera.position.set(9, 4.5, 14);
           controls.target.set(0.8, 3.2, -2);
           controls.update();

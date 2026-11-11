@@ -22,16 +22,16 @@ The [Khronos Sponza model](https://github.com/KhronosGroup/glTF-Sample-Assets/tr
 
 The earlier pastel atrium relied on repeated ribs and a single smooth sculpture. Its materials and spatial composition were too simple to support the intended quality. The new direction is a stone pavilion with bronze detail, deep recesses, a long skylight, and one circular opening. The main installation is framed by architecture rather than competing with a ceiling of repeated arches.
 
-The installation is an original parametric model: 2,420 mirrored pieces transform between a rising ribbon and a Fibonacci-distributed constellation. Shared GPU attributes interpolate both positions and rotations; normals rotate with each mirror so the reflected lighting remains coherent. Two instanced meshes render the mirror bodies and luminous edges. The sculpture, textured stone, glass exhibition wings, canopy, bench, light cards, and water shader are authored for this project. No third-party building model, reference-site artwork, or AI-generated historical image is used.
+The installation is an original parametric model: 2,420 mirrored pieces transform between a rising ribbon, a Fibonacci-distributed constellation, and a radial Bloom. Shared GPU attributes interpolate both positions and rotations; normals rotate with each mirror so the reflected lighting remains coherent. Two instanced meshes render the mirror bodies and luminous edges. The sculpture, textured stone, glass exhibition wings, canopy, bench, light cards, and water shader are authored for this project. No third-party building model, reference-site artwork, or AI-generated historical image is used.
 
 ## Implemented details
 
 - Locally generated stone color/bump detail, physically based mirrors, and transparent glass exhibition wings.
-- A luminous elliptical canopy, 420 light motes, and an authored transparent light-shaft volume. The shaft is a local mesh effect rather than full-scene ray marching.
-- GPU interpolation between two mirror formations, a 1.35-second user-controlled transformation, and an initial unfolding during the camera entrance. Reduced motion makes changes immediate.
+- A sculpted annular canopy, 420 light motes, and an authored transparent light-shaft volume. The shaft is a local mesh effect rather than full-scene ray marching.
+- GPU interpolation between three mirror formations, a 1.5-second user-controlled transformation, and a constellation-to-Bloom opening during the camera entrance. Reduced motion makes changes immediate.
 - Warm exhibit spotlights, a cool area fill, directional skylight shadows, and a locally generated reflection environment.
 - A planar reflecting pool with nine-tap softening and viewing-angle-dependent reflection strength.
-- An HDR rendering pipeline with restrained bloom, multisampling, and FXAA. Software renderers automatically use a lighter tier: a one-to-one pixel ratio, a 512px mirror, a simpler directional fill, FXAA, and no bloom/MSAA. Geometry, photographs, lighting controls, and navigation are retained.
+- An HDR rendering pipeline with restrained bloom, multisampling, and FXAA. Software renderers automatically use a lighter tier: a one-to-one pixel ratio at rest with reduced resolution during movement, a 512px mirror, a simpler directional fill, FXAA, and no bloom/MSAA. Geometry, photographs, lighting controls, and navigation are retained.
 - Daylight and after-hours lighting, including sky, skylight, environment, and exhibit changes. The change takes 750 ms or is immediate with reduced motion.
 - A camera arc and six composed viewpoints, including an elevated canopy view; drag, zoom, keyboard movement, touch controls, and local splat uploads remain available.
 - A quieter exhibition index, revised heading, and responsive spacing.
@@ -41,12 +41,20 @@ Unchanged mirror views are cached until the camera, projection, lighting, photog
 
 The three photographs remain genuine Gaussian-splat exhibits, approximately 70,000 splats. Native photo planes are visible only to the reflection camera, avoiding a second Spark camera-sort pass. The architecture is an imagined exhibition environment, not a scan of Benno's historical surroundings.
 
+## Guided exploration
+
+**Take the journey** coordinates six camera stops, mirror forms, lighting, and editorial captions. Each stop waits for its transitions before the reading interval begins. Next and previous controls are available, and Escape or manual navigation stops the route. Hidden tabs do not advance it; opening another dialog stops it. The route does not start the testimony or audio automatically.
+
+Photographs have native CPU raycast targets on a camera-excluded layer, plus keyboard-accessible DOM markers projected from their world positions. A tap opens a native dialog; a drag or multi-touch gesture does not. The reader uses the supplied photographs, supports focus restoration and Escape, and links back to the in-room view or the testimony notice. Image descriptions are editorial captions, not purported testimony quotations.
+
+The exterior is an authored sunrise with layered distant hills. It is part of the imagined pavilion and does not claim to reconstruct Vienna. Its lighting follows the daylight/after-hours control and appears in the pool reflection.
+
 ## Review and return point
 
-The first Lumen Pavilion is saved at Git tag `checkpoint-before-kinetic-gallery` (`bb550a2`). The previous unpublished atrium is saved in `/workspace/benno-atrium-before-research-redesign.tar.gz`. The prior white gallery remains at Git tag `checkpoint-before-sculptural-atrium` (`f387863`). The original cover is available immediately through **Original view**.
+The gallery before the guided journey is saved at `checkpoint-before-gallery-journey` (`de37abd`). The first Lumen Pavilion is saved at Git tag `checkpoint-before-kinetic-gallery` (`bb550a2`). The previous unpublished atrium is saved in `/workspace/benno-atrium-before-research-redesign.tar.gz`. The prior white gallery remains at Git tag `checkpoint-before-sculptural-atrium` (`f387863`). The original cover is available immediately through **Original view**.
 
 The user authorized publication after reviewing the draft. Deployment uses the repository's existing GitHub Pages workflow, with the site at https://ejaubashi.github.io/t013/.
 
 ## Validation
 
-The production build passes with the GitHub Pages base path `/t013/`. All 24 desktop/mobile browser checks pass with `npm test -- --workers=1` and cover kinetic transformations, the canopy view, actual splat drawing, composed viewpoints, lighting controls, keyboard movement, local capture imports, original-view fallback, chapter navigation, and testimony playback. The browser checks use software Chromium and touch emulation; physical mobile GPU performance remains unmeasured. Earlier detail-tier renders were also visually inspected before the automatic software tier was introduced.
+The production build passes with the GitHub Pages base path `/t013/`. All 28 desktop/mobile browser checks pass with `npm test -- --workers=1` and cover three kinetic formations, guided camera stops, in-room photograph selection, modal/keyboard behavior, kinetic transformations, the canopy view, actual splat drawing, composed viewpoints, lighting controls, keyboard movement, local capture imports, original-view fallback, chapter navigation, and testimony playback. The browser checks use software Chromium and touch emulation; physical mobile GPU performance remains unmeasured. Earlier detail-tier renders were also visually inspected before the automatic software tier was introduced.

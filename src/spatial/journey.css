@@ -1,0 +1,111 @@
+.spatial-journey-start {
+  display: flex; align-items: center; gap: 12px;
+  color: #d8e8cf; font-size: 9px; text-transform: uppercase;
+  letter-spacing: 1.2px; padding: 13px 0 2px; margin-top: 10px;
+  pointer-events: auto;
+}
+.spatial-journey-start > span:first-child { font-size: 20px; line-height: 1; }
+.journey-start-detail { font-size: 7px; color: #b6c4af80; letter-spacing: .5px; text-transform: none; }
+.spatial-journey-start:hover { color: #edfac9; }
+.spatial-journey-start:disabled { opacity: .3; }
+.room-art-form[data-form="constellation"] .art-form-state,
+.room-art-form[data-form="bloom"] .art-form-state { background: #c8f4dd; color: #172c29; }
+.room-art-form[data-form="bloom"] .art-form-state { background: #f4d6aa; }
+.room-journey-card {
+  position: absolute; left: 5%; top: 31%; width: 320px;
+  padding: 25px; background: linear-gradient(145deg, #10252bef, #172f32bc);
+  border: 1px solid #d1ebd830; backdrop-filter: blur(20px);
+  box-shadow: 0 20px 80px #0611162b; z-index: 4;
+}
+.room-journey-card > .spatial-kicker { font-size: 7px; color: #d4e3c7; letter-spacing: 1px; }
+.room-journey-card h2 {
+  font: italic 500 44px/.97 "Cormorant Garamond", Georgia, serif;
+  letter-spacing: -1.5px; margin: 22px 0 12px; color: #ecf0da;
+  animation: spatial-appear .6s both;
+}
+.room-journey-card p { font-size: 11px; line-height: 1.8; color: #b9d1c5; margin: 0; }
+.journey-stops { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; margin-top: 12px; }
+.journey-stops i { height: 2px; background: #d3e6c927; }
+.journey-stops i.visited { background: #d9e8ab; }
+.journey-actions { display: flex; align-items: center; justify-content: space-between; margin-top: 22px; }
+.journey-actions button { color: #deead1; padding: 8px 10px; border: 1px solid #c5ddbd30; min-height: 34px; }
+.journey-actions button:nth-child(2) { font-size: 8px; text-transform: uppercase; letter-spacing: 1px; border: 0; }
+.journey-actions button:disabled { opacity: .22; }
+.room-exhibit-hotspots { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+.room-exhibit-hotspot {
+  position: absolute; transform: translate(-50%, -50%);
+  width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center;
+  background: #142a2bb8; border: 1px solid #d7f0dc80;
+  color: #e9f8dd; font-size: 20px; font-weight: 400;
+  pointer-events: auto; backdrop-filter: blur(10px);
+  box-shadow: 0 0 0 5px #cdeecb0a;
+}
+.room-exhibit-hotspot:hover { background: #d5edce; color: #17322b; }
+.hotspot-title {
+  position: absolute; left: 38px; top: 3px; white-space: nowrap;
+  font: 400 9px/1.3 Archivo, sans-serif; padding: 8px 12px;
+  letter-spacing: .3px; background: #10252bed; color: #dfecd5;
+  opacity: 0; transform: translateX(-4px); pointer-events: none;
+  transition: opacity .2s, transform .2s;
+}
+.room-exhibit-hotspot:hover .hotspot-title,
+.room-exhibit-hotspot:focus-visible .hotspot-title { opacity: 1; transform: none; }
+.spatial-stage .spatial-introduction,
+.spatial-stage .room-tools,
+.spatial-stage .room-viewpoints,
+.spatial-stage .room-movement,
+.spatial-stage .spatial-chapters,
+.spatial-stage .room-lighting,
+.spatial-stage .room-art-form { z-index: 2; }
+.exhibit-dialog {
+  width: min(1080px, calc(100vw - 64px)); max-height: calc(100svh - 64px);
+  border: 1px solid #c7ddc733; background: #102326; color: #e7ead8;
+  padding: 0; box-shadow: 0 35px 160px #000a; overflow: auto;
+}
+.exhibit-dialog::backdrop { background: #051215cc; backdrop-filter: blur(8px); }
+.exhibit-dialog-controls { position: sticky; top: 0; height: 0; z-index: 3; }
+.exhibit-dialog-body { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(260px, 1fr); }
+.exhibit-media { display: flex; align-items: center; justify-content: center; padding: 42px; background: #08171b; min-width: 0; }
+.exhibit-media img { display: block; max-width: 100%; max-height: 72svh; object-fit: contain; box-shadow: 0 10px 70px #0006; }
+.exhibit-copy { padding: 66px 38px 36px; display: flex; flex-direction: column; align-items: flex-start; }
+.exhibit-copy .spatial-kicker { color: #bad6ba; font-size: 7px; line-height: 1.8; letter-spacing: 1.3px; }
+.exhibit-copy h2 { font: italic 500 48px/.98 "Cormorant Garamond", Georgia, serif; letter-spacing: -1.5px; margin: 30px 0 22px; }
+.exhibit-copy p { font-size: 13px; line-height: 1.85; color: #b3cec0; margin: 0 0 35px; }
+.exhibit-close { position: absolute; top: 12px; right: 12px; width: 40px; height: 40px; font: 28px/1 Georgia, serif; color: #e4eed8; z-index: 2; background: #10262a80; border: 1px solid #ccdec42e; }
+.exhibit-action { display: flex; width: 100%; align-items: center; justify-content: space-between; border-top: 1px solid #d1e6c741; padding: 18px 0; color: #e3efd7; text-transform: uppercase; font-size: 9px; letter-spacing: 1px; }
+.exhibit-action:hover { color: #f4deb4; }
+.exhibit-footnote { font-size: 8px; line-height: 1.8; color: #aac6b080; margin-top: auto; padding-top: 36px; }
+.large-text .exhibit-copy p { font-size: 18px; }
+@media (max-width: 600px) {
+  .spatial-journey-start { font-size: 7px; gap: 10px; margin-top: 5px; padding-top: 10px; }
+  .spatial-journey-start > span:first-child { font-size: 18px; }
+  .journey-start-detail { display: none; }
+  .room-exhibit-hotspot { width: 30px; height: 30px; font-size: 18px; }
+  .hotspot-title { display: none; }
+  .room-journey-card { left: 20px; top: 154px; width: calc(100% - 92px); padding: 16px; }
+  .room-journey-card h2 { font-size: 31px; margin: 14px 0 8px; letter-spacing: -1px; }
+  .room-journey-card p { font-size: 10px; line-height: 1.65; }
+  .room-journey-card > .spatial-kicker { font-size: 6px; letter-spacing: .7px; }
+  .journey-actions { margin-top: 14px; }
+  .journey-actions button { min-height: 30px; padding: 5px 9px; }
+  .journey-actions button:nth-child(2) { font-size: 7px; }
+  .exhibit-dialog { width: calc(100vw - 24px); max-height: calc(100svh - 32px); }
+  .exhibit-dialog-body { grid-template-columns: 1fr; }
+  .exhibit-media { padding: 36px 22px 22px; }
+  .exhibit-media img { max-height: 40svh; }
+  .exhibit-copy { padding: 24px; }
+  .exhibit-copy h2 { font-size: 36px; margin: 18px 0 14px; }
+  .exhibit-copy p { font-size: 12px; margin-bottom: 20px; }
+  .exhibit-footnote { padding-top: 20px; }
+}
+@media (max-width: 600px) and (max-height: 740px) {
+  .room-journey-card p { display: none; }
+}
+@media (max-height: 690px) and (min-width: 601px) {
+  .room-journey-card { top: 24%; width: 295px; padding: 20px; }
+  .room-journey-card h2 { font-size: 36px; margin-top: 16px; }
+  .room-journey-card p { font-size: 10px; }
+  .journey-actions { margin-top: 14px; }
+  .room-journey-card p { display: none; }
+  .is-journey .room-listen { bottom: 137px; }
+}
