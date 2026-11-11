@@ -1,10 +1,16 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
+import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
+import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
+import { FXAAShader } from "three/addons/shaders/FXAAShader.js";
 import { SparkRenderer, SplatMesh } from "@sparkjsdev/spark";
 import { createArchiveRoom } from "./archiveRoom";
 import { viewpoints } from "./viewpoints";
+import { createPavilionEnvironment } from "./pavilionMaterials";
 
 export default function RoomCanvas({
   onReady,
@@ -25,6 +31,8 @@ export default function RoomCanvas({
       room,
       controls,
       environmentTarget,
+      composer,
+      antialiasPass,
       disposed = false,
       failed = false,
       dirty = true,
@@ -32,6 +40,8 @@ export default function RoomCanvas({
     let frame = 0,
       lastTime = 0,
       transition = null,
+      lightingTransition = null,
+      lightLevel = 0,
       imported = false;
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(65, 1, 0.03, 100);
@@ -79,8 +89,13 @@ export default function RoomCanvas({
       if (!width || !height) return;
       renderer.setSize(width, height);
       camera.aspect = width / height;
-      camera.fov = width < 600 ? 77 : 65;
+      camera.fov = width < 600 ? 72 : 52;
       camera.updateProjectionMatrix();
+      composer?.setSize(width, height);
+      antialiasPass?.uniforms.resolution.value.set(
+        1 / (width * renderer.getPixelRatio()),
+        1 / (height * renderer.getPixelRatio()),
+      );
       dirty = true;
     };
     const initialize = async () => {
@@ -90,31 +105,41 @@ export default function RoomCanvas({
           alpha: false,
           powerPreference: "high-performance",
         });
+        const gl = renderer.getContext();
+        const graphicsInfo = gl.getExtension("WEBGL_debug_renderer_info");
+        const graphicsName = graphicsInfo
+          ? gl.getParameter(graphicsInfo.UNMASKED_RENDERER_WEBGL)
+          : "";
+        const softwareGraphics = /swiftshader|llvmpipe|softpipe|software/i.test(graphicsName);
         renderer.setPixelRatio(
           Math.min(
             devicePixelRatio,
-            matchMedia("(pointer: coarse)").matches ? 1 : 1.35,
+            softwareGraphics ? 1 : matchMedia("(pointer: coarse)").matches ? 1.5 : 1.35,
           ),
         );
-        renderer.setClearColor(0xf0f2ef, 1);
+        renderer.setClearColor(0x172325, 1);
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 0.95;
+        renderer.toneMappingExposure = 0.9;
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         const environmentGenerator = new THREE.PMREMGenerator(renderer);
-        const environmentRoom = new RoomEnvironment();
+        const environmentRoom = createPavilionEnvironment();
         environmentTarget = environmentGenerator.fromScene(
           environmentRoom,
           0.04,
         );
         scene.environment = environmentTarget.texture;
-        scene.environmentIntensity = 0.65;
-        environmentRoom.dispose();
+        scene.environmentIntensity = 0.38;
+        environmentRoom.traverse((object) => {
+          object.geometry?.dispose();
+          object.material?.dispose();
+        });
         environmentGenerator.dispose();
         // Architecture and lights are static: camera movement can reuse the shadow map.
         renderer.shadowMap.autoUpdate = false;
         renderer.shadowMap.needsUpdate = true;
         const canvas = renderer.domElement;
+        canvas.dataset.renderMode = softwareGraphics ? "balanced" : "detail";
         canvas.tabIndex = 0;
         canvas.setAttribute("role", "img");
         canvas.setAttribute(
@@ -130,12 +155,14 @@ export default function RoomCanvas({
           maxStdDev: Math.sqrt(5),
           minPixelRadius: 0.4,
         });
+        spark.layers.set(1);
+        camera.layers.enable(1);
         scene.add(spark);
         controls = new OrbitControls(camera, canvas);
         controls.enableDamping = false;
         controls.enablePan = true;
         controls.minDistance = 0.65;
-        controls.maxDistance = 11;
+        controls.maxDistance = 26;
         controls.minPolarAngle = 0.28;
         controls.maxPolarAngle = Math.PI * 0.79;
         controls.rotateSpeed = 0.45;
@@ -149,8 +176,23 @@ export default function RoomCanvas({
         });
         moveTo(viewpoints[0], true);
         resize();
-        room = createArchiveRoom({ onProgress });
+        room = createArchiveRoom({
+          onProgress,
+          ...(softwareGraphics ? { reflectionSize: 512, reflectionSamples: 0, balancedLighting: true } : {}),
+        });
         scene.add(room);
+        const renderTarget = new THREE.WebGLRenderTarget(1, 1, {
+          type: THREE.HalfFloatType,
+          samples: softwareGraphics ? 0 : 2,
+        });
+        composer = new EffectComposer(renderer, renderTarget);
+        composer.addPass(new RenderPass(scene, camera));
+        if (!softwareGraphics)
+          composer.addPass(new UnrealBloomPass(new THREE.Vector2(1, 1), 0.2, 0.45, 1.5));
+        composer.addPass(new OutputPass());
+        antialiasPass = new ShaderPass(FXAAShader);
+        composer.addPass(antialiasPass);
+        resize();
         listen(canvas, "webglcontextlost", (e) => {
           e.preventDefault();
           fail(
@@ -201,6 +243,14 @@ export default function RoomCanvas({
           const dt = Math.min((time - (lastTime || time)) / 1000, 0.045);
           lastTime = time;
           if (document.hidden) return;
+          if (lightingTransition) {
+            const p = Math.min(1, (time - lightingTransition.started) / 750);
+            lightLevel = THREE.MathUtils.lerp(lightingTransition.from, lightingTransition.to, p * p * (3 - 2 * p));
+            room.userData.setLighting?.(lightLevel);
+            scene.environmentIntensity = THREE.MathUtils.lerp(0.38, 0.18, lightLevel);
+            dirty = true;
+            if (p === 1) lightingTransition = null;
+          }
           if (transition) {
             const p = Math.min(1, (time - transition.started) / 1700),
               ease = p * p * (3 - 2 * p);
@@ -235,7 +285,7 @@ export default function RoomCanvas({
               .multiplyScalar(dt * 1.65);
             const before = camera.position.clone();
             camera.position.add(delta);
-            const limit = imported ? 12 : 5.45;
+            const limit = imported ? 12 : 9.4;
             camera.position.x = THREE.MathUtils.clamp(
               camera.position.x,
               -limit,
@@ -243,8 +293,8 @@ export default function RoomCanvas({
             );
             camera.position.z = THREE.MathUtils.clamp(
               camera.position.z,
-              imported ? -12 : -4.2,
-              imported ? 12 : 4.7,
+              imported ? -12 : -6.7,
+              imported ? 12 : 12.5,
             );
             controls.target.add(camera.position.clone().sub(before));
             controls.update();
@@ -252,8 +302,11 @@ export default function RoomCanvas({
           }
           if (dirty) {
             try {
-              renderer.render(scene, camera);
+              // Spark can request another frame while rendering completes its
+              // initial sort. Preserve that request instead of clearing it.
               dirty = false;
+              composer.render();
+              canvas.dataset.drawnSplats = String(spark.activeSplats);
               canvas.dataset.camera = camera.position
                 .toArray()
                 .map((n) => n.toFixed(3))
@@ -283,6 +336,19 @@ export default function RoomCanvas({
             movement.set(x, z);
           },
           focus: () => canvas.focus({ preventScroll: true }),
+          setLighting: (night) => {
+            if (imported) return;
+            if (motionRef.current) {
+              lightLevel = Number(night);
+              room.userData.setLighting(lightLevel);
+              scene.environmentIntensity = night ? 0.18 : 0.38;
+              lightingTransition = null;
+            } else {
+              lightingTransition = { from: lightLevel, to: Number(night), started: performance.now() };
+            }
+            canvas.dataset.lighting = night ? "night" : "day";
+            dirty = true;
+          },
           loadCapture: async (file) => {
             const next = new SplatMesh({
               fileBytes: await file.arrayBuffer(),
@@ -310,6 +376,8 @@ export default function RoomCanvas({
               room = next;
               scene.add(room);
               imported = true;
+              lightingTransition = null;
+              scene.environmentIntensity = 0.38;
               controls.maxDistance = 18;
               moveTo({ position: [0, 0.5, 5.5], target: [0, 0, 0] }, true);
               canvas.dataset.splats = String(
@@ -337,7 +405,14 @@ export default function RoomCanvas({
         }
         ready = true;
         dirty = true;
+        if (!motionRef.current) {
+          camera.position.set(9, 4.5, 14);
+          controls.target.set(0.8, 3.2, -2);
+          controls.update();
+          moveTo(viewpoints[0]);
+        }
         canvas.dataset.scene = "gaussian-archive";
+        canvas.dataset.lighting = "day";
         canvas.dataset.splats = String(
           room.splats?.getNumSplats() || room.packedSplats?.numSplats || 0,
         );
@@ -361,6 +436,8 @@ export default function RoomCanvas({
       room?.dispose();
       spark?.dispose();
       environmentTarget?.dispose();
+      composer?.passes.forEach((pass) => pass.dispose());
+      composer?.dispose();
       renderer?.dispose();
       renderer?.forceContextLoss();
       if (renderer?.domElement.parentNode === host)

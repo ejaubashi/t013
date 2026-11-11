@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { viewpoints } from "./viewpoints";
 import "./spatial.css";
+import "./atrium.css";
 
 const RoomCanvas = lazy(() => import("./RoomCanvas"));
 
@@ -41,6 +42,7 @@ export default function SpatialLanding({
   const [loadingCapture, setLoadingCapture] = useState(false),
     [captureError, setCaptureError] = useState("");
   const [attempt, setAttempt] = useState(0);
+  const [night, setNight] = useState(false);
   const inputRef = useRef(null);
   useEffect(() => {
     const stop = () => controls.current?.move(0, 0);
@@ -105,10 +107,11 @@ export default function SpatialLanding({
     setReady(false);
     setProgress(0);
     setCapture("");
+    setNight(false);
     setAttempt((n) => n + 1);
   };
   return (
-    <main className={`spatial-stage ${ready ? "room-ready" : ""}`}>
+    <main className={`spatial-stage ${ready ? "room-ready" : ""} ${night ? "after-hours" : ""}`}>
       <div className="spatial-fallback" aria-hidden="true" />
       <Suspense fallback={null}>
         <RoomCanvas
@@ -123,7 +126,7 @@ export default function SpatialLanding({
       <div className="spatial-vignette" aria-hidden="true" />
       <div className="spatial-topline">
         <span className="spatial-kicker">
-          <i /> An exhibition of memory
+          <i /> A place for human memory
         </span>
         <button onClick={onOriginal} className="spatial-original">
           Original view <Arrow />
@@ -132,7 +135,7 @@ export default function SpatialLanding({
       <div className="room-coordinate" aria-hidden="true">
         <span>48° 12′ N</span>
         <span>16° 22′ E</span>
-        <span>VIENNA · THE MEMORY GALLERY</span>
+        <span>THE LUMEN PAVILION · EST. IN MEMORY</span>
       </div>
       {!error && !ready && (
         <div className="room-loader" role="status">
@@ -166,17 +169,17 @@ export default function SpatialLanding({
             className={`spatial-introduction ${active !== "arrival" || capture ? "introduction-small" : ""}`}
           >
             <p className="spatial-kicker">
-              Benno Kern · The permanent collection
+              An immersive exhibition · Benno Kern
             </p>
             <h1>
-              Memory,
+              Some light
               <br />
-              <span>in space.</span>
+              <span>never leaves.</span>
             </h1>
             <p className="spatial-description">
-              Step inside. Look closer.
+              A life remembered. A voice still here.
               <br />
-              Every photograph holds a life.
+              Walk into the light. Stay for the story.
             </p>
             <button
               className="spatial-enter"
@@ -192,7 +195,9 @@ export default function SpatialLanding({
                 ? "Your capture"
                 : String(
                     viewpoints.findIndex((v) => v.id === active) + 1,
-                  ).padStart(2, "0") + " / 04"}
+                  ).padStart(2, "0") +
+                  " / " +
+                  String(viewpoints.length).padStart(2, "0")}
             </span>
             <strong>
               {capture || viewpoints.find((v) => v.id === active)?.label}
@@ -222,6 +227,22 @@ export default function SpatialLanding({
                 </button>
               ))}
           </nav>
+          {!capture && (
+            <button
+              className="room-lighting"
+              aria-label="After-hours lighting"
+              aria-pressed={night}
+              disabled={!ready}
+              onClick={() => {
+                controls.current?.setLighting(!night);
+                setNight(!night);
+              }}
+            >
+              <span className="lighting-symbol" aria-hidden="true">{night ? "☾" : "☼"}</span>
+              {night ? "After hours" : "Daylight"}
+              <span className="lighting-switch" aria-hidden="true" />
+            </button>
+          )}
           <div className="room-tools">
             <button
               onClick={() => {
@@ -308,7 +329,7 @@ export default function SpatialLanding({
                 entrance.
               </p>
               <p className="room-provenance">
-                The bundled scene is an imagined contemporary gallery with
+                The bundled scene is an imagined light pavilion with
                 Gaussian-splat exhibits. It is not a capture of a historical
                 location. You can open your own .spz, .splat, or .ply file; it
                 stays on your device.

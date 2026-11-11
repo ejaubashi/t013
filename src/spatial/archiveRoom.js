@@ -22,10 +22,15 @@ function imagePixels(name, width, height) {
 }
 
 // An imagined gallery: sharp architecture with genuine Gaussian-splat exhibits.
-export function createArchiveRoom({ onProgress } = {}) {
+export function createArchiveRoom({ onProgress, reflectionSize, reflectionSamples, balancedLighting } = {}) {
   const room = new THREE.Group();
   room.name = "contemporary-memory-gallery";
-  room.add(createGalleryArchitecture());
+  const architecture = createGalleryArchitecture({ reflectionSize, reflectionSamples, balancedLighting });
+  room.add(architecture);
+  room.userData.setLighting = (night) => architecture.userData.setLighting(night);
+  const reflections = new THREE.Group();
+  reflections.name = "reflection-artworks";
+  room.add(reflections);
   const artwork = new SplatMesh({
     lod: false,
     constructSplats: async (splats) => {
@@ -34,25 +39,25 @@ export function createArchiveRoom({ onProgress } = {}) {
           name: "benno-family.webp",
           columns: 176,
           rows: 132,
-          x: -3.15,
-          width: 2.35,
-          height: 1.8,
+          x: -4.5,
+          width: 2.7,
+          height: 2.06,
         },
         {
           name: "benno-interview.webp",
           columns: 200,
           rows: 114,
           x: 0,
-          width: 2.4,
-          height: 1.37,
+          width: 2.8,
+          height: 1.6,
         },
         {
           name: "vienna-panorama.webp",
           columns: 208,
           rows: 114,
-          x: 3.15,
-          width: 2.42,
-          height: 1.31,
+          x: 4.5,
+          width: 2.8,
+          height: 1.52,
         },
       ];
       const images = await Promise.all(
@@ -66,13 +71,31 @@ export function createArchiveRoom({ onProgress } = {}) {
       for (let n = 0; n < works.length; n++) {
         const work = works[n],
           pixels = images[n];
+        const reflectionCanvas = document.createElement("canvas");
+        reflectionCanvas.width = work.columns;
+        reflectionCanvas.height = work.rows;
+        reflectionCanvas
+          .getContext("2d")
+          .putImageData(new ImageData(pixels, work.columns, work.rows), 0, 0);
+        const reflectionTexture = new THREE.CanvasTexture(reflectionCanvas);
+        reflectionTexture.colorSpace = THREE.SRGBColorSpace;
+        const reflectedArtwork = new THREE.Mesh(
+          new THREE.PlaneGeometry(work.width, work.height),
+          new THREE.MeshBasicMaterial({
+            map: reflectionTexture,
+            toneMapped: false,
+          }),
+        );
+        reflectedArtwork.position.set(work.x, 2.75, -7.455);
+        reflectedArtwork.layers.set(2);
+        reflections.add(reflectedArtwork);
         for (let row = 0; row < work.rows; row++) {
           for (let col = 0; col < work.columns; col++) {
             const i = (row * work.columns + col) * 4;
             center.set(
               work.x + (col / (work.columns - 1) - 0.5) * work.width,
-              2.13 + (0.5 - row / (work.rows - 1)) * work.height,
-              -4.835,
+              2.75 + (0.5 - row / (work.rows - 1)) * work.height,
+              -7.455,
             );
             scales.set(
               (work.width / work.columns) * 0.6,
@@ -94,6 +117,7 @@ export function createArchiveRoom({ onProgress } = {}) {
   room.add(artwork);
   room.initialized = artwork.initialized.then(() => {
     room.splats = artwork.splats;
+    room.userData.reflectionVersion = 1;
     return room;
   });
   let disposed = false;
@@ -105,6 +129,7 @@ export function createArchiveRoom({ onProgress } = {}) {
       materials = new Set(),
       textures = new Set();
     room.traverse((object) => {
+      if (object.isReflector) object.dispose();
       if (object.geometry) geometries.add(object.geometry);
       for (const material of object.material
         ? Array.isArray(object.material)

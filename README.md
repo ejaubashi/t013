@@ -1,19 +1,20 @@
 # Benno’s Light
 
-A responsive React experience based on the supplied Benno’s Light recordings. The opening is a navigable contemporary art gallery, combining precise architectural geometry with Gaussian-splat exhibits. The saved paper cover, six-card chapter index, testimony player, and scrollable archive remain available.
+A responsive React experience based on the supplied Benno’s Light recordings. The opening is a navigable stone-and-bronze light pavilion, combining architectural geometry with Gaussian-splat exhibits. The saved paper cover, six-card chapter index, testimony player, and scrollable archive remain available.
 
 ## 3D archive experiment
 
-The default opening uses Three.js and Spark 2.4.0 to render approximately 70,000 Gaussian splats in the photographic exhibits. Crisp white architecture, polished mineral flooring, floating displays, recessed lighting, a suspended elliptical luminaire, and a chrome sculpture form an imagined contemporary gallery. Lighting uses a locally generated environment map, a directional shadow, and exhibit spotlights. This is an **imagined gallery and technical study**, not a captured historical location. It uses the supplied photographs and runs locally without requesting external scene assets.
+The default opening uses Three.js and Spark 2.4.0 to render approximately 70,000 Gaussian splats in the photographic exhibits. A monumental circular opening, a deep skylight, textured stone, bronze screens, and a suspended installation of 176 bronze filaments form the Lumen Pavilion. A reflecting pool uses a softened, viewing-angle-dependent reflection. An HDR pipeline adds restrained bloom and antialiasing. The entrance includes a short camera approach when motion is allowed. This is an **imagined gallery and technical study**, not a captured historical location. It uses the supplied photographs and runs locally without requesting external scene assets. See the [reference study and art direction](docs/research/pavilion-art-direction.md).
 
-- Drag to orbit, scroll or pinch to move closer, and use the four composed viewpoint buttons.
+- Drag to orbit, scroll or pinch to move closer, and use the five composed viewpoints, including a close-up of the installation.
+- **Daylight / After hours** changes the sky, skylight, studio environment, and exhibition lighting. Reduced motion makes this change immediate.
 - Focus the canvas and hold W/A/S/D or the arrow keys to move. The on-screen direction controls also work with pointer, touch, and keyboard input. Reset returns to the entrance.
 - Use the upload control to open your own `.spz`, `.splat`, or `.ply` capture, up to 90 MB. Files stay on the device and are normalized into the viewer. The orientation control turns an upside-down capture over.
 - **Listen to Benno** opens the testimony through the content notice. The chapter archive works as before.
 - **Original view** restores the paper cover for the browser session. **Enter the 3D room** switches back. `?view=classic` explicitly opens the saved cover.
 - Reduced motion makes viewpoint transitions immediate. Rendering pauses when the tab is hidden and updates on demand while the room is still. A graphics failure offers the original experience.
 
-The 3D renderer is a separate, lazy-loaded JavaScript chunk, about 1.1 MB gzipped. The initial interface can render while it loads. Browser checks use software WebGL and touch emulation; actual mobile hardware performance still needs evaluation.
+The 3D renderer is a separate, lazy-loaded JavaScript chunk, about 1.2 MB gzipped. The initial interface can render while it loads. The planar reflection uses a separate camera with native photograph planes, keeping Spark's main-camera sorting separate from the mirror pass. Static shadows and unchanged mirror views are cached and rendering stops updating at rest. Software graphics use a lighter render tier without bloom/MSAA. Browser checks use software WebGL and touch emulation; actual mobile hardware performance still needs evaluation.
 
 ### Return point
 
@@ -21,7 +22,11 @@ The complete version before the experiment is saved under the Git tag **`checkpo
 
 The warmer, first 3D archive is also saved under **`checkpoint-before-modern-gallery`**, commit `1843ed6`.
 
-To inspect either checkpoint without changing files, use `git show <tag>:<path>`. Reverting **Transform archive into a contemporary art gallery** restores the first 3D room. To restore the paper version in Git history, revert the gallery update first and then **Add navigable Gaussian-splat archive experience**, and push the resulting revert commits. The Pages workflow deploys the restored version. **Original view** offers an immediate visual comparison without changing Git history.
+The white contemporary gallery before the sculptural atrium is saved under Git tag **`checkpoint-before-sculptural-atrium`**, commit `f387863`.
+
+The unpublished pastel atrium before the reference-led pavilion redesign is also saved locally in `/workspace/benno-atrium-before-research-redesign.tar.gz`.
+
+To inspect a checkpoint without changing files, use `git show <tag>:<path>`. **Original view** offers an immediate visual comparison without changing Git history. To restore an earlier version in Git history, revert subsequent updates in reverse order. Pushing changes to `main` triggers the Pages deployment; leave draft changes local until publication is requested.
 
 ## Develop
 

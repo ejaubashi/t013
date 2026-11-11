@@ -1,5 +1,11 @@
 import { test, expect } from "@playwright/test";
 
+// Trace screencasts force expensive WebGL readbacks in software Chromium.
+// Keep action/DOM traces and the usual screenshot on failure.
+test.use({
+  trace: { mode: "retain-on-failure", screenshots: false, snapshots: true },
+});
+
 test.describe("Gaussian-splat room", () => {
   test.setTimeout(90000);
   test.use({ reducedMotion: "reduce" });
@@ -18,8 +24,9 @@ test.describe("Gaussian-splat room", () => {
       50000,
     );
     await expect(
-      page.getByRole("heading", { name: "Memory, in space." }),
+      page.getByRole("heading", { name: "Some light never leaves." }),
     ).toBeVisible();
+    await expect.poll(async () => Number(await canvas.getAttribute("data-drawn-splats")), { timeout: 45000 }).toBeGreaterThan(50000);
     expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth <= innerWidth,
@@ -27,9 +34,17 @@ test.describe("Gaussian-splat room", () => {
     ).toBe(true);
     const arrival = await canvas.getAttribute("data-camera");
     await page.getByRole("button", { name: "02 The family" }).click();
-    await expect(canvas).toHaveAttribute("data-camera", "-2.650,1.750,-1.500");
+    await expect(canvas).toHaveAttribute("data-camera", "-4.000,2.450,-3.600");
     await page.getByRole("button", { name: "03 The city" }).click();
-    await expect(canvas).toHaveAttribute("data-camera", "2.650,1.800,-1.600");
+    await expect(canvas).toHaveAttribute("data-camera", "4.900,2.500,-3.650");
+    await page.getByRole("button", { name: "05 The light" }).click();
+    await expect(canvas).toHaveAttribute("data-camera", "5.800,3.400,5.900");
+    const lighting = page.getByRole("button", { name: "After-hours lighting" });
+    await lighting.click();
+    await expect(lighting).toHaveAttribute("aria-pressed", "true");
+    await expect(canvas).toHaveAttribute("data-lighting", "night");
+    await lighting.click();
+    await expect(canvas).toHaveAttribute("data-lighting", "day");
     await page.getByRole("button", { name: "Open Benno’s memories" }).click();
     await expect(page.getByRole("dialog")).toContainText("Before you begin.");
     await page.keyboard.press("Escape");
