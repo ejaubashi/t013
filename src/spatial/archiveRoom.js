@@ -28,6 +28,8 @@ export function createArchiveRoom({ onProgress, reflectionSize, reflectionSample
   const architecture = createGalleryArchitecture({ reflectionSize, reflectionSamples, balancedLighting });
   room.add(architecture);
   room.userData.setLighting = (night) => architecture.userData.setLighting(night);
+  room.userData.setArtPhase = (value) => architecture.userData.setArtPhase(value);
+  room.userData.mirrorCount = architecture.userData.mirrorCount;
   const reflections = new THREE.Group();
   reflections.name = "reflection-artworks";
   room.add(reflections);

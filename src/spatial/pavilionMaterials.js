@@ -45,5 +45,6 @@ export function createPavilionEnvironment() {
   card(0xc8e0ed, 8, [5, 6, -5], [5, 4, 1]);
   card(0xffffff, 18, [0, 10, 0], [2, 10, 1]);
   card(0xffe8c0, 5, [1, 3, 8], [1, 7, 1]);
+  card(0x83e8e0, 7, [-4, 3, -3], [2, 6, 1]);
   return scene;
 }

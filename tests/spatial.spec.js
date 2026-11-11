@@ -81,6 +81,32 @@ test.describe("Gaussian-splat room", () => {
     expect(errors).toEqual([]);
   });
 
+  test("transforms the mirror installation and explores the canopy", async ({ page }) => {
+    const errors = [];
+    page.on("pageerror", (error) => errors.push(error.message));
+    page.on("console", (message) => {
+      if (message.type() === "error") errors.push(message.text());
+    });
+    await page.goto("/");
+    const canvas = page.locator(".spatial-canvas canvas");
+    await expect(canvas).toHaveAttribute("data-art-form", "ribbon", { timeout: 45000 });
+    expect(Number(await canvas.getAttribute("data-mirrors"))).toBeGreaterThan(2000);
+    await expect(page.getByRole("navigation", { name: "Room viewpoints" }).getByRole("button")).toHaveCount(6);
+    const transform = page.getByRole("button", { name: "Transform the installation" });
+    await transform.click();
+    await expect(transform).toHaveAttribute("aria-pressed", "true");
+    await expect(canvas).toHaveAttribute("data-art-form", "constellation");
+    await expect(canvas).toHaveAttribute("data-art-phase", "1.000");
+    await transform.click();
+    await expect(canvas).toHaveAttribute("data-art-form", "ribbon");
+    await expect(canvas).toHaveAttribute("data-art-phase", "0.000");
+    await page.getByRole("button", { name: "06 The canopy" }).click();
+    await expect(canvas).toHaveAttribute("data-camera", "6.700,6.800,7.700");
+    await page.getByRole("button", { name: "After-hours lighting" }).click();
+    await expect(canvas).toHaveAttribute("data-lighting", "night");
+    expect(errors).toEqual([]);
+  });
+
   test("loads a local capture and preserves the room when a file is invalid", async ({
     page,
   }) => {
@@ -119,6 +145,7 @@ test.describe("Gaussian-splat room", () => {
     );
     await expect(canvas).toHaveAttribute("data-splats", "81");
     await expect(page.getByRole("alert")).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Transform the installation" })).toHaveCount(0);
     await page
       .getByRole("button", { name: "Flip capture orientation" })
       .click();

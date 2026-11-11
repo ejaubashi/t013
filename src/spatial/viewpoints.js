@@ -30,8 +30,15 @@ export const viewpoints = [
   {
     id: "continuum",
     label: "The light",
-    subtitle: "Continuum · A sculptural study",
+    subtitle: "Afterimage · A kinetic light study",
     position: [5.8, 3.4, 5.9],
-    target: [2.2, 3.05, -0.1],
+    target: [2.2, 3.25, -0.4],
+  },
+  {
+    id: "canopy",
+    label: "The canopy",
+    subtitle: "A different perspective",
+    position: [6.7, 6.8, 7.7],
+    target: [1.2, 2.4, -1],
   },
 ];

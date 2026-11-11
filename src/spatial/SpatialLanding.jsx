@@ -43,6 +43,7 @@ export default function SpatialLanding({
     [captureError, setCaptureError] = useState("");
   const [attempt, setAttempt] = useState(0);
   const [night, setNight] = useState(false);
+  const [constellation, setConstellation] = useState(false);
   const inputRef = useRef(null);
   useEffect(() => {
     const stop = () => controls.current?.move(0, 0);
@@ -108,6 +109,7 @@ export default function SpatialLanding({
     setProgress(0);
     setCapture("");
     setNight(false);
+    setConstellation(false);
     setAttempt((n) => n + 1);
   };
   return (
@@ -212,7 +214,7 @@ export default function SpatialLanding({
               Listen to Benno <Arrow />
             </button>
           )}
-          <nav className="room-viewpoints" aria-label="Room viewpoints">
+          <nav className="room-viewpoints" aria-label="Room viewpoints" style={{ "--view-count": viewpoints.length }}>
             {!capture &&
               viewpoints.map((view, index) => (
                 <button
@@ -228,20 +230,36 @@ export default function SpatialLanding({
               ))}
           </nav>
           {!capture && (
-            <button
-              className="room-lighting"
-              aria-label="After-hours lighting"
-              aria-pressed={night}
-              disabled={!ready}
-              onClick={() => {
-                controls.current?.setLighting(!night);
-                setNight(!night);
-              }}
-            >
-              <span className="lighting-symbol" aria-hidden="true">{night ? "☾" : "☼"}</span>
-              {night ? "After hours" : "Daylight"}
-              <span className="lighting-switch" aria-hidden="true" />
-            </button>
+            <>
+              <button
+                className="room-lighting"
+                aria-label="After-hours lighting"
+                aria-pressed={night}
+                disabled={!ready}
+                onClick={() => {
+                  controls.current?.setLighting(!night);
+                  setNight(!night);
+                }}
+              >
+                <span className="lighting-symbol" aria-hidden="true">{night ? "☾" : "☼"}</span>
+                {night ? "After hours" : "Daylight"}
+                <span className="lighting-switch" aria-hidden="true" />
+              </button>
+              <button
+                className="room-art-form"
+                aria-label="Transform the installation"
+                aria-pressed={constellation}
+                disabled={!ready}
+                onClick={() => {
+                  controls.current?.setArtForm(!constellation);
+                  setConstellation(!constellation);
+                }}
+              >
+                <span className="art-form-symbol" aria-hidden="true">✧</span>
+                Shape the light
+                <span className="art-form-state">{constellation ? "II" : "I"}</span>
+              </button>
+            </>
           )}
           <div className="room-tools">
             <button
@@ -326,7 +344,8 @@ export default function SpatialLanding({
               </p>
               <p>
                 Choose a viewpoint for a composed view. Reset returns you to the
-                entrance.
+                entrance. Shape the light transforms the installation between a
+                rising ribbon and a constellation of mirrors.
               </p>
               <p className="room-provenance">
                 The bundled scene is an imagined light pavilion with

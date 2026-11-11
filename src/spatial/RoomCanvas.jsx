@@ -36,11 +36,14 @@ export default function RoomCanvas({
       disposed = false,
       failed = false,
       dirty = true,
-      ready = false;
+      ready = false,
+      announced = false;
     let frame = 0,
       lastTime = 0,
       transition = null,
       lightingTransition = null,
+      artTransition = null,
+      artPhase = 0,
       lightLevel = 0,
       imported = false;
     const scene = new THREE.Scene();
@@ -243,6 +246,13 @@ export default function RoomCanvas({
           const dt = Math.min((time - (lastTime || time)) / 1000, 0.045);
           lastTime = time;
           if (document.hidden) return;
+          if (artTransition) {
+            const p = Math.min(1, (time - artTransition.started) / artTransition.duration);
+            artPhase = THREE.MathUtils.lerp(artTransition.from, artTransition.to, p * p * (3 - 2 * p));
+            room.userData.setArtPhase?.(artPhase);
+            dirty = true;
+            if (p === 1) artTransition = null;
+          }
           if (lightingTransition) {
             const p = Math.min(1, (time - lightingTransition.started) / 750);
             lightLevel = THREE.MathUtils.lerp(lightingTransition.from, lightingTransition.to, p * p * (3 - 2 * p));
@@ -255,6 +265,8 @@ export default function RoomCanvas({
             const p = Math.min(1, (time - transition.started) / 1700),
               ease = p * p * (3 - 2 * p);
             camera.position.lerpVectors(transition.from, transition.to, ease);
+            // A shallow camera arc adds lift while keeping both endpoints exact.
+            camera.position.y += Math.sin(p * Math.PI) * 0.32;
             controls.target.lerpVectors(
               transition.fromTarget,
               transition.toTarget,
@@ -307,10 +319,19 @@ export default function RoomCanvas({
               dirty = false;
               composer.render();
               canvas.dataset.drawnSplats = String(spark.activeSplats);
+              if (!imported) {
+                canvas.dataset.artPhase = artPhase.toFixed(3);
+                canvas.dataset.artForm = artPhase < 0.001 ? "ribbon" : artPhase > 0.999 ? "constellation" : "transforming";
+              }
               canvas.dataset.camera = camera.position
                 .toArray()
                 .map((n) => n.toFixed(3))
                 .join(",");
+              if (ready && !announced && spark.activeSplats > 0) {
+                announced = true;
+                onProgress(100);
+                onReady();
+              }
             } catch (error) {
               fail(
                 "Your graphics device could not render this room. Try the original experience instead.",
@@ -349,6 +370,18 @@ export default function RoomCanvas({
             canvas.dataset.lighting = night ? "night" : "day";
             dirty = true;
           },
+          setArtForm: (constellation) => {
+            if (imported) return;
+            const next = Number(constellation);
+            if (motionRef.current) {
+              artPhase = next;
+              room.userData.setArtPhase(artPhase);
+              artTransition = null;
+            } else {
+              artTransition = { from: artPhase, to: next, started: performance.now(), duration: 1350 };
+            }
+            dirty = true;
+          },
           loadCapture: async (file) => {
             const next = new SplatMesh({
               fileBytes: await file.arrayBuffer(),
@@ -377,6 +410,9 @@ export default function RoomCanvas({
               scene.add(room);
               imported = true;
               lightingTransition = null;
+              artTransition = null;
+              canvas.dataset.artForm = "capture";
+              canvas.dataset.mirrors = "0";
               scene.environmentIntensity = 0.38;
               controls.maxDistance = 18;
               moveTo({ position: [0, 0.5, 5.5], target: [0, 0, 0] }, true);
@@ -406,6 +442,9 @@ export default function RoomCanvas({
         ready = true;
         dirty = true;
         if (!motionRef.current) {
+          artPhase = 1;
+          room.userData.setArtPhase(artPhase);
+          artTransition = { from: 1, to: 0, started: performance.now(), duration: 2700 };
           camera.position.set(9, 4.5, 14);
           controls.target.set(0.8, 3.2, -2);
           controls.update();
@@ -413,11 +452,11 @@ export default function RoomCanvas({
         }
         canvas.dataset.scene = "gaussian-archive";
         canvas.dataset.lighting = "day";
+        canvas.dataset.mirrors = String(room.userData.mirrorCount || 0);
         canvas.dataset.splats = String(
           room.splats?.getNumSplats() || room.packedSplats?.numSplats || 0,
         );
-        onProgress(100);
-        onReady();
+        onProgress(98);
       } catch (error) {
         console.error(error);
         fail(

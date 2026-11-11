@@ -64,7 +64,7 @@
 .spatial-stage .room-viewpoints {
   left: 5%; right: auto; bottom: 73px; transform: none;
   width: 68%; max-width: 900px; display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(var(--view-count, 6), minmax(0, 1fr));
   background: #10202026; backdrop-filter: blur(12px);
   border: 0; border-top: 1px solid #e6eddb38;
   border-bottom: 1px solid #e6eddb38;
@@ -121,6 +121,20 @@
 .lighting-switch::after { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #dce5c1; position: absolute; left: 3px; top: 3px; transition: transform .3s; }
 .after-hours .lighting-switch::after { transform: translateX(12px); background: #e9d097; }
 .after-hours .lighting-switch { border-color: #e9d09799; }
+.room-art-form {
+  position: absolute; top: 208px; right: 30px;
+  display: flex; align-items: center; gap: 12px;
+  color: #d6f0df; font-size: 8px; letter-spacing: 1px;
+  text-transform: uppercase; padding: 10px 0;
+}
+.room-art-form:disabled { opacity: .3; }
+.art-form-symbol { font: 25px/1 Georgia, serif; width: 23px; }
+.art-form-state {
+  display: grid; place-items: center; width: 29px; height: 19px;
+  border: 1px solid #b9e3cf55; border-radius: 20px; font-size: 8px;
+}
+.room-art-form[aria-pressed="true"] .art-form-state { background: #c8f4dd; color: #172c29; }
+.spatial-stage .room-coordinate { top: 269px; }
 @media (max-width: 1050px) {
   .spatial-stage .spatial-introduction h1 { font-size: 76px; }
   .spatial-stage .room-viewpoints { width: 70%; }
@@ -141,11 +155,13 @@
   .spatial-stage .spatial-introduction h1 span { font-size: 1.12em; }
   .spatial-stage .spatial-enter { width: 168px; padding: 13px 14px; font-size: 7px; letter-spacing: 1px; }
   .spatial-stage .room-lighting { top: 117px; right: 20px; font-size: 6px; gap: 8px; }
+  .spatial-stage .room-art-form { top: 117px; left: 20px; right: auto; font-size: 6px; gap: 8px; }
+  .spatial-stage .art-form-symbol { width: 18px; font-size: 20px; }
   .spatial-stage .lighting-symbol { font-size: 19px; width: 18px; }
   .spatial-stage .room-tools { top: 169px; right: 16px; }
   .spatial-stage .room-tools > button { width: 30px; height: 30px; }
   .spatial-stage .room-viewpoints { left: 20px; right: 20px; width: auto; bottom: 85px; padding: 0; gap: 0; }
-  .spatial-stage .room-viewpoints button { font-size: 8px; padding: 17px 3px; gap: 7px; }
+  .spatial-stage .room-viewpoints button { font-size: 7px; padding: 17px 2px; gap: 7px; }
   .spatial-stage .room-viewpoints button[aria-pressed="true"] i { width: 100%; }
   .spatial-stage .room-view-label { left: 24px; bottom: 184px; gap: 12px; }
   .spatial-stage .room-view-label strong { font-size: 16px; }
@@ -166,5 +182,6 @@
   .spatial-stage .spatial-chapters { bottom: 78px; }
   .spatial-stage .room-movement { bottom: 144px; }
   .spatial-stage .room-lighting { top: 145px; }
+  .spatial-stage .room-art-form { top: 145px; right: 210px; }
   .spatial-stage .room-coordinate { display: none; }
 }

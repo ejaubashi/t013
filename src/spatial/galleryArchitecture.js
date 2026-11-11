@@ -3,6 +3,7 @@ import { Reflector } from "three/addons/objects/Reflector.js";
 import { RectAreaLightUniformsLib } from "three/addons/lights/RectAreaLightUniformsLib.js";
 import { createLightInstallation } from "./lightInstallation";
 import { stoneTexture } from "./pavilionMaterials";
+import { createGalleryAtmosphere } from "./galleryAtmosphere";
 
 export function createGalleryArchitecture({ reflectionSize, reflectionSamples, balancedLighting = false } = {}) {
   if (!balancedLighting) RectAreaLightUniformsLib.init();
@@ -10,7 +11,7 @@ export function createGalleryArchitecture({ reflectionSize, reflectionSamples, b
   gallery.name = "lumen-pavilion";
   const texture = stoneTexture();
   const limestone = new THREE.MeshStandardMaterial({
-    color: 0xcac1ac, map: texture, bumpMap: texture, bumpScale: 0.009, roughness: 0.86,
+    color: 0xb9c8bf, map: texture, bumpMap: texture, bumpScale: 0.009, roughness: 0.86,
   });
   const darkStone = new THREE.MeshStandardMaterial({
     color: 0x515752, map: texture, bumpMap: texture, bumpScale: 0.012, roughness: 0.43, metalness: 0.18,
@@ -34,6 +35,11 @@ export function createGalleryArchitecture({ reflectionSize, reflectionSamples, b
   };
   const bronze = new THREE.MeshStandardMaterial({ color: 0x8d7247, metalness: 0.9, roughness: 0.3 });
   const charcoal = new THREE.MeshStandardMaterial({ color: 0x101c1c, roughness: 0.8 });
+  const glass = new THREE.MeshPhysicalMaterial({
+    color: 0x9bd5cc, metalness: 0.18, roughness: 0.13,
+    transparent: true, opacity: 0.14, depthWrite: false,
+    side: THREE.DoubleSide, envMapIntensity: 0.7,
+  });
   const warmLight = new THREE.MeshBasicMaterial({ color: new THREE.Color(0xffdeb0).multiplyScalar(2) });
   const coolLight = new THREE.MeshBasicMaterial({ color: new THREE.Color(0xc5e2ef).multiplyScalar(2) });
   const box = (x, y, z, w, h, d, material, castShadow = false) => {
@@ -83,12 +89,19 @@ export function createGalleryArchitecture({ reflectionSize, reflectionSamples, b
   ];
   const exhibitLights = [];
   for (const work of works) {
-    box(work.x, 2.6, -7.82, 3.65, 5.2, 0.45, limestone, true);
+    box(work.x, 2.6, -7.82, 3.65, 5.2, 0.065, glass);
+    for (const edge of [-1.84, 1.84])
+      box(work.x + edge, 2.6, -7.82, 0.018, 5.2, 0.085, bronze);
+    box(work.x, 0.065, -7.82, 3.75, 0.13, 0.4, bronze, true);
+    box(work.x, 0.14, -7.6, 3.5, 0.018, 0.025, coolLight);
     box(work.x, 2.75, -7.53, work.width + 0.12, work.height + 0.12, 0.07, bronze);
     box(work.x, 2.75, -7.48, work.width + 0.035, work.height + 0.035, 0.02, charcoal);
     box(work.x, 5.06, -7.51, 3.35, 0.018, 0.02, warmLight);
-    const label = labelMesh(work.title, work.detail);
-    label.position.set(work.x - work.width / 2 + 0.8, 2.75 - work.height / 2 - 0.32, -7.48);
+    const labelY = 2.75 - work.height / 2 - 0.32;
+    const labelX = work.x - work.width / 2 + 0.8;
+    box(labelX, labelY, -7.505, 1.7, 0.29, 0.025, charcoal);
+    const label = labelMesh(work.title, work.detail, "#d7e5d7");
+    label.position.set(labelX, labelY, -7.48);
     gallery.add(label);
     const light = new THREE.SpotLight(0xffe4bb, 35, 10, 0.62, 0.8, 2);
     light.position.set(work.x, 5.6, -4.8);
@@ -99,7 +112,14 @@ export function createGalleryArchitecture({ reflectionSize, reflectionSamples, b
   box(-4.85, 0.39, 0.6, 3.6, 0.22, 0.85, limestone, true);
   box(-6.2, 0.15, 0.6, 0.15, 0.3, 0.6, bronze, true);
   box(-3.5, 0.15, 0.6, 0.15, 0.3, 0.6, bronze, true);
-  gallery.add(createLightInstallation());
+  const installation = createLightInstallation();
+  const atmosphere = createGalleryAtmosphere();
+  gallery.add(installation, atmosphere);
+  gallery.userData.mirrorCount = installation.userData.mirrorCount;
+  gallery.userData.setArtPhase = (value) => {
+    installation.userData.setPhase(value);
+    gallery.userData.artPhase = value;
+  };
   const coarse = matchMedia("(pointer: coarse)").matches;
   const mirrorSize = reflectionSize ?? (coarse ? 512 : 1024);
   const poolShader = {
@@ -138,7 +158,7 @@ export function createGalleryArchitecture({ reflectionSize, reflectionSamples, b
         #include <colorspace_fragment>
       }`,
   };
-  const pool = new Reflector(new THREE.CircleGeometry(3.65, 128), {
+  const pool = new Reflector(new THREE.CircleGeometry(4.2, 128), {
     color: 0x0d1b1b, textureWidth: mirrorSize, textureHeight: mirrorSize,
     clipBias: 0.003, multisample: reflectionSamples ?? (coarse ? 2 : 4), shader: poolShader,
   });
@@ -150,28 +170,30 @@ export function createGalleryArchitecture({ reflectionSize, reflectionSamples, b
   // mirror until its camera, lighting, or photographed assets change.
   const renderReflection = pool.onBeforeRender;
   const lastView = new THREE.Matrix4(), lastProjection = new THREE.Matrix4();
-  let reflectionReady = false, reflectedLevel = -1, reflectedAssets = -1;
+  let reflectionReady = false, reflectedLevel = -1, reflectedAssets = -1, reflectedArt = -1;
   pool.onBeforeRender = (...args) => {
     const camera = args[2];
     const level = gallery.userData.lightLevel ?? 0;
     const assets = gallery.parent?.userData.reflectionVersion ?? 0;
+    const art = gallery.userData.artPhase ?? 0;
     if (reflectionReady && lastView.equals(camera.matrixWorldInverse) &&
-        lastProjection.equals(camera.projectionMatrix) && reflectedLevel === level && reflectedAssets === assets)
+        lastProjection.equals(camera.projectionMatrix) && reflectedLevel === level && reflectedAssets === assets && reflectedArt === art)
       return;
     renderReflection.apply(pool, args);
     lastView.copy(camera.matrixWorldInverse);
     lastProjection.copy(camera.projectionMatrix);
     reflectedLevel = level;
     reflectedAssets = assets;
+    reflectedArt = art;
     reflectionReady = true;
   };
   gallery.add(pool);
-  const edge = new THREE.Mesh(new THREE.TorusGeometry(3.69, 0.018, 6, 144), bronze);
+  const edge = new THREE.Mesh(new THREE.TorusGeometry(4.24, 0.018, 6, 144), bronze);
   edge.rotation.x = Math.PI / 2;
   edge.position.copy(pool.position);
   gallery.add(edge);
-  const caption = labelMesh("CONTINUUM / 001", "A STUDY IN LIGHT AND REMEMBRANCE", "#d2c6a6");
-  caption.position.set(2.2, 0.018, 4.1);
+  const caption = labelMesh("AFTERIMAGE / 001", "LIGHT, HELD IN TWO THOUSAND MIRRORS", "#cbe2d2");
+  caption.position.set(2.2, 0.018, 4.7);
   caption.rotation.x = -Math.PI / 2;
   caption.scale.setScalar(1.8);
   gallery.add(caption);
@@ -200,6 +222,7 @@ export function createGalleryArchitecture({ reflectionSize, reflectionSamples, b
   gallery.userData.setLighting = (level) => {
     const blend = Number(level);
     gallery.userData.lightLevel = blend;
+    atmosphere.userData.setLighting(blend);
     ambient.intensity = THREE.MathUtils.lerp(0.55, 0.17, blend);
     sun.intensity = THREE.MathUtils.lerp(3.5, 0.35, blend);
     fill.intensity = THREE.MathUtils.lerp(balancedLighting ? 0.85 : 3.2, balancedLighting ? 0.25 : 1.1, blend);
@@ -215,8 +238,8 @@ function skyTexture() {
   const canvas = document.createElement("canvas");
   canvas.width = 32; canvas.height = 512;
   const context = canvas.getContext("2d"), gradient = context.createLinearGradient(0, 0, 0, 512);
-  gradient.addColorStop(0, "#71909b"); gradient.addColorStop(0.55, "#b7c4bf");
-  gradient.addColorStop(0.83, "#ddd2ae"); gradient.addColorStop(1, "#929b86");
+  gradient.addColorStop(0, "#294b65"); gradient.addColorStop(0.55, "#86b7bb");
+  gradient.addColorStop(0.83, "#f2c296"); gradient.addColorStop(1, "#477079");
   context.fillStyle = gradient; context.fillRect(0, 0, 32, 512);
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
