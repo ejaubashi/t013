@@ -1,17 +1,18 @@
 # Benno’s Light
 
-A responsive React experience based on the supplied Benno’s Light recordings. The opening is an interactive light pavilion, combining architecture, a kinetic mirror installation, and Gaussian-splat exhibits. The saved paper cover, six-card chapter index, testimony player, and scrollable archive remain available.
+A responsive React experience based on the supplied Benno’s Light recordings. The opening is an interactive exhibition with three explorable rooms, sculptural light installations, and Gaussian-splat photographs. The saved paper cover, six-card chapter index, testimony player, and scrollable archive remain available.
 
 ## 3D archive experiment
 
 The default opening uses Three.js and Spark 2.4.0 to render approximately 70,000 Gaussian splats in the photographic exhibits. A monumental circular opening, a sculpted canopy, glass exhibition wings, and a distant sunrise frame a suspended installation of 2,420 mirrors. Bloom is the opening composition; **Shape the light** cycles through Ribbon, Constellation, and Bloom. A larger reflecting pool follows the transformation, with softened reflections and viewing-angle-dependent strength. Light shafts, floating motes, an HDR rendering pipeline, and an opening camera arc complete the scene. This is an **imagined gallery and technical study**, not a captured historical location. It uses the supplied photographs and runs locally without requesting external scene assets. See the [reference study and art direction](docs/research/pavilion-art-direction.md).
 
-- Drag to orbit, scroll or pinch to move closer, and use six composed viewpoints, including the installation close-up and an elevated canopy view.
+- **Explore the rooms** visits the Lumen Pavilion, Orbit Hall, and Sky Garden. Glowing doorways can also be selected in 3D or through their projected, keyboard-accessible entrance markers. Orbit Hall suspends nine gold light rings above an obsidian reflecting floor. The open-roof Sky Garden holds 1,100 iridescent petals above a shallow basin. Each room has its own viewpoints and a route back to the pavilion.
+- Drag to orbit, scroll or pinch to move closer, and use twelve composed viewpoints: six in the pavilion, three in Orbit Hall, and three in the Sky Garden.
 - **Shape the light** transforms the installation in 1.5 seconds, or immediately with reduced motion. The camera entrance opens the constellation into Bloom when motion is allowed.
-- **Take the journey** follows six camera stops with editorial captions and coordinated artwork/lighting. Next, previous, stop, Escape, and manual navigation keep the route interruptible. It stops when another dialog opens and does not advance while the tab is hidden.
+- **Take the journey** follows ten camera stops across all three rooms, with editorial captions and coordinated artwork/lighting. Next, previous, stop, Escape, room selection, and manual navigation keep the route interruptible. It stops when another dialog opens and does not advance while the tab is hidden.
 - Select a photograph in the room or use its **+** marker to open the archive reader. Native modal focus, keyboard access, Escape, and a route into Benno’s testimony are supported. Dragging and pinching do not select an image.
 - **Daylight / After hours** changes the sky, skylight, studio environment, and exhibition lighting. Reduced motion makes this change immediate.
-- Focus the canvas and hold W/A/S/D or the arrow keys to move. The on-screen direction controls also work with pointer, touch, and keyboard input. Reset returns to the entrance.
+- Focus the canvas and hold W/A/S/D or the arrow keys to move. The on-screen direction controls also work with pointer, touch, and keyboard input. Reset returns to the current room's entrance.
 - Use the upload control to open your own `.spz`, `.splat`, or `.ply` capture, up to 90 MB. Files stay on the device and are normalized into the viewer. The orientation control turns an upside-down capture over.
 - **Listen to Benno** opens the testimony through the content notice. The chapter archive works as before.
 - **Original view** restores the paper cover for the browser session. **Enter the 3D room** switches back. `?view=classic` explicitly opens the saved cover.
@@ -32,6 +33,8 @@ The unpublished pastel atrium before the reference-led pavilion redesign is also
 The first Lumen Pavilion before the kinetic installation is saved under **`checkpoint-before-kinetic-gallery`**, commit `bb550a2`.
 
 The kinetic gallery before the guided journey and Bloom update is saved under **`checkpoint-before-gallery-journey`**, commit `de37abd`.
+
+The single-room Bloom gallery before the room expansion is saved under **`checkpoint-before-connected-rooms`**, commit `311586d`.
 
 To inspect a checkpoint without changing files, use `git show <tag>:<path>`. **Original view** offers an immediate visual comparison without changing Git history. To restore an earlier version in Git history, revert subsequent updates in reverse order. Pushing changes to `main` triggers the Pages deployment; leave draft changes local until publication is requested.
 

@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { SplatMesh } from "@sparkjsdev/spark";
 import { createGalleryArchitecture } from "./galleryArchitecture";
 import { exhibits } from "./exhibits";
+import { addRoomPortals, createOrbitHall, createSkyGarden } from "./galleryRooms";
 
 const asset = (name) => `${import.meta.env.BASE_URL}assets/${name}`;
 
@@ -26,23 +27,46 @@ function imagePixels(name, width, height) {
 export function createArchiveRoom({ onProgress, reflectionSize, reflectionSamples, balancedLighting } = {}) {
   const room = new THREE.Group();
   room.name = "contemporary-memory-gallery";
+  const pavilion = new THREE.Group();
+  room.add(pavilion);
   const architecture = createGalleryArchitecture({ reflectionSize, reflectionSamples, balancedLighting });
-  room.add(architecture);
-  room.userData.setLighting = (night) => architecture.userData.setLighting(night);
+  pavilion.add(architecture);
+  const orbit = createOrbitHall({ reflectionSize, reflectionSamples });
+  const garden = createSkyGarden();
+  room.add(orbit, garden);
+  orbit.visible = false;
+  garden.visible = false;
+  const roomGroups = { pavilion, orbit, garden };
+  const pavilionPortals = addRoomPortals(pavilion, "pavilion");
+  room.userData.setLighting = (night) => {
+    architecture.userData.setLighting(night);
+    orbit.userData.setLighting(night);
+    garden.userData.setLighting(night);
+  };
   room.userData.setArtPhase = (value) => architecture.userData.setArtPhase(value);
   room.userData.mirrorCount = architecture.userData.mirrorCount;
   const reflections = new THREE.Group();
   reflections.name = "reflection-artworks";
-  room.add(reflections);
+  pavilion.add(reflections);
   const hitMaterial = new THREE.MeshBasicMaterial({ side: THREE.FrontSide });
-  room.userData.hitTargets = exhibits.map((exhibit) => {
+  const exhibitTargets = exhibits.map((exhibit) => {
     const target = new THREE.Mesh(new THREE.PlaneGeometry(exhibit.width, exhibit.height), hitMaterial);
     target.position.set(exhibit.x, 2.75, -7.445);
     target.layers.set(3);
     target.userData.exhibit = exhibit.id;
-    room.add(target);
+    pavilion.add(target);
     return target;
   });
+  room.userData.setRoom = (id) => {
+    if (!roomGroups[id]) return;
+    for (const [key, group] of Object.entries(roomGroups)) group.visible = key === id;
+    room.userData.activeRoom = id;
+    room.userData.hitTargets = id === "pavilion" ? [...exhibitTargets, ...pavilionPortals] : roomGroups[id].userData.portalTargets;
+    // The pavilion's cached water reflection also depends on which scene is visible.
+    pavilion.userData.reflectionVersion = (pavilion.userData.reflectionVersion || 0) + 1;
+  };
+  room.userData.setRoom("pavilion");
+  room.userData.petalCount = garden.userData.petalCount;
   const artwork = new SplatMesh({
     lod: false,
     constructSplats: async (splats) => {
@@ -101,10 +125,10 @@ export function createArchiveRoom({ onProgress, reflectionSize, reflectionSample
       onProgress?.(95);
     },
   });
-  room.add(artwork);
+  pavilion.add(artwork);
   room.initialized = artwork.initialized.then(() => {
     room.splats = artwork.splats;
-    room.userData.reflectionVersion = 1;
+    pavilion.userData.reflectionVersion = (pavilion.userData.reflectionVersion || 0) + 1;
     return room;
   });
   let disposed = false;

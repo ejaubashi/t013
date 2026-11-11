@@ -13,6 +13,7 @@ import { viewpoints } from "./viewpoints";
 import { createPavilionEnvironment } from "./pavilionMaterials";
 import { exhibits } from "./exhibits";
 import { journey } from "./journey";
+import { rooms, roomForView } from "./rooms";
 
 export default function RoomCanvas({
   onReady,
@@ -23,6 +24,7 @@ export default function RoomCanvas({
   onJourneyChange,
   onExhibitSelect,
   onExhibitPositions,
+  onRoomChange,
 }) {
   const hostRef = useRef(null);
   const motionRef = useRef(reducedMotion);
@@ -53,6 +55,7 @@ export default function RoomCanvas({
       journeyState = null,
       orbiting = false,
       imported = false;
+    let activeRoom = "pavilion";
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(65, 1, 0.03, 100);
     const keys = new Set();
@@ -81,7 +84,20 @@ export default function RoomCanvas({
     };
     const moveTo = (view, instant = false) => {
       if (!controls) return;
+      const nextRoom = roomForView(view);
+      if (!imported && room && nextRoom !== activeRoom) {
+        activeRoom = nextRoom;
+        room.userData.setRoom(activeRoom);
+        renderer.shadowMap.needsUpdate = true;
+        keys.clear(); movement.set(0, 0);
+        // A short reveal hides the scene exchange; the camera then settles
+        // into the new room. Reduced motion goes directly to its endpoint.
+        camera.position.set(view.position[0], view.position[1] + 0.18, view.position[2] + 1.2);
+        controls.target.set(...view.target);
+        controls.update();
+      }
       currentView = view;
+      if (!imported && room) onRoomChange?.({ id: activeRoom, view: view.id });
       const position = new THREE.Vector3(...view.position),
         target = new THREE.Vector3(...view.target);
       if (instant || motionRef.current) {
@@ -237,7 +253,7 @@ export default function RoomCanvas({
           const rect = canvas.getBoundingClientRect();
           cursor.set(((event.clientX - rect.left) / rect.width) * 2 - 1, 1 - ((event.clientY - rect.top) / rect.height) * 2);
           raycaster.setFromCamera(cursor, camera);
-          return raycaster.intersectObjects(room.userData.hitTargets || [], false)[0]?.object.userData.exhibit;
+          return raycaster.intersectObjects(room.userData.hitTargets || [], false)[0]?.object.userData;
         };
         listen(canvas, "pointerdown", (event) => {
           activePointers.add(event.pointerId);
@@ -252,7 +268,11 @@ export default function RoomCanvas({
           pointerDown = null;
           if (!isTap) return;
           const selected = pickExhibit(event);
-          if (selected) { stopJourney(); onExhibitSelect?.(selected); }
+          if (selected) {
+            stopJourney();
+            if (selected.portal) moveTo(viewpoints.find((view) => view.id === rooms.find((item) => item.id === selected.portal).entry));
+            else if (selected.exhibit) onExhibitSelect?.(selected.exhibit);
+          }
         });
         listen(canvas, "pointercancel", (event) => { activePointers.delete(event.pointerId); pointerDown = null; });
         listen(window, "keydown", (event) => { if (event.code === "Escape") stopJourney(); });
@@ -426,16 +446,26 @@ export default function RoomCanvas({
               dirty = false;
               composer.render();
               canvas.dataset.drawnSplats = String(spark.activeSplats);
+              canvas.dataset.room = imported ? "capture" : activeRoom;
+              canvas.dataset.petals = !imported && activeRoom === "garden" ? String(room.userData.petalCount || 0) : "0";
+              canvas.dataset.mirrors = !imported && activeRoom === "pavilion" ? String(room.userData.mirrorCount || 0) : "0";
+              canvas.dataset.artwork = imported ? "capture" : activeRoom === "pavilion" ? "afterimage" : activeRoom === "orbit" ? "golden-orbits" : "petal-cloud";
               if (!imported) {
                 canvas.dataset.artPhase = artPhase.toFixed(3);
                 canvas.dataset.artForm = artPhase < 0.001 ? "ribbon" : Math.abs(artPhase - 1) < 0.001 ? "constellation" : artPhase > 1.999 ? "bloom" : "transforming";
               }
               canvas.dataset.journey = journeyState ? String(journeyState.index) : "stopped";
-              onExhibitPositions?.(imported ? [] : exhibits.map((exhibit) => {
+              const markers = activeRoom === "pavilion" ? exhibits.map((exhibit) => {
                 const point = new THREE.Vector3(exhibit.x + exhibit.width / 2 - 0.18, 2.75, -7.43).project(camera);
                 return { id: exhibit.id, x: (point.x + 1) * host.clientWidth / 2, y: (1 - point.y) * host.clientHeight / 2,
                   visible: camera.position.z > -7.43 && point.z > -1 && point.z < 1 && Math.abs(point.x) < 0.94 && Math.abs(point.y) < 0.88 };
-              }));
+              }) : [];
+              for (const portal of rooms.find((item) => item.id === activeRoom).portals) {
+                const point = new THREE.Vector3(...portal.position).add(new THREE.Vector3(0, -1.65, 0.2)).project(camera);
+                markers.push({ id: `portal-${portal.to}`, room: portal.to, x: (point.x + 1) * host.clientWidth / 2, y: (1 - point.y) * host.clientHeight / 2,
+                  visible: camera.position.z > portal.position[2] && point.z > -1 && point.z < 1 && Math.abs(point.x) < 0.91 && Math.abs(point.y) < 0.85 });
+              }
+              onExhibitPositions?.(imported ? [] : markers);
               canvas.dataset.camera = camera.position
                 .toArray()
                 .map((n) => n.toFixed(3))
@@ -460,12 +490,19 @@ export default function RoomCanvas({
             if (!imported)
               moveTo(viewpoints.find((v) => v.id === id) || viewpoints[0]);
           },
+          enterRoom: (id) => {
+            if (!ready || imported) return;
+            const destination = rooms.find((item) => item.id === id);
+            if (!destination) return;
+            stopJourney();
+            moveTo(viewpoints.find((view) => view.id === destination.entry));
+          },
           reset: () => {
             stopJourney();
             moveTo(
               imported
                 ? { position: [0, 0.5, 5.5], target: [0, 0, 0] }
-                : viewpoints[0],
+                : viewpoints.find((view) => view.id === rooms.find((item) => item.id === activeRoom).entry),
             );
           },
           move: (x, z) => {

@@ -3,9 +3,11 @@ import { viewpoints } from "./viewpoints";
 import { journey, artForms } from "./journey";
 import { exhibits } from "./exhibits";
 import ExhibitDialog from "./ExhibitDialog";
+import { rooms, roomForView } from "./rooms";
 import "./spatial.css";
 import "./atrium.css";
 import "./journey.css";
+import "./rooms.css";
 
 const RoomCanvas = lazy(() => import("./RoomCanvas"));
 
@@ -51,6 +53,9 @@ export default function SpatialLanding({
   const [journeyStep, setJourneyStep] = useState(null);
   const [selectedExhibit, setSelectedExhibit] = useState(null);
   const [exhibitPositions, setExhibitPositions] = useState([]);
+  const [activeRoom, setActiveRoom] = useState("pavilion");
+  const currentRoom = rooms.find((room) => room.id === activeRoom);
+  const roomViews = viewpoints.filter((view) => roomForView(view) === activeRoom);
   const inputRef = useRef(null);
   useEffect(() => {
     const stop = () => controls.current?.move(0, 0);
@@ -129,10 +134,12 @@ export default function SpatialLanding({
     setJourneyStep(null);
     setSelectedExhibit(null);
     setExhibitPositions([]);
+    setActiveRoom("pavilion");
+    setActive("arrival");
     setAttempt((n) => n + 1);
   };
   return (
-    <main className={`spatial-stage ${ready ? "room-ready" : ""} ${night ? "after-hours" : ""} ${journeyStep !== null ? "is-journey" : ""}`}>
+    <main className={`spatial-stage gallery-${activeRoom} ${ready ? "room-ready" : ""} ${night ? "after-hours" : ""} ${journeyStep !== null ? "is-journey" : ""}`}>
       <div className="spatial-fallback" aria-hidden="true" />
       <Suspense fallback={null}>
         <RoomCanvas
@@ -143,6 +150,7 @@ export default function SpatialLanding({
           onProgress={setProgress}
           onError={setError}
           onExhibitSelect={openExhibit}
+          onRoomChange={({ id, view }) => { setActiveRoom(id); setActive(view); setHelp(false); }}
           onExhibitPositions={(next) => setExhibitPositions((previous) => {
             if (previous.length === next.length && previous.every((point, index) =>
               point.id === next[index].id && point.visible === next[index].visible &&
@@ -156,9 +164,17 @@ export default function SpatialLanding({
         />
       </Suspense>
       <div className="spatial-vignette" aria-hidden="true" />
+      {ready && <div key={activeRoom} className="room-reveal" aria-hidden="true" />}
       {!error && !capture && ready && (
-        <div className="room-exhibit-hotspots" aria-label="Photographs in the gallery">
+        <div className="room-exhibit-hotspots" aria-label="Explore the gallery">
           {exhibitPositions.filter((point) => point.visible).map((point) => {
+            if (point.room) {
+              const destination = rooms.find((room) => room.id === point.room);
+              return <button key={point.id} className="room-portal-hotspot" style={{ left: point.x, top: point.y }}
+                aria-label={`Door to ${destination.name}`} onClick={() => controls.current?.enterRoom(point.room)}>
+                <span aria-hidden="true"><Arrow /></span><span>{destination.name}</span>
+              </button>;
+            }
             const exhibit = exhibits.find((item) => item.id === point.id);
             return <button key={point.id} className="room-exhibit-hotspot" style={{ left: point.x, top: point.y }}
               aria-label={exhibit.label} onClick={() => openExhibit(point.id)}>
@@ -175,10 +191,17 @@ export default function SpatialLanding({
           Original view <Arrow />
         </button>
       </div>
+      {!error && !capture && <nav className="gallery-room-nav" aria-label="Gallery rooms">
+        <span className="gallery-room-nav-label">Explore the rooms</span>
+        <div>{rooms.map((room) => <button key={room.id} aria-label={`Enter ${room.name}`} aria-pressed={activeRoom === room.id}
+          disabled={!ready} onClick={() => controls.current?.enterRoom(room.id)}>
+          <span>{room.number}</span>{room.short}<i aria-hidden="true"><Arrow /></i>
+        </button>)}</div>
+      </nav>}
       <div className="room-coordinate" aria-hidden="true">
         <span>48° 12′ N</span>
         <span>16° 22′ E</span>
-        <span>THE LUMEN PAVILION · EST. IN MEMORY</span>
+        <span>{currentRoom.name.toUpperCase()} · EST. IN MEMORY</span>
       </div>
       {!error && !ready && (
         <div className="room-loader" role="status">
@@ -232,18 +255,24 @@ export default function SpatialLanding({
               Listen to Benno <Arrow />
             </button>
             {!capture && <button className="spatial-journey-start" disabled={!ready} aria-label="Start guided journey" onClick={() => controls.current?.startJourney()}>
-              <span aria-hidden="true">▷</span> Take the journey <span className="journey-start-detail">6 moments in light</span>
+              <span aria-hidden="true">▷</span> Take the journey <span className="journey-start-detail">3 rooms · {journey.length} moments</span>
             </button>}
           </div>
+          {activeRoom !== "pavilion" && !capture && journeyStep === null && <div className="gallery-room-heading">
+            <p className="spatial-kicker">Room {currentRoom.number} / A study in light</p>
+            <h2>{currentRoom.name}</h2>
+            <p>{currentRoom.description}</p>
+            <button aria-label="Start guided journey" onClick={() => controls.current?.startJourney()}>Take the full journey <Arrow /></button>
+          </div>}
           <div className="room-view-label" aria-live="polite">
             <span>
               {capture
                 ? "Your capture"
                 : String(
-                    viewpoints.findIndex((v) => v.id === active) + 1,
+                    roomViews.findIndex((v) => v.id === active) + 1,
                   ).padStart(2, "0") +
                   " / " +
-                  String(viewpoints.length).padStart(2, "0")}
+                  String(roomViews.length).padStart(2, "0")}
             </span>
             <strong>
               {capture || viewpoints.find((v) => v.id === active)?.label}
@@ -258,9 +287,9 @@ export default function SpatialLanding({
               Listen to Benno <Arrow />
             </button>
           )}
-          <nav className="room-viewpoints" aria-label="Room viewpoints" style={{ "--view-count": viewpoints.length }}>
+          <nav className="room-viewpoints" aria-label="Room viewpoints" style={{ "--view-count": roomViews.length }}>
             {!capture &&
-              viewpoints.map((view, index) => (
+              roomViews.map((view, index) => (
                 <button
                   key={view.id}
                   onClick={() => choose(view.id)}
@@ -289,7 +318,7 @@ export default function SpatialLanding({
                 {night ? "After hours" : "Daylight"}
                 <span className="lighting-switch" aria-hidden="true" />
               </button>
-              <button
+              {activeRoom === "pavilion" && <button
                 className="room-art-form"
                 aria-label="Transform the installation"
                 data-form={artForms[artForm].toLowerCase()}
@@ -305,13 +334,13 @@ export default function SpatialLanding({
                 Shape the light
                 <span className="art-form-state">{["I", "II", "III"][artForm]}</span>
                 <span id="art-form-description" className="sr-only">Current form: {artForms[artForm]}</span>
-              </button>
+              </button>}
             </>
           )}
           {journeyStep !== null && (
             <aside className="room-journey-card" aria-label="Guided journey" aria-live="polite">
               <span className="spatial-kicker">A journey in light · {journeyStep + 1} / {journey.length}</span>
-              <div className="journey-stops" aria-hidden="true">{journey.map((_, index) => <i key={index} className={index <= journeyStep ? "visited" : ""} />)}</div>
+              <div className="journey-stops" style={{ "--journey-count": journey.length }} aria-hidden="true">{journey.map((_, index) => <i key={index} className={index <= journeyStep ? "visited" : ""} />)}</div>
               <h2 key={journeyStep}>{journey[journeyStep].title}</h2>
               <p>{journey[journeyStep].text}</p>
               <div className="journey-actions">
@@ -325,7 +354,7 @@ export default function SpatialLanding({
             <button
               onClick={() => {
                 controls.current?.reset();
-                setActive("arrival");
+                setActive(currentRoom.entry);
               }}
               disabled={!ready}
               aria-label="Reset room view"
@@ -406,10 +435,12 @@ export default function SpatialLanding({
                 Choose a viewpoint for a composed view. Reset returns you to the
                 entrance. Shape the light transforms the installation between a
                 ribbon, constellation, and Bloom. Take the journey for a guided
-                camera route, or select a photograph directly in the room.
+                camera route across all three rooms. Select a glowing doorway
+                or use Explore the rooms to visit Orbit Hall and the Sky Garden.
+                Select a photograph in the pavilion to open it.
               </p>
               <p className="room-provenance">
-                The bundled scene is an imagined light pavilion with
+                The bundled scene is an imagined gallery with three rooms and
                 Gaussian-splat exhibits. It is not a capture of a historical
                 location. You can open your own .spz, .splat, or .ply file; it
                 stays on your device.

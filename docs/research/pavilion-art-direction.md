@@ -43,18 +43,28 @@ The three photographs remain genuine Gaussian-splat exhibits, approximately 70,0
 
 ## Guided exploration
 
-**Take the journey** coordinates six camera stops, mirror forms, lighting, and editorial captions. Each stop waits for its transitions before the reading interval begins. Next and previous controls are available, and Escape or manual navigation stops the route. Hidden tabs do not advance it; opening another dialog stops it. The route does not start the testimony or audio automatically.
+**Take the journey** coordinates ten camera stops across three rooms, mirror forms, lighting, and editorial captions. Each stop waits for its transitions before the reading interval begins. Next and previous controls are available, and Escape, room selection, or manual navigation stops the route. Hidden tabs do not advance it; opening another dialog stops it. The route does not start the testimony or audio automatically.
 
 Photographs have native CPU raycast targets on a camera-excluded layer, plus keyboard-accessible DOM markers projected from their world positions. A tap opens a native dialog; a drag or multi-touch gesture does not. The reader uses the supplied photographs, supports focus restoration and Escape, and links back to the in-room view or the testimony notice. Image descriptions are editorial captions, not purported testimony quotations.
 
 The exterior is an authored sunrise with layered distant hills. It is part of the imagined pavilion and does not claim to reconstruct Vienna. Its lighting follows the daylight/after-hours control and appears in the pool reflection.
 
+## Additional rooms
+
+The room expansion adds two original architectural studies. **Orbit Hall** uses dark stone, bronze fins, nine suspended gold orbits, an eclipse disc, and a softened planar floor reflection. **Sky Garden** contrasts it with pale stone, an open elliptical roof, a generated sky, a shallow basin, and 1,100 instanced iridescent petals in a rising spiral. No downloaded building models or external scene assets are required.
+
+Thresholds have locally drawn previews, physical frames, CPU raycast targets, and projected entrance buttons. Selecting a doorway exchanges the visible room and reveals its composed entrance view. This is portal navigation between authored rooms, rather than a continuous corridor or a captured building. A persistent three-room selector provides an alternative on narrow screens where a doorway may be outside the camera view. Each room keeps its own viewpoint list; reset stays in the current room. The mirror transformation belongs to the pavilion, while daylight/after-hours works in all rooms.
+
+Only the active room renders; its lights and geometry are hidden together when leaving. Reflections are cached while the camera and lighting remain unchanged. The garden's petals use a single instanced draw. The room reveal and camera travel are suppressed under reduced motion. Gaussian photographs remain in the pavilion, and return navigation restores their rendering and selection.
+
 ## Review and return point
 
-The gallery before the guided journey is saved at `checkpoint-before-gallery-journey` (`de37abd`). The first Lumen Pavilion is saved at Git tag `checkpoint-before-kinetic-gallery` (`bb550a2`). The previous unpublished atrium is saved in `/workspace/benno-atrium-before-research-redesign.tar.gz`. The prior white gallery remains at Git tag `checkpoint-before-sculptural-atrium` (`f387863`). The original cover is available immediately through **Original view**.
+The single-room Bloom gallery before the expansion is saved at `checkpoint-before-connected-rooms` (`311586d`). The gallery before the guided journey is saved at `checkpoint-before-gallery-journey` (`de37abd`). The first Lumen Pavilion is saved at Git tag `checkpoint-before-kinetic-gallery` (`bb550a2`). The previous unpublished atrium is saved in `/workspace/benno-atrium-before-research-redesign.tar.gz`. The prior white gallery remains at Git tag `checkpoint-before-sculptural-atrium` (`f387863`). The original cover is available immediately through **Original view**.
 
 The user authorized publication after reviewing the draft. Deployment uses the repository's existing GitHub Pages workflow, with the site at https://ejaubashi.github.io/t013/.
 
 ## Validation
 
-The production build passes with the GitHub Pages base path `/t013/`. All 28 desktop/mobile browser checks pass with `npm test -- --workers=1` and cover three kinetic formations, guided camera stops, in-room photograph selection, modal/keyboard behavior, kinetic transformations, the canopy view, actual splat drawing, composed viewpoints, lighting controls, keyboard movement, local capture imports, original-view fallback, chapter navigation, and testimony playback. The browser checks use software Chromium and touch emulation; physical mobile GPU performance remains unmeasured. Earlier detail-tier renders were also visually inspected before the automatic software tier was introduced.
+The production build passes with the GitHub Pages base path `/t013/`. All 30 desktop/mobile browser checks pass with `npm test -- --workers=1`. They cover all ten guided stops and room changes, keyboard room selection, doorway navigation, room-specific reset, returning to Gaussian photographs, three kinetic formations, in-room photograph selection, modal focus, actual splat drawing, composed viewpoints, lighting, keyboard movement, local capture imports, original-view fallback, chapter navigation, and testimony playback. The browser checks use software Chromium and touch emulation; physical mobile GPU performance remains unmeasured. Earlier detail-tier renders were also visually inspected before the automatic software tier was introduced.
+
+A separate production smoke check exercised normal-motion camera arrivals, a direct canvas click on the physical Orbit Hall doorway into Sky Garden, return to the pavilion, and video loading under `/t013/`. It reported no browser errors or failed HTTP assets. All three room entrances were also visually checked at 390 × 664 with no horizontal overflow.

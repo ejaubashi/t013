@@ -41,4 +41,10 @@ export const viewpoints = [
     position: [6.7, 6.8, 7.7],
     target: [1.2, 2.4, -1],
   },
+  { id: "orbit-arrival", room: "orbit", label: "The orbits", position: [7.4, 3.6, 10.8], target: [0, 3.6, -1] },
+  { id: "orbit-axis", room: "orbit", label: "The eclipse", position: [0, 3.7, 10.2], target: [0, 4.1, -1.8] },
+  { id: "orbit-close", room: "orbit", label: "Inside the light", position: [3.8, 4.5, 4.8], target: [0, 4.1, -0.8] },
+  { id: "garden-arrival", room: "garden", label: "The garden", position: [7.4, 3.8, 10.8], target: [0, 3.7, -1] },
+  { id: "garden-petals", room: "garden", label: "The petals", position: [4.6, 4.3, 5.6], target: [0, 4.1, -0.8] },
+  { id: "garden-sky", room: "garden", label: "The open sky", position: [5.8, 7.6, 7], target: [0, 3.2, -0.8] },
 ];

@@ -60,6 +60,15 @@ export function createGalleryArchitecture({ reflectionSize, reflectionSamples, b
   const opening = new THREE.Path();
   opening.absarc(2.2, 5.1, 3.65, 0, Math.PI * 2, true);
   rear.holes.push(opening);
+  for (const center of [-8.4, 8.4]) {
+    const threshold = new THREE.Path();
+    threshold.moveTo(center - 1.45, 0);
+    threshold.lineTo(center - 1.45, 5.65);
+    threshold.lineTo(center + 1.45, 5.65);
+    threshold.lineTo(center + 1.45, 0);
+    threshold.closePath();
+    rear.holes.push(threshold);
+  }
   const rearWall = new THREE.Mesh(new THREE.ExtrudeGeometry(rear, {
     depth: 0.65, steps: 1, bevelEnabled: true,
     bevelThickness: 0.05, bevelSize: 0.04, bevelSegments: 3, curveSegments: 96,
