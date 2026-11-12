@@ -1,19 +1,21 @@
 # Benno’s Light
 
-A responsive React experience based on the supplied Benno’s Light recordings. The opening is an interactive exhibition with three explorable rooms, sculptural light installations, and Gaussian-splat photographs. The saved paper cover, six-card chapter index, testimony player, and scrollable archive remain available.
+A responsive React experience based on the supplied Benno’s Light recordings. The opening is an interactive exhibition with four explorable rooms, sculptural light installations, and Gaussian-splat photographs. The saved paper cover, six-card chapter index, testimony player, and scrollable archive remain available.
 
 ## 3D archive experiment
 
-The default opening uses Three.js and Spark 2.4.0 to render approximately 70,000 Gaussian splats in the photographic exhibits. A monumental circular opening, a sculpted canopy, glass exhibition wings, and a distant sunrise frame a suspended installation of 2,420 mirrors. Bloom is the opening composition; **Shape the light** cycles through Ribbon, Constellation, and Bloom. A larger reflecting pool follows the transformation, with softened reflections and viewing-angle-dependent strength. Light shafts, floating motes, an HDR rendering pipeline, and an opening camera arc complete the scene. This is an **imagined gallery and technical study**, not a captured historical location. It uses the supplied photographs and runs locally without requesting external scene assets. See the [reference study and art direction](docs/research/pavilion-art-direction.md).
+The default opening uses Three.js and Spark 2.4.0 to render approximately 70,000 Gaussian splats in the photographic exhibits. A monumental circular opening, a sculpted canopy, glass exhibition wings, and a distant sunrise frame a suspended installation of 2,420 mirrors. Bloom is the opening composition; **Shape the light** cycles through Ribbon, Constellation, and Bloom. A larger reflecting pool follows the transformation, with softened reflections and viewing-angle-dependent strength. Light shafts, floating motes, an HDR rendering pipeline, and an opening camera arc complete the scene. This is an **imagined gallery and technical study**, not a captured historical location. It uses the supplied photographs and runs locally without requesting external scene assets. See the [original art direction](docs/research/pavilion-art-direction.md) and the new [UI/UX and optical implementation study](docs/research/atlas-ui-and-optics.md).
 
-- **Explore the rooms** visits the Lumen Pavilion, Orbit Hall, and Sky Garden. Glowing doorways can also be selected in 3D or through their projected, keyboard-accessible entrance markers. Orbit Hall suspends nine gold light rings above an obsidian reflecting floor. The open-roof Sky Garden holds 1,100 iridescent petals above a shallow basin. Each room has its own viewpoints and a route back to the pavilion.
-- Drag to orbit, scroll or pinch to move closer, and use twelve composed viewpoints: six in the pavilion, three in Orbit Hall, and three in the Sky Garden.
-- **Shape the light** transforms the installation in 1.5 seconds, or immediately with reduced motion. The camera entrance opens the constellation into Bloom when motion is allowed.
-- **Take the journey** follows ten camera stops across all three rooms, with editorial captions and coordinated artwork/lighting. Next, previous, stop, Escape, room selection, and manual navigation keep the route interruptible. It stops when another dialog opens and does not advance while the tab is hidden.
+- **Explore the rooms** opens a visual atlas for the Lumen Pavilion, Orbit Hall, Sky Garden, and Prism Chamber, with illustrated room cards, a schematic desktop floor plan, and visit indicators. Glowing doorways can also be selected in 3D or through their projected, keyboard-accessible entrance markers. Orbit Hall suspends nine gold light rings above an obsidian reflecting floor. The open-roof Sky Garden holds 1,100 iridescent petals above a shallow basin. Prism Chamber adds seven transmissive crystal forms, dispersion, a spectral backlight, and a floor light field. Each room has its own viewpoints and a route back to the pavilion.
+- Drag to orbit, scroll or pinch to move closer, and use fifteen composed viewpoints: six in the pavilion and three in each additional room. Mobile viewpoints scroll horizontally with larger labels.
+- **Controls** groups lighting, artwork adjustments, reset, help, local captures, and walking into one disclosure. In Prism Chamber, **Move the light** adjusts the spectrum with a native pointer/keyboard slider.
+- **Just the art** hides the exhibition interface. Its exit button or Escape returns to the interface and restores focus.
+- **Shape the light**, inside Controls, transforms the installation in 1.5 seconds, or immediately with reduced motion. The camera entrance opens the constellation into Bloom when motion is allowed.
+- **Take the journey** follows twelve camera stops across all four rooms, with editorial captions and coordinated artwork/lighting. Next, previous, stop, Escape, room selection, and manual navigation keep the route interruptible. It stops when another dialog opens and does not advance while the tab is hidden.
 - Select a photograph in the room or use its **+** marker to open the archive reader. Native modal focus, keyboard access, Escape, and a route into Benno’s testimony are supported. Dragging and pinching do not select an image.
 - **Daylight / After hours** changes the sky, skylight, studio environment, and exhibition lighting. Reduced motion makes this change immediate.
 - Focus the canvas and hold W/A/S/D or the arrow keys to move. The on-screen direction controls also work with pointer, touch, and keyboard input. Reset returns to the current room's entrance.
-- Use the upload control to open your own `.spz`, `.splat`, or `.ply` capture, up to 90 MB. Files stay on the device and are normalized into the viewer. The orientation control turns an upside-down capture over.
+- Use the upload action inside Controls to open your own `.spz`, `.splat`, or `.ply` capture, up to 90 MB. Files stay on the device and are normalized into the viewer. The orientation control turns an upside-down capture over.
 - **Listen to Benno** opens the testimony through the content notice. The chapter archive works as before.
 - **Original view** restores the paper cover for the browser session. **Enter the 3D room** switches back. `?view=classic` explicitly opens the saved cover.
 - Reduced motion makes viewpoint transitions immediate. Rendering pauses when the tab is hidden and updates on demand while the room is still. A graphics failure offers the original experience.
@@ -35,6 +37,10 @@ The first Lumen Pavilion before the kinetic installation is saved under **`check
 The kinetic gallery before the guided journey and Bloom update is saved under **`checkpoint-before-gallery-journey`**, commit `de37abd`.
 
 The single-room Bloom gallery before the room expansion is saved under **`checkpoint-before-connected-rooms`**, commit `311586d`.
+
+The three-room gallery before the atlas, UI redesign, and Prism Chamber is saved under **`checkpoint-before-atlas-prism`**, commit `b2ab6c3`.
+
+Direct links such as `?view=spatial&room=prism` open a specific room; `view=spatial` overrides the saved original-view preference for that URL.
 
 To inspect a checkpoint without changing files, use `git show <tag>:<path>`. **Original view** offers an immediate visual comparison without changing Git history. To restore an earlier version in Git history, revert subsequent updates in reverse order. Pushing changes to `main` triggers the Pages deployment; leave draft changes local until publication is requested.
 

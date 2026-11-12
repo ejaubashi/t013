@@ -47,4 +47,7 @@ export const viewpoints = [
   { id: "garden-arrival", room: "garden", label: "The garden", position: [7.4, 3.8, 10.8], target: [0, 3.7, -1] },
   { id: "garden-petals", room: "garden", label: "The petals", position: [4.6, 4.3, 5.6], target: [0, 4.1, -0.8] },
   { id: "garden-sky", room: "garden", label: "The open sky", position: [5.8, 7.6, 7], target: [0, 3.2, -0.8] },
+  { id: "prism-arrival", room: "prism", label: "The chamber", position: [7.4, 3.8, 11.2], target: [0, 3.6, -0.8] },
+  { id: "prism-crystals", room: "prism", label: "The crystals", position: [4.6, 4.8, 6], target: [0, 3.8, -0.8] },
+  { id: "prism-spectrum", room: "prism", label: "The spectrum", position: [5.5, 7.3, 7.5], target: [0, 1.8, -0.8] },
 ];

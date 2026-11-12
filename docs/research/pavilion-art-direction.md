@@ -2,6 +2,8 @@
 
 Research and implementation: 11 November 2026.
 
+This document records the pavilion and three-room expansion. The current four-room interface, atlas, and Prism Chamber are documented in [An atlas of light](atlas-ui-and-optics.md).
+
 ## Reference models
 
 These references were selected for specific strengths, rather than treated as a universal ranking. Public source files were retrieved and read; Bruno Simon's official preview image was also visually inspected. Standalone museum websites were not accessible with the environment's current network configuration, so this study does not claim a live-site comparison of them.

@@ -56,6 +56,7 @@ export default function RoomCanvas({
       orbiting = false,
       imported = false;
     let activeRoom = "pavilion";
+    let spectrum = 0.5;
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(65, 1, 0.03, 100);
     const keys = new Set();
@@ -175,6 +176,7 @@ export default function RoomCanvas({
           ? gl.getParameter(graphicsInfo.UNMASKED_RENDERER_WEBGL)
           : "";
         const softwareGraphics = /swiftshader|llvmpipe|softpipe|software/i.test(graphicsName);
+        renderer.transmissionResolutionScale = softwareGraphics ? 0.3 : 0.65;
         renderer.setPixelRatio(
           Math.min(
             devicePixelRatio,
@@ -449,7 +451,9 @@ export default function RoomCanvas({
               canvas.dataset.room = imported ? "capture" : activeRoom;
               canvas.dataset.petals = !imported && activeRoom === "garden" ? String(room.userData.petalCount || 0) : "0";
               canvas.dataset.mirrors = !imported && activeRoom === "pavilion" ? String(room.userData.mirrorCount || 0) : "0";
-              canvas.dataset.artwork = imported ? "capture" : activeRoom === "pavilion" ? "afterimage" : activeRoom === "orbit" ? "golden-orbits" : "petal-cloud";
+              canvas.dataset.artwork = imported ? "capture" : { pavilion: "afterimage", orbit: "golden-orbits", garden: "petal-cloud", prism: "spectral-crystals" }[activeRoom];
+              canvas.dataset.crystals = !imported && activeRoom === "prism" ? String(room.userData.crystalCount) : "0";
+              canvas.dataset.spectrum = spectrum.toFixed(2);
               if (!imported) {
                 canvas.dataset.artPhase = artPhase.toFixed(3);
                 canvas.dataset.artForm = artPhase < 0.001 ? "ribbon" : Math.abs(artPhase - 1) < 0.001 ? "constellation" : artPhase > 1.999 ? "bloom" : "transforming";
@@ -512,6 +516,13 @@ export default function RoomCanvas({
           focus: () => canvas.focus({ preventScroll: true }),
           setLighting: (night) => { stopJourney(); setLighting(night); },
           setArtForm: (form) => { stopJourney(); setArtForm(form); },
+          setSpectrum: (value) => {
+            if (imported) return;
+            stopJourney();
+            spectrum = THREE.MathUtils.clamp(Number(value), 0, 1);
+            room.userData.setSpectrum(spectrum);
+            dirty = true;
+          },
           startJourney: () => { if (ready && !imported) showJourneyStep(0); },
           stopJourney,
           advanceJourney: (direction) => { if (journeyState) showJourneyStep(journeyState.index + direction); },

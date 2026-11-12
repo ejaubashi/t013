@@ -6,6 +6,22 @@ test.use({
   trace: { mode: "retain-on-failure", screenshots: false, snapshots: true },
 });
 
+
+async function openControls(page) {
+  const tools = page.locator(".gallery-toolbox");
+  if (!(await tools.evaluate((element) => element.open))) await page.getByLabel("Gallery controls", { exact: true }).click();
+}
+
+async function closeControls(page) {
+  const tools = page.locator(".gallery-toolbox");
+  if (await tools.count() && await tools.evaluate((element) => element.open)) await page.getByLabel("Gallery controls", { exact: true }).click();
+}
+
+async function openAtlas(page) {
+  await closeControls(page);
+  await page.getByRole("button", { name: "Open gallery atlas" }).click();
+}
+
 test.describe("Gaussian-splat room", () => {
   test.setTimeout(90000);
   test.use({ reducedMotion: "reduce" });
@@ -39,15 +55,18 @@ test.describe("Gaussian-splat room", () => {
     await expect(canvas).toHaveAttribute("data-camera", "4.900,2.500,-3.650");
     await page.getByRole("button", { name: "05 The light" }).click();
     await expect(canvas).toHaveAttribute("data-camera", "5.800,3.400,5.900");
+    await openControls(page);
     const lighting = page.getByRole("button", { name: "After-hours lighting" });
     await lighting.click();
     await expect(lighting).toHaveAttribute("aria-pressed", "true");
     await expect(canvas).toHaveAttribute("data-lighting", "night");
     await lighting.click();
     await expect(canvas).toHaveAttribute("data-lighting", "day");
+    await closeControls(page);
     await page.getByRole("button", { name: "Open Benno’s memories" }).click();
     await expect(page.getByRole("dialog")).toContainText("Before you begin.");
     await page.keyboard.press("Escape");
+    await openControls(page);
     await page.getByRole("button", { name: "Reset room view" }).click();
     await expect(canvas).toHaveAttribute("data-camera", arrival);
     await canvas.focus();
@@ -56,8 +75,10 @@ test.describe("Gaussian-splat room", () => {
       .poll(() => canvas.getAttribute("data-camera"))
       .not.toBe(arrival);
     await page.keyboard.up("KeyW");
+    await openControls(page);
     await page.getByRole("button", { name: "Reset room view" }).click();
     await expect(canvas).toHaveAttribute("data-camera", arrival);
+    await openControls(page);
     const left = page.getByRole("button", { name: "Move left", exact: true });
     await left.focus();
     await page.keyboard.down("Space");
@@ -65,16 +86,19 @@ test.describe("Gaussian-splat room", () => {
       .poll(() => canvas.getAttribute("data-camera"))
       .not.toBe(arrival);
     await page.keyboard.up("Space");
+    await openControls(page);
     await page.getByRole("button", { name: "Room navigation help" }).click();
     await expect(page.locator(".room-help")).toContainText(
       "not a capture of a historical location",
     );
     await page.getByRole("button", { name: "Close navigation help" }).click();
+    await closeControls(page);
     await page
       .getByRole("button", { name: "Original view", exact: true })
       .click();
     await expect(page.locator(".cover-photo img")).toBeVisible();
     await expect(canvas).toHaveCount(0);
+    await closeControls(page);
     await page.getByRole("button", { name: "Open Benno’s memories" }).click();
     await page.getByRole("button", { name: /Access the experience/ }).click();
     await expect(page).toHaveURL(/#chapter-1$/);
@@ -92,6 +116,7 @@ test.describe("Gaussian-splat room", () => {
     await expect(canvas).toHaveAttribute("data-art-form", "bloom", { timeout: 45000 });
     expect(Number(await canvas.getAttribute("data-mirrors"))).toBeGreaterThan(2000);
     await expect(page.getByRole("navigation", { name: "Room viewpoints" }).getByRole("button")).toHaveCount(6);
+    await openControls(page);
     const transform = page.getByRole("button", { name: "Transform the installation" });
     await transform.click();
     await expect(transform).toHaveAttribute("data-form", "ribbon");
@@ -106,21 +131,23 @@ test.describe("Gaussian-splat room", () => {
     await expect(canvas).toHaveAttribute("data-art-phase", "2.000");
     await page.getByRole("button", { name: "06 The canopy" }).click();
     await expect(canvas).toHaveAttribute("data-camera", "6.700,6.800,7.700");
+    await openControls(page);
     await page.getByRole("button", { name: "After-hours lighting" }).click();
     await expect(canvas).toHaveAttribute("data-lighting", "night");
     expect(errors).toEqual([]);
   });
 
-  test("guides all ten journey stops across three rooms and yields to manual navigation", async ({ page }) => {
+  test("guides all twelve journey stops across four rooms and yields to manual navigation", async ({ page }) => {
     test.setTimeout(180000);
     await page.goto("/");
     const canvas = page.locator(".spatial-canvas canvas");
     await expect(canvas).toHaveAttribute("data-art-form", "bloom", { timeout: 45000 });
+    await closeControls(page);
     await page.getByRole("button", { name: "Start guided journey" }).click();
     await expect(canvas).toHaveAttribute("data-journey", "0");
     const guide = page.getByRole("complementary", { name: "Guided journey" });
     await expect(guide).toContainText("Light, taking shape.");
-    const route = ["pavilion", "pavilion", "pavilion", "pavilion", "pavilion", "orbit", "orbit", "garden", "garden", "pavilion"];
+    const route = ["pavilion", "pavilion", "pavilion", "pavilion", "pavilion", "orbit", "orbit", "garden", "garden", "prism", "prism", "pavilion"];
     for (let index = 1; index < route.length; index++) {
       await page.getByRole("button", { name: "Next journey stop" }).click();
       await expect(canvas).toHaveAttribute("data-journey", String(index));
@@ -132,6 +159,7 @@ test.describe("Gaussian-splat room", () => {
     await page.getByRole("button", { name: "Next journey stop" }).click();
     await expect(guide).toHaveCount(0);
     await expect(canvas).toHaveAttribute("data-journey", "stopped");
+    await closeControls(page);
     await page.getByRole("button", { name: "Start guided journey" }).click();
     await page.getByRole("button", { name: "03 The city" }).click();
     await expect(guide).toHaveCount(0);
@@ -146,41 +174,52 @@ test.describe("Gaussian-splat room", () => {
     await page.goto("/");
     const canvas = page.locator(".spatial-canvas canvas");
     await expect(canvas).toHaveAttribute("data-room", "pavilion", { timeout: 45000 });
+    await openAtlas(page);
     const roomNav = page.getByRole("navigation", { name: "Gallery rooms" });
-    await expect(roomNav.getByRole("button")).toHaveCount(3);
+    await expect(roomNav.getByRole("button")).toHaveCount(4);
     const orbit = roomNav.getByRole("button", { name: "Enter Orbit Hall", exact: true });
     await expect(orbit).toBeEnabled();
     await orbit.focus();
     await page.keyboard.press("Enter");
     await expect(canvas).toHaveAttribute("data-room", "orbit");
     await expect(canvas).toHaveAttribute("data-camera", "7.400,3.600,10.800");
+    await openAtlas(page);
     await expect(orbit).toHaveAttribute("aria-pressed", "true");
+    await page.keyboard.press("Escape");
     await expect(page.getByRole("button", { name: "Transform the installation" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "View family photograph" })).toHaveCount(0);
     await page.getByRole("button", { name: "02 The eclipse" }).click();
     await expect(canvas).toHaveAttribute("data-camera", "0.000,3.700,10.200");
+    await openControls(page);
     await page.getByRole("button", { name: "Reset room view" }).click();
     await expect(canvas).toHaveAttribute("data-room", "orbit");
     await expect(canvas).toHaveAttribute("data-camera", "7.400,3.600,10.800");
     await page.getByRole("button", { name: "Door to Lumen Pavilion", exact: true }).click();
     await expect(canvas).toHaveAttribute("data-room", "pavilion");
     await expect(canvas).toHaveAttribute("data-camera", "7.400,3.400,10.800");
+    await openAtlas(page);
     await roomNav.getByRole("button", { name: "Enter Sky Garden", exact: true }).click();
     await expect(canvas).toHaveAttribute("data-room", "garden");
     await expect(canvas).toHaveAttribute("data-camera", "7.400,3.800,10.800");
     await expect(canvas).toHaveAttribute("data-petals", "1100");
+    await openAtlas(page);
     await expect(roomNav.getByRole("button", { name: "Enter Sky Garden", exact: true })).toHaveAttribute("aria-pressed", "true");
+    await page.keyboard.press("Escape");
     await page.getByRole("button", { name: "03 The open sky" }).click();
     await expect(canvas).toHaveAttribute("data-camera", "5.800,7.600,7.000");
+    await openControls(page);
     await page.getByRole("button", { name: "After-hours lighting" }).click();
     await expect(canvas).toHaveAttribute("data-lighting", "night");
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await closeControls(page);
     await page.getByRole("button", { name: "Start guided journey" }).click();
     await expect(canvas).toHaveAttribute("data-room", "pavilion");
     await expect(canvas).toHaveAttribute("data-journey", "0");
+    await openAtlas(page);
     await roomNav.getByRole("button", { name: "Enter Sky Garden", exact: true }).click();
     await expect(canvas).toHaveAttribute("data-journey", "stopped");
     await expect(page.getByRole("complementary", { name: "Guided journey" })).toHaveCount(0);
+    await openAtlas(page);
     await roomNav.getByRole("button", { name: "Enter Lumen Pavilion", exact: true }).click();
     await expect(canvas).toHaveAttribute("data-room", "pavilion");
     await expect.poll(async () => Number(await canvas.getAttribute("data-drawn-splats")), { timeout: 45000 }).toBeGreaterThan(50000);
@@ -206,6 +245,7 @@ test.describe("Gaussian-splat room", () => {
     await expect(page.getByRole("dialog")).toHaveCount(0);
     await page.getByRole("button", { name: "02 The family" }).click();
     await expect(canvas).toHaveAttribute("data-camera", "-4.000,2.450,-3.600");
+    await page.getByRole("button", { name: "View artwork without interface" }).click();
     await page.mouse.click(width / 2, height / 2);
     const reader = page.getByRole("dialog");
     await expect(reader.getByRole("heading", { name: "The family" })).toBeVisible();
@@ -268,11 +308,58 @@ test.describe("Gaussian-splat room", () => {
     await expect(canvas).toHaveAttribute("data-splats", "81");
     await expect(page.getByRole("alert")).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Transform the installation" })).toHaveCount(0);
+    await openControls(page);
     await page
       .getByRole("button", { name: "Flip capture orientation" })
       .click();
+    await openControls(page);
     await page.getByRole("button", { name: "Reset room view" }).click();
     await expect(canvas).toHaveAttribute("data-camera", "0.000,0.500,5.500");
+  });
+
+  test("opens the room atlas, shapes the prism spectrum, and restores focus after art view", async ({ page }) => {
+    const errors = [];
+    page.on("pageerror", (error) => errors.push(error.message));
+    page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
+    await page.addInitScript(() => sessionStorage.setItem("benno-classic", "1"));
+    await page.goto("/?view=spatial&room=prism");
+    const canvas = page.locator(".spatial-canvas canvas");
+    await expect(canvas).toHaveAttribute("data-room", "prism", { timeout: 45000 });
+    await expect(canvas).toHaveAttribute("data-artwork", "spectral-crystals");
+    await expect(canvas).toHaveAttribute("data-crystals", "7");
+    await expect(canvas).toHaveAttribute("data-camera", "7.400,3.800,11.200");
+    await openAtlas(page);
+    const atlas = page.getByRole("dialog", { name: "An atlas of light." });
+    await expect(atlas).toBeVisible();
+    await expect(atlas.getByRole("navigation", { name: "Gallery rooms" }).getByRole("button")).toHaveCount(4);
+    await expect(atlas.getByRole("button", { name: "Enter Prism Chamber", exact: true })).toHaveAttribute("aria-pressed", "true");
+    await page.keyboard.press("Tab");
+    expect(await page.evaluate(() => Boolean(document.activeElement.closest("dialog")))).toBe(true);
+    await page.keyboard.press("Escape");
+    await expect(atlas).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Open gallery atlas" })).toBeFocused();
+    await openControls(page);
+    const spectrum = page.getByRole("slider", { name: "Spectrum position" });
+    await spectrum.focus();
+    await page.keyboard.press("End");
+    await expect(canvas).toHaveAttribute("data-spectrum", "1.00");
+    await page.keyboard.press("Home");
+    await expect(canvas).toHaveAttribute("data-spectrum", "0.00");
+    await page.keyboard.press("Escape");
+    const focus = page.getByRole("button", { name: "View artwork without interface" });
+    await focus.click();
+    await expect(page.getByRole("button", { name: "Return to gallery interface" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Open gallery atlas" })).toBeHidden();
+    await expect(canvas).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(focus).toBeFocused();
+    await expect(page.getByRole("button", { name: "Open gallery atlas" })).toBeVisible();
+    await openAtlas(page);
+    const garden = atlas.getByRole("button", { name: "Enter Sky Garden", exact: true });
+    await garden.focus(); await page.keyboard.press("Enter");
+    await expect(canvas).toHaveAttribute("data-room", "garden");
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    expect(errors).toEqual([]);
   });
 
   test("graphics failure provides a usable original experience", async ({
@@ -301,6 +388,7 @@ test.describe("Gaussian-splat room", () => {
     await expect(
       page.getByRole("button", { name: "Open Benno’s memories" }),
     ).toBeVisible();
+    await closeControls(page);
     await page.getByRole("button", { name: "Open Benno’s memories" }).click();
     await expect(page.getByRole("dialog")).toContainText("Before you begin.");
   });

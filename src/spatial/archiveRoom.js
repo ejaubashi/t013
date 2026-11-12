@@ -3,6 +3,7 @@ import { SplatMesh } from "@sparkjsdev/spark";
 import { createGalleryArchitecture } from "./galleryArchitecture";
 import { exhibits } from "./exhibits";
 import { addRoomPortals, createOrbitHall, createSkyGarden } from "./galleryRooms";
+import { createPrismChamber } from "./prismChamber";
 
 const asset = (name) => `${import.meta.env.BASE_URL}assets/${name}`;
 
@@ -33,16 +34,21 @@ export function createArchiveRoom({ onProgress, reflectionSize, reflectionSample
   pavilion.add(architecture);
   const orbit = createOrbitHall({ reflectionSize, reflectionSamples });
   const garden = createSkyGarden();
-  room.add(orbit, garden);
+  const prism = createPrismChamber();
+  room.add(orbit, garden, prism);
   orbit.visible = false;
   garden.visible = false;
-  const roomGroups = { pavilion, orbit, garden };
+  prism.visible = false;
+  const roomGroups = { pavilion, orbit, garden, prism };
   const pavilionPortals = addRoomPortals(pavilion, "pavilion");
   room.userData.setLighting = (night) => {
     architecture.userData.setLighting(night);
     orbit.userData.setLighting(night);
     garden.userData.setLighting(night);
+    prism.userData.setLighting(night);
   };
+  room.userData.setSpectrum = (value) => prism.userData.setSpectrum(value);
+  room.userData.crystalCount = prism.userData.crystalCount;
   room.userData.setArtPhase = (value) => architecture.userData.setArtPhase(value);
   room.userData.mirrorCount = architecture.userData.mirrorCount;
   const reflections = new THREE.Group();

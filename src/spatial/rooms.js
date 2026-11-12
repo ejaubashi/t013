@@ -9,7 +9,11 @@ export const rooms = [
   ] },
   { id: "garden", name: "Sky Garden", short: "Sky Garden", number: "03", entry: "garden-arrival", description: "An open sky. A thousand floating petals.", portals: [
     { to: "pavilion", position: [-8.4, 2.7, -9.76] },
-    { to: "orbit", position: [8.4, 2.7, -9.76] },
+    { to: "prism", position: [8.4, 2.7, -9.76] },
+  ] },
+  { id: "prism", name: "Prism Chamber", short: "Prism", number: "04", entry: "prism-arrival", description: "One light. A world of colour.", portals: [
+    { to: "garden", position: [-8.4, 2.7, -9.76] },
+    { to: "pavilion", position: [8.4, 2.7, -9.76] },
   ] },
 ];
 

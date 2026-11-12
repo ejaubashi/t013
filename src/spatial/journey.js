@@ -10,5 +10,7 @@ export const journey = [
   { view: "orbit-axis", form: 1, night: false, title: "An echo of infinity.", text: "A circle of light. Its reflection, reaching further." },
   { view: "garden-arrival", form: 2, night: false, title: "Room to breathe.", text: "The Sky Garden opens to a cloud of iridescent petals." },
   { view: "garden-sky", form: 2, night: false, title: "Let the sky in.", text: "Eleven hundred petals trace a rising spiral beneath the open roof." },
+  { view: "prism-arrival", form: 2, night: false, title: "A world within the light.", text: "Seven crystal forms gather in the Prism Chamber." },
+  { view: "prism-spectrum", form: 2, night: true, title: "See what light can become.", text: "A spectrum spreads across the floor. Open Controls to move the light yourself." },
   { view: "arrival", form: 2, night: true, title: "Some light never leaves.", text: "Stay and explore, or follow Benno’s story." },
 ];

@@ -613,6 +613,7 @@ function ArchiveViewer({ chapter, onClose, onNextChapter }) {
 function App() {
   const [classic, setClassic] = useState(() => {
     try {
+      if (new URLSearchParams(location.search).get("view") === "spatial") return false;
       return (
         sessionStorage.getItem("benno-classic") === "1" ||
         new URLSearchParams(location.search).get("view") === "classic"
