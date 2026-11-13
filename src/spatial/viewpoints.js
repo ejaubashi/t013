@@ -51,6 +51,6 @@ export const viewpoints = [
   { id: "prism-crystals", room: "prism", label: "The crystals", position: [4.6, 4.8, 6], target: [0, 3.8, -0.8] },
   { id: "prism-spectrum", room: "prism", label: "The spectrum", position: [5.5, 7.3, 7.5], target: [0, 1.8, -0.8] },
   ...["pavilion", "orbit", "garden", "prism"].map((room) => ({
-    id: `${room}-artworks`, room, label: "On the walls", position: [-2.8, 3.8, 6.8], target: [-9.42, 3.35, -0.5],
+    id: `${room}-artworks`, room, label: "On the walls", position: [-2.8, 3.8, 6.8], target: [-9.67, 3.35, -0.5],
   })),
 ];

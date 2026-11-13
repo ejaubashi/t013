@@ -3,15 +3,15 @@ export const rooms = [
     { to: "orbit", position: [-8.4, 2.7, -9.76] },
     { to: "garden", position: [8.4, 2.7, -9.76] },
   ] },
-  { id: "orbit", name: "Orbit Hall", short: "Orbit Hall", number: "02", entry: "orbit-arrival", description: "A constellation of golden orbits.", portals: [
+  { id: "orbit", name: "Orbit Hall", short: "Orbit Hall", number: "02", entry: "orbit-arrival", description: "Satin forms. Quiet geometry.", portals: [
     { to: "pavilion", position: [-8.4, 2.7, -9.76] },
     { to: "garden", position: [8.4, 2.7, -9.76] },
   ] },
-  { id: "garden", name: "Sky Garden", short: "Sky Garden", number: "03", entry: "garden-arrival", description: "An open sky. A thousand floating petals.", portals: [
+  { id: "garden", name: "Sky Garden", short: "Sky Garden", number: "03", entry: "garden-arrival", description: "Soft daylight. A cloud of paper petals.", portals: [
     { to: "pavilion", position: [-8.4, 2.7, -9.76] },
     { to: "prism", position: [8.4, 2.7, -9.76] },
   ] },
-  { id: "prism", name: "Prism Chamber", short: "Prism", number: "04", entry: "prism-arrival", description: "One light. A world of colour.", portals: [
+  { id: "prism", name: "Prism Chamber", short: "Prism", number: "04", entry: "prism-arrival", description: "Frosted glass in a quiet white room.", portals: [
     { to: "garden", position: [-8.4, 2.7, -9.76] },
     { to: "pavilion", position: [8.4, 2.7, -9.76] },
   ] },

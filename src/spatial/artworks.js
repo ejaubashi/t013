@@ -54,7 +54,7 @@ export const artworks = [
   collection: "State Hermitage Museum", reproduction: "Digital reproduction · Public-domain work",
   wallImage: `artworks/${artwork.id}-wall.webp`, image: `artworks/${artwork.id}-detail.webp`,
   source: archive + encodeURIComponent(artwork.sourceFile),
-  position: [-9.42, 3.35, index % 2 === 0 ? -4.6 : 3.6], rotation: Math.PI / 2,
+  position: [-9.67, 3.35, index % 2 === 0 ? -4.6 : 3.6], rotation: Math.PI / 2,
 }));
 
 export function artworkSize(artwork) {

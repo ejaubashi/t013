@@ -15,11 +15,11 @@ function ribbonPosition(u, v) {
 
 function bloomPosition(u, v) {
   const angle = u * Math.PI * 2;
-  const radius = (0.7 + (v + 1) * 1.14) * (1 + 0.16 * Math.cos(angle * 6));
+  const radius = 1.0 + (v + 1) * 0.78;
   return new THREE.Vector3(
     radius * Math.cos(angle) * 1.05,
     radius * Math.sin(angle) * 0.95,
-    0.5 * Math.sin(angle * 3) + 0.62 * Math.cos(radius * 1.3 + angle * 6),
+    0.32 * Math.sin(angle * 2) + 0.2 * Math.cos(radius * 1.3),
   );
 }
 
@@ -76,7 +76,7 @@ export function createLightInstallation() {
   const right = new THREE.Vector3(), up = new THREE.Vector3(), normal = new THREE.Vector3();
   const basis = new THREE.Matrix4(), quaternion = new THREE.Quaternion();
   const identity = new THREE.Matrix4();
-  const top = new THREE.Color(0xe8c58a), bottom = new THREE.Color(0x9de8de);
+  const top = new THREE.Color(0xf2eee5), bottom = new THREE.Color(0xc9c5bb);
   const colors = [];
   for (let column = 0; column < columns; column++) {
     const u = column / (columns - 1);
@@ -124,8 +124,8 @@ export function createLightInstallation() {
     aBloomRotation: new THREE.InstancedBufferAttribute(rotationC, 4),
   };
   const mirrors = new THREE.MeshStandardMaterial({
-    color: 0xffffff, metalness: 0.88, roughness: 0.24,
-    envMapIntensity: 1.05, emissive: 0x09262a, emissiveIntensity: 0.24,
+    color: 0xffffff, metalness: 0.35, roughness: 0.62,
+    envMapIntensity: 0.45, emissive: 0x000000, emissiveIntensity: 0,
   });
   const light = new THREE.MeshBasicMaterial({ color: 0xffffff });
   addMorph(mirrors, phase);
@@ -142,7 +142,7 @@ export function createLightInstallation() {
     plates.setMatrixAt(i, identity);
     edges.setMatrixAt(i, identity);
     plates.setColorAt(i, colors[i]);
-    edges.setColorAt(i, colors[i].clone().multiplyScalar(2.8));
+    edges.setColorAt(i, colors[i].clone().multiplyScalar(1.02));
   }
   for (const mesh of [plates, edges]) {
     mesh.frustumCulled = false;
@@ -150,38 +150,8 @@ export function createLightInstallation() {
     mesh.instanceColor.needsUpdate = true;
     installation.add(mesh);
   }
-  const dust = new Float32Array(420 * 3);
-  for (let i = 0; i < 420; i++) {
-    const angle = i * 2.399963;
-    const radius = 1.5 + ((i * 71) % 191) / 100;
-    dust.set([Math.cos(angle) * radius, ((i * 37) % 100) / 17 - 2.8, Math.sin(angle) * radius], i * 3);
-  }
-  const dustGeometry = new THREE.BufferGeometry();
-  dustGeometry.setAttribute("position", new THREE.BufferAttribute(dust, 3));
-  const dustMaterial = new THREE.ShaderMaterial({
-    uniforms: { uArtPhase: phase }, transparent: true, depthWrite: false,
-    blending: THREE.AdditiveBlending,
-    vertexShader: `
-      uniform float uArtPhase;
-      void main() {
-        vec3 point = position;
-        point.x += sin(point.y * 1.6 + uArtPhase * 5.0) * 0.16;
-        point.z += cos(point.y * 1.3 + uArtPhase * 4.0) * 0.16;
-        vec4 view = modelViewMatrix * vec4(point, 1.0);
-        gl_Position = projectionMatrix * view;
-        gl_PointSize = clamp(24.0 / max(-view.z, 0.1), 1.0, 3.0);
-      }`,
-    fragmentShader: `
-      void main() {
-        vec2 uv = gl_PointCoord * 2.0 - 1.0;
-        float glow = exp(-dot(uv, uv) * 4.0) * 0.45;
-        gl_FragColor = vec4(0.7, 1.0, 0.91, glow);
-        #include <tonemapping_fragment>
-        #include <colorspace_fragment>
-      }`,
-  });
-  installation.add(new THREE.Points(dustGeometry, dustMaterial));
-  installation.position.set(2.2, 3.25, -0.4);
+  installation.position.set(2.2, 2.55, -0.4);
+  installation.scale.setScalar(0.62);
   installation.rotation.y = 0.16;
   installation.userData.setPhase = (value) => { phase.value = value; };
   installation.userData.mirrorCount = count;

@@ -1,23 +1,23 @@
 import * as THREE from "three";
 import { addRoomPortals } from "./galleryRooms";
+import { galleryPalette as palette } from "./galleryPalette";
 
 // An authored optical installation. The floor light is a procedural artwork,
 // not a physical caustics solver. The renderer scales its refraction buffer.
 export function createPrismChamber() {
   const chamber = new THREE.Group();
   chamber.name = "prism-chamber";
-  const stone = new THREE.MeshStandardMaterial({ color: 0x272637, roughness: 0.43, metalness: 0.3 });
-  const porcelain = new THREE.MeshStandardMaterial({ color: 0xc9c6d8, roughness: 0.36, metalness: 0.18 });
-  const trim = new THREE.MeshStandardMaterial({ color: 0x7d7994, roughness: 0.3, metalness: 0.85 });
-  const glow = new THREE.MeshBasicMaterial({ color: new THREE.Color(0xc5c7ff).multiplyScalar(2) });
+  const stone = new THREE.MeshStandardMaterial({ color: palette.plaster, roughness: 0.94, metalness: 0 });
+  const porcelain = new THREE.MeshStandardMaterial({ color: palette.porcelain, roughness: 0.87, metalness: 0 });
+  const trim = new THREE.MeshStandardMaterial({ color: palette.trim, roughness: 0.7, metalness: 0.3 });
+  const glow = new THREE.MeshBasicMaterial({ color: new THREE.Color(palette.daylight) });
   const box = (material, x, y, z, w, h, d) => {
     const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), material);
     mesh.position.set(x, y, z); chamber.add(mesh); return mesh;
   };
   box(stone, 0, -0.2, 0, 23, 0.4, 29);
-  for (const x of [-10.7, 10.7]) {
+  for (const x of [-10.2, 10.2]) {
     box(stone, x, 5, 0, 0.6, 10, 28);
-    for (let z = -10; z < 13; z += 0.75) box(trim, x * 0.97, 4.8, z, 0.04, 9.6, 0.1);
     box(glow, x * 0.96, 0.035, 0, 0.018, 0.02, 27);
   }
   box(stone, 0, 10, 0, 22, 0.3, 28);
@@ -25,26 +25,10 @@ export function createPrismChamber() {
   for (const x of [-10.35, 10.35]) box(stone, x, 5, -10.2, 0.7, 10, 0.5);
   for (const x of [-8.4, 8.4]) box(stone, x, 8, -10.2, 3.5, 4, 0.5);
   const haloGeometry = new THREE.TorusGeometry(3.95, 0.035, 8, 192);
-  const positions = haloGeometry.getAttribute("position"), colors = [];
-  const color = new THREE.Color();
-  for (let i = 0; i < positions.count; i++) {
-    color.setHSL((Math.atan2(positions.getY(i), positions.getX(i)) / (Math.PI * 2) + 1) % 1, 0.85, 0.5).multiplyScalar(1.4);
-    colors.push(color.r, color.g, color.b);
-  }
-  haloGeometry.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
-  const halo = new THREE.Mesh(haloGeometry, new THREE.MeshBasicMaterial({ vertexColors: true }));
+  const halo = new THREE.Mesh(haloGeometry, trim);
   halo.position.set(0, 4.8, -9.84); chamber.add(halo);
-  const disc = new THREE.Mesh(new THREE.CircleGeometry(3.85, 128), new THREE.ShaderMaterial({
-    vertexShader: "varying vec2 vUv; void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}",
-    fragmentShader: `varying vec2 vUv; void main(){
-      vec2 p=vUv-0.5;
-      vec3 spectrum=0.55+0.45*cos(6.28318*(p.x*0.65+p.y*0.3+vec3(0.0,0.33,0.67)));
-      float glow=0.35+0.5*exp(-dot(p,p)*5.0);
-      gl_FragColor=vec4(mix(vec3(0.16,0.18,0.27),spectrum*0.95,glow),1.0);
-      #include <tonemapping_fragment>
-      #include <colorspace_fragment>
-    }`,
-  }));
+  const disc = new THREE.Mesh(new THREE.CircleGeometry(3.85, 128),
+    new THREE.MeshStandardMaterial({ color: palette.stone, roughness: 0.95 }));
   disc.position.set(0, 4.8, -9.8); chamber.add(disc);
   for (const x of [-5.2, 5.2]) box(glow, x, 9.8, 0, 0.025, 0.02, 25);
   const island = new THREE.Mesh(new THREE.CylinderGeometry(4.4, 4.65, 0.28, 96), porcelain);
@@ -52,11 +36,11 @@ export function createPrismChamber() {
   const islandRim = new THREE.Mesh(new THREE.TorusGeometry(4.42, 0.018, 6, 144), glow);
   islandRim.rotation.x = Math.PI / 2; islandRim.position.set(0, 0.29, -0.8); chamber.add(islandRim);
   const glass = new THREE.MeshPhysicalMaterial({
-    color: 0xe4e8ff, roughness: 0.07, metalness: 0,
-    transmission: 0.92, thickness: 2.5, ior: 1.48,
-    dispersion: 0.85, clearcoat: 1,
-    iridescence: 0.28, iridescenceIOR: 1.35,
-    iridescenceThicknessRange: [100, 420], envMapIntensity: 2.1,
+    color: 0xf5f2eb, roughness: 0.25, metalness: 0,
+    transmission: 0.58, thickness: 1.5, ior: 1.48,
+    dispersion: 0.08, clearcoat: 0.4,
+    iridescence: 0, iridescenceIOR: 1.35,
+    iridescenceThicknessRange: [100, 420], envMapIntensity: 0.8,
   });
   const installation = new THREE.Group(); installation.name = "seven-spectral-crystals";
   const crystalGeometry = new THREE.OctahedronGeometry(1);
@@ -73,59 +57,27 @@ export function createPrismChamber() {
     const crystal = new THREE.Mesh(crystalGeometry, glass);
     crystal.position.set(x, y, z); crystal.scale.set(sx, sy, sz); crystal.rotation.set(rx, ry, rz);
     installation.add(crystal);
-    const outline = new THREE.LineSegments(new THREE.EdgesGeometry(crystalGeometry), new THREE.LineBasicMaterial({ color: 0xbfc7ed, transparent: true, opacity: 0.32 }));
+    const outline = new THREE.LineSegments(new THREE.EdgesGeometry(crystalGeometry), new THREE.LineBasicMaterial({ color: palette.trim, transparent: true, opacity: 0.16 }));
     outline.position.copy(crystal.position); outline.scale.copy(crystal.scale); outline.rotation.copy(crystal.rotation);
     installation.add(outline);
   }
+  installation.scale.setScalar(0.72);
   chamber.add(installation);
-  const spectrumUniform = { value: 0.5 };
-  const caustics = new THREE.Mesh(new THREE.PlaneGeometry(19, 23), new THREE.ShaderMaterial({
-    uniforms: { uSpectrum: spectrumUniform }, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
-    vertexShader: "varying vec2 vUv; void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}",
-    fragmentShader: `
-      uniform float uSpectrum;
-      varying vec2 vUv;
-      vec3 palette(float t) { return 0.55 + 0.45*cos(6.28318*(vec3(0.0,0.33,0.67)+t)); }
-      void main() {
-        vec2 p=(vUv-0.5)*vec2(19.0,23.0);
-        p.x += (uSpectrum-0.5)*4.0;
-        float a=atan(p.y+1.5,p.x), r=length(p*vec2(0.85,1.0));
-        float wave=sin(r*2.2+sin(a*3.0+uSpectrum*3.0)*1.8);
-        float bands=pow(max(0.0,1.0-abs(wave)),9.0);
-        float falloff=exp(-r*r*0.021)*smoothstep(0.6,2.0,r);
-        vec3 spectrum=palette(a/6.28318+uSpectrum*0.3+r*0.055);
-        gl_FragColor=vec4(spectrum*1.5,bands*falloff*0.72);
-        #include <tonemapping_fragment>
-        #include <colorspace_fragment>
-      }`,
-  }));
-  caustics.rotation.x = -Math.PI / 2; caustics.position.set(0, 0.305, -0.8); chamber.add(caustics);
-  const rays = new THREE.Group(); rays.position.set(0, 3.9, -0.8);
-  for (let i = 0; i < 7; i++) {
-    const rayGeometry = new THREE.BufferGeometry();
-    rayGeometry.setAttribute("position", new THREE.Float32BufferAttribute([0, 0, 0, -4.9 + i * 1.4, -3.58, 7.5, -4.2 + i * 1.4, -3.58, 7.5], 3));
-    color.setHSL(i / 8, 0.7, 0.65);
-    const ray = new THREE.Mesh(rayGeometry, new THREE.MeshBasicMaterial({ color: color.clone().multiplyScalar(1.8), transparent: true, opacity: 0.055, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending }));
-    rays.add(ray);
-  }
-  chamber.add(rays);
-  const ambient = new THREE.HemisphereLight(0xd8dcff, 0x392a43, 1.1);
-  const key = new THREE.PointLight(0xf5d7c2, 80, 23, 1.6); key.position.set(-4, 7.5, 4);
-  const fill = new THREE.PointLight(0x9aafff, 65, 20, 1.6); fill.position.set(4, 5, -4);
+  const ambient = new THREE.HemisphereLight(palette.daylight, palette.stone, 1.25);
+  const key = new THREE.PointLight(palette.daylight, 45, 23, 1.6); key.position.set(-4, 7.5, 4);
+  const fill = new THREE.PointLight(palette.daylight, 32, 20, 1.6); fill.position.set(4, 5, -4);
   chamber.add(ambient, key, fill);
   chamber.userData.setSpectrum = (value) => {
     const level = THREE.MathUtils.clamp(value, 0, 1);
-    spectrumUniform.value = level;
-    rays.rotation.y = (level - 0.5) * 0.65;
     installation.rotation.y = (level - 0.5) * 0.18;
-    key.color.setHSL(0.05 + level * 0.68, 0.35, 0.8);
-    fill.color.setHSL(0.65 - level * 0.45, 0.45, 0.75);
+    key.color.lerpColors(new THREE.Color(palette.warmLight), new THREE.Color(0xf5f7f6), level);
+    fill.color.lerpColors(new THREE.Color(palette.daylight), new THREE.Color(0xe9e7e1), level);
     chamber.userData.spectrum = level;
   };
   chamber.userData.setLighting = (level) => {
-    ambient.intensity = 1.1 - level * 0.6;
-    key.intensity = 80 + level * 15;
-    fill.intensity = 65 + level * 20;
+    ambient.intensity = 1.25 - level * 0.65;
+    key.intensity = 45 + level * 8;
+    fill.intensity = 32 + level * 8;
   };
   chamber.userData.crystalCount = crystals.length;
   chamber.userData.portalTargets = addRoomPortals(chamber, "prism");

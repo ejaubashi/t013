@@ -12,7 +12,7 @@ export function stoneTexture() {
       const grain = noise(x, y);
       const strata = Math.sin(y * 0.085 + Math.sin(x * 0.026) * 1.4);
       const cloud = Math.sin(x * 0.035 + y * 0.013) * Math.cos(y * 0.027);
-      const value = Math.round(190 + strata * 4 + cloud * 8 + grain * 12 + (grain < 0.025 ? -34 : 0));
+      const value = Math.round(231 + strata * 1.4 + cloud * 2 + grain * 5);
       pixels.set([value, value, value, 255], (y * size + x) * 4);
     }
   }
@@ -30,7 +30,7 @@ export function stoneTexture() {
 // Studio light cards, following the technique illustrated by drei Lightformer.
 export function createPavilionEnvironment() {
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x262e30);
+  scene.background = new THREE.Color(0xede9e0);
   const card = (color, intensity, position, scale) => {
     const material = new THREE.MeshBasicMaterial({
       color: new THREE.Color(color).multiplyScalar(intensity), side: THREE.DoubleSide,
@@ -41,10 +41,9 @@ export function createPavilionEnvironment() {
     mesh.lookAt(0, 2, 0);
     scene.add(mesh);
   };
-  card(0xffe3b2, 12, [-5, 5, 4], [3, 8, 1]);
-  card(0xc8e0ed, 8, [5, 6, -5], [5, 4, 1]);
-  card(0xffffff, 18, [0, 10, 0], [2, 10, 1]);
-  card(0xffe8c0, 5, [1, 3, 8], [1, 7, 1]);
-  card(0x83e8e0, 7, [-4, 3, -3], [2, 6, 1]);
+  card(0xfffaf0, 5, [-5, 5, 4], [5, 8, 1]);
+  card(0xffffff, 4, [5, 6, -5], [5, 6, 1]);
+  card(0xffffff, 8, [0, 10, 0], [4, 10, 1]);
+  card(0xfff4e5, 2, [1, 3, 8], [3, 7, 1]);
   return scene;
 }

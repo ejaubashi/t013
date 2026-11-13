@@ -1,0 +1,118 @@
+/* Quiet museum surfaces. Artwork images keep their original colours. */
+.spatial-stage {
+  --gallery-paper: #f7f5f0;
+  --gallery-ink: #30312c;
+  --gallery-muted: #6e6c63;
+  --gallery-line: #393a352b;
+  --pavilion-accent: #777268;
+  --ui-glass: #f7f5f0ed;
+  background: #eeebe3; color: var(--gallery-ink);
+}
+body:has(.spatial-stage) { background: #eeebe3; }
+.site-header.gallery-header, .spatial-stage ~ .utility-bar { color: #30312c; }
+.site-header.gallery-header { text-shadow: none; }
+.spatial-stage .spatial-fallback { background: #eeebe3; }
+.spatial-stage .spatial-vignette, .spatial-stage.is-focus .spatial-vignette { opacity: 0; }
+.spatial-stage .spatial-topline, .spatial-stage .spatial-topline button { color: var(--gallery-ink); border-color: var(--gallery-line); }
+.spatial-stage .spatial-topline > span::before { background: #77776c; }
+.spatial-stage .spatial-kicker, .gallery-room-heading .spatial-kicker { color: var(--gallery-muted); }
+.spatial-stage .spatial-topline .spatial-kicker, .spatial-stage .spatial-introduction .spatial-kicker { color: var(--gallery-muted); }
+.spatial-stage .spatial-kicker i { background: #777268; }
+.spatial-stage .spatial-introduction h1, .gallery-room-heading h2 { color: var(--gallery-ink); font-weight: 500; }
+.spatial-stage .spatial-introduction h1 { font-size: clamp(48px, 4.5vw, 66px); }
+.spatial-stage .spatial-description, .gallery-room-heading > p:last-of-type { color: var(--gallery-muted); }
+.spatial-stage .spatial-enter, .spatial-stage .room-listen, .spatial-stage .spatial-chapters,
+.spatial-stage .room-caption, .spatial-stage .room-caption > span, .spatial-stage .room-view-label,
+.gallery-journey-launch { color: var(--gallery-ink); text-shadow: none; border-color: var(--gallery-line); }
+.spatial-stage .spatial-enter:hover, .spatial-stage .room-listen:hover, .spatial-stage .spatial-chapters:hover { color: #6b675c; }
+.spatial-stage .atlas-launcher, .gallery-focus-toggle:not(.gallery-focus-exit), .gallery-focus-exit,
+.gallery-collection-launch { background: #f7f5f0df; color: var(--gallery-ink); border-color: var(--gallery-line); border-radius: 12px; backdrop-filter: blur(12px); }
+.gallery-collection-launch:hover { color: var(--gallery-ink); background: #eeebe3; border-color: #6e6c6355; }
+.atlas-visit-dots i { background: #393a3529; }
+.atlas-visit-dots .is-visited { background: #aaa494; }
+.atlas-visit-dots .is-current { background: #42433d; box-shadow: 0 0 0 3px #393a3510; }
+.spatial-stage .gallery-navigation .gallery-view-dock, .walk-mode-switch,
+.gallery-navigation .gallery-toolbox > summary { background: var(--ui-glass); border-color: var(--gallery-line); border-radius: 14px; box-shadow: 0 7px 24px #393a3509; color: var(--gallery-ink); }
+.spatial-stage .gallery-view-dock button { color: #706e65; border-radius: 9px; }
+.view-dock-indicator { border-radius: 9px; background: #393a35; box-shadow: none; }
+.spatial-stage .gallery-view-dock button[aria-pressed="true"],
+.spatial-stage .gallery-view-dock button[aria-pressed="true"]:hover { color: #f7f5f0; }
+.spatial-stage .gallery-view-dock button:hover { color: #30312c; background: #393a3507; }
+.walk-mode-switch button { border-radius: 9px; color: #706e65; }
+.walk-mode-switch button[aria-pressed="true"] { background: #393a35; color: #f7f5f0; }
+.walk-mode-switch button:hover:not([aria-pressed="true"]) { background: #393a3507; }
+.gallery-toolbox > summary:hover { background: #eeeae1; border-color: #8c887b55; }
+.gallery-toolbox, .gallery-toolbox > summary > svg, .gallery-toolbox > summary > .controls-label, .gallery-toolbox > summary > .controls-symbol { color: var(--gallery-ink); }
+/* Closed native details can retain inherited loading visibility in descendants.
+   Explicit state rules keep the first painted icon and label in sync. */
+.spatial-stage .gallery-toolbox > summary * { visibility: hidden; }
+.spatial-stage.room-ready:not(.is-focus) .gallery-toolbox > summary * { visibility: visible; }
+.gallery-navigation .gallery-controls-panel, .spatial-stage .room-help { background: #f7f5f0fa; color: var(--gallery-ink); border-color: var(--gallery-line); border-radius: 14px; box-shadow: 0 12px 45px #393a3514; }
+.controls-eyebrow, .spatial-stage .room-help p { color: var(--gallery-muted); }
+.gallery-controls-panel button, .gallery-controls-panel .room-lighting, .gallery-controls-panel .room-art-form,
+.gallery-controls-panel .spectrum-control, .gallery-controls-panel .walking-tour-action { color: var(--gallery-ink); border-color: var(--gallery-line); }
+.spatial-stage .room-tools > button, .spatial-stage .room-movement button { color: var(--gallery-ink); background: #eeebe3; border-color: var(--gallery-line); }
+.spatial-stage .lighting-switch { background: #ded9ce; border-color: #c4beb0; }
+.spatial-stage .lighting-switch::after { background: #52534c; }
+.spatial-stage.after-hours .lighting-switch::after { background: #52534c; }
+.spatial-stage .room-art-form[data-form] .art-form-state { color: #393a35; background: #e7e2d7; border-color: #c7c0b2; }
+.spatial-stage .room-help-close, .spatial-stage .room-error button { color: #393a35; background: #f7f5f0; border-color: var(--gallery-line); }
+.spectrum-control input { accent-color: #6f7064; }
+.walk-invitation, .walk-invitation p, .walk-location { color: var(--gallery-ink); text-shadow: none; }
+.walk-location, .walk-desktop-hint, .walk-touch-hint { color: #6b695f; }
+.walk-invitation button { color: var(--gallery-ink); background: #f7f5f0e8; border-color: var(--gallery-line); border-radius: 9px; }
+.walk-thumbstick { background: #f7f5f0b8; border-color: #6c695f4d; color: #393a35; }
+.walk-thumb-knob { color: #f7f5f0; background: #51524bec; box-shadow: 0 3px 12px #393a3510; }
+.walk-thumb-guides > i { background: #393a3522; }
+.room-portal-hotspot { color: #3c3c35; text-shadow: 0 1px 4px #f7f5f0cc; }
+.room-portal-hotspot > span:first-child, .room-exhibit-hotspot { color: #393a35; background: #f7f5f0e8; border-color: #6e6c6360; text-shadow: none; }
+.room-portal-hotspot:hover > span:first-child, .room-exhibit-hotspot:hover { color: #f7f5f0; background: #393a35; }
+.room-exhibit-hotspot .hotspot-title { color: #393a35; background: #f7f5f0; border-color: var(--gallery-line); text-shadow: none; }
+.spatial-stage .room-journey-card, .spatial-stage .room-transit-hud { background: #f7f5f0f0; color: var(--gallery-ink); border-color: var(--gallery-line); border-radius: 14px; box-shadow: 0 8px 30px #393a350c; }
+.room-journey-card p, .journey-actions button, .room-transit-hud p, .room-transit-hud button { color: var(--gallery-ink); border-color: var(--gallery-line); }
+.room-transit-hud > div { text-shadow: none; }
+.transit-origin, .transit-direction { color: #777268; }
+.journey-stops i { background: #393a351b; }
+.journey-stops i.visited { background: #78796e; }
+.spatial-stage .room-loader, .spatial-stage .room-loader-mark, .room-load-progress { color: #393a35; border-color: #a29b8c; }
+.spatial-stage .room-error, .capture-status { background: #f7f5f0ed; color: #393a35; border-color: var(--gallery-line); }
+.spatial-stage ~ .utility-bar .accessibility-button { color: #393a35; background: #f7f5f0dc; border-color: #393a3533; }
+.spatial-stage ~ .utility-bar .sound-bars i { background: #67685e; }
+
+/* Catalogue, atlas and archive readers share the same warm paper. */
+.gallery-atlas, .art-collection-dialog, .exhibit-dialog { background: #f7f5f0; color: #30312c; border-color: #d7d2c7; border-radius: 16px; box-shadow: 0 24px 90px #393a3524; }
+.gallery-atlas::backdrop, .art-collection-dialog::backdrop, .exhibit-dialog::backdrop { background: #bdb6a66b; backdrop-filter: blur(9px); }
+.atlas-header, .atlas-footer, .atlas-plan-section, .art-collection-header, .art-collection-filters, .art-collection-footer { border-color: #393a3524; }
+.atlas-header { background: #f7f5f0; }
+.atlas-eyebrow, .atlas-plan-heading, .atlas-map-number, .atlas-north, .atlas-plan-note,
+.atlas-card-number, .atlas-card-copy p, .atlas-footer small, .art-eyebrow, .art-card-location,
+.art-collection-card p, .art-collection-card p > span, .artwork-label dt, .artwork-rights,
+.artwork-image-tools > span, .art-collection-footer { color: #706c62; }
+.atlas-close, .art-collection-close, .exhibit-close { color: #393a35; background: #f7f5f0e8; border-color: #393a3538; }
+.atlas-close:hover { background: #e9e5db; }
+.atlas-plan { background-image: linear-gradient(#393a3508 1px, transparent 1px), linear-gradient(90deg, #393a3508 1px, transparent 1px); }
+.atlas-corridors { stroke: #a8a294; }
+.atlas-map-room { color: #7d796e; background: #eeebe3; border-color: #bcb6a8; border-radius: 10px; }
+.atlas-map-room.is-current, .atlas-map-room:hover { color: #393a35; background: #e5e1d7; border-color: #8b8678; outline-color: #bbb4a355; }
+.atlas-room-card, .atlas-room-card:last-child { color: #393a35; background: #f2efe8; border-color: #ded9cd; border-radius: 12px; }
+.atlas-room-card:hover, .atlas-room-card[aria-pressed="true"] { color: #30312c; background: #eae6dd; border-color: #aaa394; }
+.atlas-card-copy h3, .atlas-room-card:hover h3, .atlas-card-number i, .atlas-room-card > svg, .atlas-footer > span { color: #393a35; }
+.atlas-card-art, .atlas-orbit .atlas-card-art, .atlas-garden .atlas-card-art, .atlas-prism .atlas-card-art { color: #8a8578; background: #e9e4d9; border-radius: 8px; }
+.atlas-footer > button, .art-view-on-wall { color: #f7f5f0; background: #393a35; border-radius: 10px; }
+.atlas-footer > button:hover { background: #53544b; }
+.art-back, .artwork-description, .artwork-label dd, .artwork-sources a { color: #5e5b52; }
+.art-collection-filters button { color: #676358; border-color: #d3ccbf; background: transparent; }
+.art-collection-filters button[aria-pressed="true"] { color: #f7f5f0; border-color: #393a35; background: #393a35; }
+.art-collection-card { color: #393a35; border-color: #ded9cd; background: #f2efe8; border-radius: 10px; }
+.art-collection-card:hover { background: #eae6dd; border-color: #aba494; }
+.art-collection-card > div, .artwork-media { background: #e8e4dc; border-radius: 6px; }
+.artwork-image-column, .exhibit-media { background: #eeebe4; }
+.artwork-image-tools { color: #393a35; }
+.artwork-image-tools button { border-color: #c9c2b3; }
+.art-image-loading { color: #666257; }
+.exhibit-copy p, .exhibit-footnote { color: #6b675d; }
+.exhibit-copy .spatial-kicker { color: #80786b; }
+.exhibit-action { color: #393a35; border-color: #ccc5b7; }
+.exhibit-action:hover { color: #817868; }
+body:has(.spatial-stage) button:focus-visible, .artwork-media:focus-visible { outline-color: #777064; }
+@media (prefers-reduced-motion: reduce) { .walk-invitation { transition: none; } }

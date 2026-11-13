@@ -17,6 +17,7 @@ import { journey } from "./journey";
 import { rooms, roomForView } from "./rooms";
 import { RoomTransitionPass, roomTransitions, smoothTravel } from "./roomTransitions";
 import { PortalPreviews } from "./portalPreviews";
+import { galleryPalette as palette } from "./galleryPalette";
 import { WalkController, eyeHeight, isWalkable, walkPosition, walkView } from "./walkNavigation";
 
 export default function RoomCanvas({
@@ -228,7 +229,7 @@ export default function RoomCanvas({
       if (instant || motionRef.current) {
         lightLevel = Number(night);
         room.userData.setLighting(lightLevel);
-        scene.environmentIntensity = night ? 0.18 : 0.38;
+        scene.environmentIntensity = night ? 0.25 : 0.5;
         lightingTransition = null;
       } else lightingTransition = { from: lightLevel, to: Number(night), started: performance.now() };
       renderer.domElement.dataset.lighting = night ? "night" : "day";
@@ -274,9 +275,9 @@ export default function RoomCanvas({
             softwareGraphics ? 1 : matchMedia("(pointer: coarse)").matches ? 1.5 : 1.35,
           ),
         );
-        renderer.setClearColor(0x172325, 1);
+        renderer.setClearColor(palette.sky, 1);
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 0.9;
+        renderer.toneMappingExposure = 1.0;
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         const environmentGenerator = new THREE.PMREMGenerator(renderer);
@@ -286,7 +287,7 @@ export default function RoomCanvas({
           0.04,
         );
         scene.environment = environmentTarget.texture;
-        scene.environmentIntensity = 0.38;
+        scene.environmentIntensity = 0.5;
         environmentRoom.traverse((object) => {
           object.geometry?.dispose();
           object.material?.dispose();
@@ -345,7 +346,7 @@ export default function RoomCanvas({
         const floor = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
         const floorPoint = new THREE.Vector3();
         floorMarker = new THREE.Mesh(new THREE.RingGeometry(0.18, 0.215, 48),
-          new THREE.MeshBasicMaterial({ color: 0xe3edc9, transparent: true, opacity: 0.8, depthWrite: false, side: THREE.DoubleSide }));
+          new THREE.MeshBasicMaterial({ color: palette.charcoal, transparent: true, opacity: 0.65, depthWrite: false, side: THREE.DoubleSide }));
         floorMarker.rotation.x = -Math.PI / 2; floorMarker.visible = false; scene.add(floorMarker);
         const pointOnFloor = (event) => {
           const rect = canvas.getBoundingClientRect();
@@ -443,7 +444,7 @@ export default function RoomCanvas({
         composer.addPass(transitionPass);
         portalPreviews = new PortalPreviews({ renderer, scene, room, balanced: softwareGraphics, onDirty: () => { dirty = true; } });
         if (!softwareGraphics)
-          composer.addPass(new UnrealBloomPass(new THREE.Vector2(1, 1), 0.2, 0.45, 1.5));
+          composer.addPass(new UnrealBloomPass(new THREE.Vector2(1, 1), 0.08, 0.45, 1.5));
         composer.addPass(new OutputPass());
         antialiasPass = new ShaderPass(FXAAShader);
         composer.addPass(antialiasPass);
@@ -564,7 +565,7 @@ export default function RoomCanvas({
             const p = Math.min(1, (time - lightingTransition.started) / 750);
             lightLevel = THREE.MathUtils.lerp(lightingTransition.from, lightingTransition.to, p * p * (3 - 2 * p));
             room.userData.setLighting?.(lightLevel);
-            scene.environmentIntensity = THREE.MathUtils.lerp(0.38, 0.18, lightLevel);
+            scene.environmentIntensity = THREE.MathUtils.lerp(0.5, 0.25, lightLevel);
             dirty = true;
             if (p === 1) lightingTransition = null;
           }
@@ -829,7 +830,7 @@ export default function RoomCanvas({
               artTransition = null;
               canvas.dataset.artForm = "capture";
               canvas.dataset.mirrors = "0";
-              scene.environmentIntensity = 0.38;
+              scene.environmentIntensity = 0.5;
               controls.maxDistance = 18;
               moveTo({ position: [0, 0.5, 5.5], target: [0, 0, 0] }, true);
               canvas.dataset.splats = String(

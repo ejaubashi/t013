@@ -3,10 +3,10 @@ import { Pass, FullScreenQuad } from "three/addons/postprocessing/Pass.js";
 import { rooms } from "./rooms";
 
 const identities = {
-  pavilion: { effect: "afterimage", index: 0, color: "#e9e9bb" },
-  orbit: { effect: "orbital", index: 1, color: "#edbd7b" },
-  garden: { effect: "silk", index: 2, color: "#b9e7d7" },
-  prism: { effect: "spectral", index: 3, color: "#ceb8f0" },
+  pavilion: { effect: "afterimage", index: 0, color: "#e9e5db" },
+  orbit: { effect: "orbital", index: 1, color: "#d6d2c9" },
+  garden: { effect: "silk", index: 2, color: "#e4e4d9" },
+  prism: { effect: "spectral", index: 3, color: "#e3e0d8" },
 };
 
 export const roomTransitions = Object.fromEntries(rooms.flatMap((from, i) =>

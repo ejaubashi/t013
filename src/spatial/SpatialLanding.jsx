@@ -19,6 +19,7 @@ import "./transitions.css";
 import "./navigation.css";
 import "./artworks.css";
 import "./walking.css";
+import "./minimal.css";
 
 const RoomCanvas = lazy(() => import("./RoomCanvas"));
 
