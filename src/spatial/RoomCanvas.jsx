@@ -12,6 +12,7 @@ import { createArchiveRoom } from "./archiveRoom";
 import { viewpoints } from "./viewpoints";
 import { createPavilionEnvironment } from "./pavilionMaterials";
 import { exhibits } from "./exhibits";
+import { artworks, artworkSize, artworkView } from "./artworks";
 import { journey } from "./journey";
 import { rooms, roomForView } from "./rooms";
 import { RoomTransitionPass, roomTransitions, smoothTravel } from "./roomTransitions";
@@ -25,6 +26,7 @@ export default function RoomCanvas({
   reducedMotion,
   onJourneyChange,
   onExhibitSelect,
+  onArtworkSelect,
   onExhibitPositions,
   onRoomChange,
   onRoomTransition,
@@ -322,6 +324,7 @@ export default function RoomCanvas({
           if (selected) {
             stopJourney();
             if (selected.portal) moveTo(viewpoints.find((view) => view.id === rooms.find((item) => item.id === selected.portal).entry));
+            else if (selected.artwork) onArtworkSelect?.(selected.artwork);
             else if (selected.exhibit) onExhibitSelect?.(selected.exhibit);
           }
         });
@@ -549,6 +552,8 @@ export default function RoomCanvas({
               canvas.dataset.mirrors = !imported && activeRoom === "pavilion" ? String(room.userData.mirrorCount || 0) : "0";
               canvas.dataset.artwork = imported ? "capture" : { pavilion: "afterimage", orbit: "golden-orbits", garden: "petal-cloud", prism: "spectral-crystals" }[activeRoom];
               canvas.dataset.crystals = !imported && activeRoom === "prism" ? String(room.userData.crystalCount) : "0";
+              canvas.dataset.wallArtworks = imported ? "0" : String(artworks.filter((art) => art.room === activeRoom).length);
+              canvas.dataset.artworkView = currentView.artwork || "none";
               canvas.dataset.spectrum = spectrum.toFixed(2);
               canvas.dataset.lightLevel = lightLevel.toFixed(3);
               if (!imported) {
@@ -565,6 +570,15 @@ export default function RoomCanvas({
                 const point = new THREE.Vector3(...portal.position).add(new THREE.Vector3(0, -1.65, 0.2)).project(camera);
                 markers.push({ id: `portal-${portal.to}`, room: portal.to, x: (point.x + 1) * host.clientWidth / 2, y: (1 - point.y) * host.clientHeight / 2,
                   visible: camera.position.z > portal.position[2] && point.z > -1 && point.z < 1 && Math.abs(point.x) < 0.91 && Math.abs(point.y) < 0.85 });
+              }
+              if (!imported) for (const art of artworks.filter((item) => item.room === activeRoom)) {
+                const { width, height } = artworkSize(art);
+                const anchor = new THREE.Vector3(width / 2 - 0.15, -height / 2 + 0.15, 0.18)
+                  .applyAxisAngle(new THREE.Vector3(0, 1, 0), art.rotation).add(new THREE.Vector3(...art.position));
+                const point = anchor.project(camera);
+                markers.push({ id: `artwork-${art.id}`, artwork: art.id,
+                  x: (point.x + 1) * host.clientWidth / 2, y: (1 - point.y) * host.clientHeight / 2,
+                  visible: camera.position.x > art.position[0] + 0.2 && point.z > -1 && point.z < 1 && Math.abs(point.x) < 0.93 && Math.abs(point.y) < 0.86 });
               }
               onExhibitPositions?.(imported || roomTravel ? [] : markers);
               canvas.dataset.camera = camera.position
@@ -597,6 +611,13 @@ export default function RoomCanvas({
             if (!destination) return;
             stopJourney();
             moveTo(viewpoints.find((view) => view.id === destination.entry), instant);
+          },
+          inspectArtwork: (id) => {
+            if (!ready || imported) return;
+            const art = artworks.find((item) => item.id === id);
+            if (!art) return;
+            stopJourney();
+            moveTo({ ...artworkView(art), artwork: art.id });
           },
           skipRoomTransition: () => finishRoomTravel(true),
           reset: () => {

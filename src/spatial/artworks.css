@@ -1,0 +1,113 @@
+.gallery-collection-launch {
+  position: absolute; left: 270px; bottom: 166px; z-index: 3; display: flex; align-items: center;
+  min-height: 44px; gap: 10px; padding: 9px 14px; border: 1px solid #cbdcc52e; border-radius: 25px;
+  color: #e7efdb; background: #10262b66; backdrop-filter: blur(12px); font-size: 11px;
+  transition: opacity 500ms var(--ui-ease), background 180ms, border-color 180ms;
+}
+.gallery-collection-launch > svg { width: 19px; height: 19px; }
+.gallery-collection-launch > span { font-size: 9px; opacity: .5; margin-left: 5px; }
+.gallery-collection-launch:hover { border-color: #d6e5be80; background: #193333a6; }
+.spatial-stage.is-travelling .gallery-collection-launch,
+.spatial-stage:not(.room-ready) .gallery-collection-launch { opacity: 0; visibility: hidden; pointer-events: none; }
+.spatial-stage.is-interacting .gallery-collection-launch { opacity: .08; pointer-events: none; }
+.room-artwork-hotspot > span:first-child > svg { width: 14px; height: 14px; }
+.room-artwork-hotspot .hotspot-title { max-width: 240px; white-space: normal; }
+.art-collection-dialog {
+  position: fixed; inset: 0; margin: auto; width: min(1200px, calc(100vw - 64px));
+  height: min(820px, calc(100svh - 56px)); max-height: none; padding: 0;
+  border: 1px solid #c5dac82e; border-radius: 27px; background: #10262bf9; color: #e7eddb;
+  overflow: hidden; box-shadow: 0 30px 150px #0008; display: none;
+}
+.art-collection-dialog[open] { display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; }
+.art-collection-dialog.is-detail { grid-template-rows: auto minmax(0, 1fr); }
+.art-collection-dialog::backdrop { background: #06151bb0; backdrop-filter: blur(10px); animation: gallery-backdrop-in 260ms both; }
+.art-collection-dialog[data-state="closing"]::backdrop { animation: gallery-backdrop-out 170ms both; }
+.art-collection-header { display: flex; justify-content: space-between; align-items: flex-start; padding: 28px 32px 24px; gap: 24px; border-bottom: 1px solid #d2dfca1f; }
+.art-eyebrow { display: block; font-size: 8px; text-transform: uppercase; letter-spacing: 1.5px; color: #a4bcb1; }
+.art-collection-header h2 { font: 500 45px/1.05 "Cormorant Garamond", Georgia, serif; margin: 13px 0 0; letter-spacing: -.8px; }
+.art-collection-header h2:focus { outline: none; }
+.art-collection-close { flex-shrink: 0; width: 44px; height: 44px; border: 1px solid #c8dcc43b; border-radius: 50%; font: 28px Georgia, serif; color: #e6edd8; }
+.art-back { display: block; min-height: 30px; padding: 0 0 9px; margin-bottom: 12px; color: #c4d5c6; font-size: 11px; }
+.art-collection-filters { display: flex; gap: 7px; padding: 17px 32px; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid #d2dfca16; }
+.art-collection-filters button { flex-shrink: 0; min-height: 38px; padding: 9px 15px; border: 1px solid #c5d9c32b; border-radius: 22px; font-size: 10px; color: #afc4b9; }
+.art-collection-filters button[aria-pressed="true"] { background: #dce6c9; color: #233e37; border-color: #dce6c9; }
+.art-collection-grid { min-height: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); align-content: start; gap: 16px; padding: 24px 32px; overflow-y: auto; overscroll-behavior: contain; }
+.art-collection-card { min-width: 0; padding: 12px; text-align: left; color: #e5ebdb; background: #d9e6cc05; border: 1px solid #c6d7be22; border-radius: 18px; transition: background 180ms, border-color 180ms; }
+.art-collection-card:hover { background: #d9e6cc0a; border-color: #d4e0be66; }
+.art-collection-card > div { height: 150px; display: grid; place-items: center; border-radius: 10px; background: #07191c; padding: 10px; }
+.art-collection-card img { display: block; width: 100%; height: 100%; max-height: 130px; object-fit: contain; }
+.art-card-location { display: flex; justify-content: space-between; gap: 12px; margin-top: 15px; font-size: 8px; color: #9fb7a8; }
+.art-card-location > span { opacity: .6; }
+.art-collection-card h3 { font: 500 23px/1.15 "Cormorant Garamond", Georgia, serif; margin: 10px 0 8px; }
+.art-collection-card p { font-size: 10px; line-height: 1.6; color: #b2c5b6; margin: 0; }
+.art-collection-card p > span { white-space: nowrap; color: #91aa9d; }
+.art-collection-footer { display: flex; justify-content: space-between; gap: 20px; padding: 17px 32px; border-top: 1px solid #d2dfca1f; font-size: 9px; color: #a1b8aa; }
+.artwork-detail { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(270px, .8fr); min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.artwork-image-column { min-width: 0; min-height: 0; display: flex; flex-direction: column; padding: 24px; background: #07191e; }
+.artwork-media { position: relative; flex: 1; min-height: 300px; min-width: 0; display: flex; align-items: center; justify-content: center; overflow: auto; overscroll-behavior: contain; border-radius: 12px; background: #0c1c20; }
+.artwork-media img { display: block; width: 100%; height: 100%; max-height: 490px; object-fit: contain; opacity: 0; transition: opacity 220ms ease; }
+.artwork-media img.is-loaded { opacity: 1; }
+.artwork-media.is-zoomed { display: block; cursor: grab; }
+.artwork-media.is-zoomed:active { cursor: grabbing; }
+.artwork-media.is-zoomed img { width: 200%; height: auto; max-height: none; max-width: none; }
+.artwork-media:focus-visible { outline: 2px solid #dce8bd; outline-offset: -3px; }
+.art-image-loading { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); color: #afc5b6; font-size: 11px; }
+.artwork-image-tools { display: flex; align-items: center; gap: 13px; padding-top: 15px; color: #dce5d1; }
+.artwork-image-tools button { min-width: 44px; min-height: 44px; border: 1px solid #c9d6bd24; border-radius: 24px; font-size: 16px; }
+.artwork-image-tools > span { font-size: 9px; color: #9fb6a7; }
+.artwork-image-tools .artwork-zoom { margin-left: auto; padding: 10px 16px; font-size: 11px; }
+.artwork-label { padding: 30px 27px; min-width: 0; }
+.artwork-artist { margin: 0 0 25px; font: 500 30px/1.1 "Cormorant Garamond", Georgia, serif; }
+.artwork-label dl { margin: 0; font-size: 11px; }
+.artwork-label dl > div { display: grid; grid-template-columns: 95px 1fr; gap: 15px; margin-bottom: 13px; line-height: 1.5; }
+.artwork-label dt { color: #8faa9e; }
+.artwork-label dd { margin: 0; color: #d8e3d1; }
+.artwork-description { font-size: 12px; line-height: 1.9; margin: 27px 0; color: #b5cbbd; }
+.art-view-on-wall { display: flex; align-items: center; justify-content: space-between; gap: 20px; width: 100%; min-height: 48px; padding: 12px 17px; border-radius: 25px; background: #dfe8cd; color: #213e35; font-size: 12px; }
+.art-view-on-wall > span { font-size: 18px; }
+.artwork-rights { font-size: 9px; line-height: 1.7; color: #93ad9e; margin-top: 24px; }
+.artwork-sources { display: flex; flex-wrap: wrap; gap: 14px; font-size: 10px; margin-top: 12px; }
+.artwork-sources a { color: #c6d7bc; text-underline-offset: 3px; }
+.art-collection-dialog button:focus-visible { outline: 2px solid #dce8bd; outline-offset: 3px; }
+.art-collection-dialog button { transition: background 180ms, border-color 180ms, transform 160ms var(--ui-ease); }
+.art-collection-dialog button:active { transform: scale(.985); }
+@media (max-width: 1000px) and (min-width: 601px) {
+  .art-collection-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .artwork-detail { grid-template-columns: minmax(0, 1.2fr) minmax(250px, .8fr); }
+  .artwork-label { padding: 24px; }
+}
+@media (max-width: 600px) {
+  .gallery-collection-launch { left: auto; right: 20px; bottom: 161px; padding: 8px 11px; font-size: 10px; gap: 8px; }
+  .gallery-collection-launch > span { display: none; }
+  .art-collection-dialog { inset: 10px; width: auto; max-width: none; height: calc(100svh - 20px); border-radius: 24px; }
+  .art-collection-header { padding: 22px 19px 19px; gap: 14px; }
+  .art-collection-header h2 { font-size: 34px; }
+  .art-back { margin-bottom: 8px; }
+  .art-eyebrow { font-size: 7px; line-height: 1.5; }
+  .art-collection-filters { padding: 12px 17px; }
+  .art-collection-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 16px; gap: 10px; }
+  .art-collection-card { padding: 10px; border-radius: 15px; }
+  .art-collection-card > div { height: 118px; padding: 7px; }
+  .art-collection-card img { max-height: 104px; }
+  .art-collection-card h3 { font-size: 22px; }
+  .art-card-location { font-size: 7px; line-height: 1.5; }
+  .art-collection-footer { padding: 13px 18px; font-size: 8px; }
+  .art-collection-footer > span:last-child { display: none; }
+  .artwork-detail { display: block; }
+  .artwork-image-column { padding: 16px; }
+  .artwork-media { flex: none; height: 310px; min-height: 0; }
+  .artwork-media img { max-height: 310px; }
+  .artwork-media.is-zoomed img { max-height: none; }
+  .artwork-image-tools { gap: 9px; }
+  .artwork-label { padding: 24px; }
+  .artwork-artist { font-size: 29px; }
+}
+@media (max-height: 620px) and (min-width: 601px) {
+  .gallery-collection-launch { left: auto; right: 44px; top: 288px; bottom: auto; }
+  .gallery-journey-launch { right: 240px; bottom: 152px; }
+  .artwork-media { min-height: 200px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gallery-collection-launch, .art-collection-dialog *, .artwork-media img { transition-duration: .01ms !important; }
+  .art-collection-dialog::backdrop { animation-duration: .01ms !important; }
+}

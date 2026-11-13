@@ -1,0 +1,170 @@
+{
+  "monet-waterloo": {
+    "sourceFile": "Monet,_Claude_-_Waterloo_Bridge._Effect_of_Fog.jpg",
+    "sourceUrl": "https://raw.githubusercontent.com/pmilovanov/hermitage-art/b8ead49c010eac0c8366bafc4ffaaf1f1a447805/Monet%2C_Claude_-_Waterloo_Bridge._Effect_of_Fog.jpg",
+    "bytes": 8798070,
+    "width": 4818,
+    "height": 3090,
+    "sha256": "a9fe88c3adb6e4bf9b0f9effd7a314769d79710d2cfc7b3441190ab7ff40e1ed",
+    "wall": {
+      "file": "monet-waterloo-wall.webp",
+      "width": 1024,
+      "height": 657,
+      "bytes": 61608
+    },
+    "detail": {
+      "file": "monet-waterloo-detail.webp",
+      "width": 2200,
+      "height": 1411,
+      "bytes": 766002
+    },
+    "license": "CC0-1.0 (source archive)"
+  },
+  "friedrich-sailing": {
+    "sourceFile": "Friedrich,_Caspar_David_-_On_a_Sailing_Ship.jpg",
+    "sourceUrl": "https://raw.githubusercontent.com/pmilovanov/hermitage-art/b8ead49c010eac0c8366bafc4ffaaf1f1a447805/Friedrich%2C_Caspar_David_-_On_a_Sailing_Ship.jpg",
+    "bytes": 11544709,
+    "width": 4359,
+    "height": 5611,
+    "sha256": "153c098d8d2fe9c473eb85cbd8033c3ee49d818c26cc7e0e670d279c437e9884",
+    "wall": {
+      "file": "friedrich-sailing-wall.webp",
+      "width": 796,
+      "height": 1024,
+      "bytes": 119086
+    },
+    "detail": {
+      "file": "friedrich-sailing-detail.webp",
+      "width": 1709,
+      "height": 2200,
+      "bytes": 935876
+    },
+    "license": "CC0-1.0 (source archive)"
+  },
+  "kandinsky-composition": {
+    "sourceFile": "Kandinsky,_Vasily_-_Composition_VI.jpg",
+    "sourceUrl": "https://raw.githubusercontent.com/pmilovanov/hermitage-art/b8ead49c010eac0c8366bafc4ffaaf1f1a447805/Kandinsky%2C_Vasily_-_Composition_VI.jpg",
+    "bytes": 36050116,
+    "width": 9493,
+    "height": 6317,
+    "sha256": "9eb4a7ed3a36d087f64701b74bd9bc457fddcaab601a97cebd28c9cfb53739ae",
+    "wall": {
+      "file": "kandinsky-composition-wall.webp",
+      "width": 1024,
+      "height": 681,
+      "bytes": 138224
+    },
+    "detail": {
+      "file": "kandinsky-composition-detail.webp",
+      "width": 2200,
+      "height": 1464,
+      "bytes": 675918
+    },
+    "license": "CC0-1.0 (source archive)"
+  },
+  "kandinsky-winter": {
+    "sourceFile": "Kandinsky,_Vasily_-_Winter_Landscape.jpg",
+    "sourceUrl": "https://raw.githubusercontent.com/pmilovanov/hermitage-art/b8ead49c010eac0c8366bafc4ffaaf1f1a447805/Kandinsky%2C_Vasily_-_Winter_Landscape.jpg",
+    "bytes": 15957191,
+    "width": 6823,
+    "height": 4985,
+    "sha256": "9dc59329d7c68d93bd1c3e8f8269621bef13bf6031fd94d7ca8c61d309544d17",
+    "wall": {
+      "file": "kandinsky-winter-wall.webp",
+      "width": 1024,
+      "height": 748,
+      "bytes": 161602
+    },
+    "detail": {
+      "file": "kandinsky-winter-detail.webp",
+      "width": 2200,
+      "height": 1607,
+      "bytes": 958834
+    },
+    "license": "CC0-1.0 (source archive)"
+  },
+  "monet-garden": {
+    "sourceFile": "Monet,_Claude_-_Corner_of_the_Garden_at_Montgeron.jpg",
+    "sourceUrl": "https://raw.githubusercontent.com/pmilovanov/hermitage-art/b8ead49c010eac0c8366bafc4ffaaf1f1a447805/Monet%2C_Claude_-_Corner_of_the_Garden_at_Montgeron.jpg",
+    "bytes": 34635387,
+    "width": 7395,
+    "height": 6668,
+    "sha256": "0165708dab6a9dfb393a5160fd17d3d4bc3619a28551b1b036342e4628395ed8",
+    "wall": {
+      "file": "monet-garden-wall.webp",
+      "width": 1024,
+      "height": 923,
+      "bytes": 241274
+    },
+    "detail": {
+      "file": "monet-garden-detail.webp",
+      "width": 2200,
+      "height": 1984,
+      "bytes": 1589956
+    },
+    "license": "CC0-1.0 (source archive)"
+  },
+  "vangogh-lilac": {
+    "sourceFile": "Gogh,_Vincent_van_-_Lilac_Bush.jpg",
+    "sourceUrl": "https://raw.githubusercontent.com/pmilovanov/hermitage-art/b8ead49c010eac0c8366bafc4ffaaf1f1a447805/Gogh%2C_Vincent_van_-_Lilac_Bush.jpg",
+    "bytes": 28723545,
+    "width": 7503,
+    "height": 5942,
+    "sha256": "f45f91ea0c9accb33f1309dfa11e7d1604e360bf43cd36248bfe65ed2069bdc5",
+    "wall": {
+      "file": "vangogh-lilac-wall.webp",
+      "width": 1024,
+      "height": 811,
+      "bytes": 372506
+    },
+    "detail": {
+      "file": "vangogh-lilac-detail.webp",
+      "width": 2200,
+      "height": 1742,
+      "bytes": 2025946
+    },
+    "license": "CC0-1.0 (source archive)"
+  },
+  "matisse-red-room": {
+    "sourceFile": "Matisse,_Henri_-_The_Red_Room_(Harmony_in_Red).jpg",
+    "sourceUrl": "https://raw.githubusercontent.com/pmilovanov/hermitage-art/b8ead49c010eac0c8366bafc4ffaaf1f1a447805/Matisse%2C_Henri_-_The_Red_Room_%28Harmony_in_Red%29.jpg",
+    "bytes": 13468735,
+    "width": 5735,
+    "height": 4725,
+    "sha256": "92ef8f43fb45cc8aa2871c7d8f6e55a1e64320ccac7102502868e9fe93fa43f6",
+    "wall": {
+      "file": "matisse-red-room-wall.webp",
+      "width": 1024,
+      "height": 844,
+      "bytes": 153602
+    },
+    "detail": {
+      "file": "matisse-red-room-detail.webp",
+      "width": 2200,
+      "height": 1813,
+      "bytes": 923800
+    },
+    "license": "CC0-1.0 (source archive)"
+  },
+  "cezanne-still-life": {
+    "sourceFile": "Cezanne,_Paul_-_Still_Life_with_a_Curtain.jpg",
+    "sourceUrl": "https://raw.githubusercontent.com/pmilovanov/hermitage-art/b8ead49c010eac0c8366bafc4ffaaf1f1a447805/Cezanne%2C_Paul_-_Still_Life_with_a_Curtain.jpg",
+    "bytes": 3844956,
+    "width": 3176,
+    "height": 2315,
+    "sha256": "fd7942ecef924bdacf78cc8294fc34735702b35fb7e83a4e80bae2614c6d3e2d",
+    "wall": {
+      "file": "cezanne-still-life-wall.webp",
+      "width": 1024,
+      "height": 746,
+      "bytes": 170452
+    },
+    "detail": {
+      "file": "cezanne-still-life-detail.webp",
+      "width": 2200,
+      "height": 1604,
+      "bytes": 1118258
+    },
+    "license": "CC0-1.0 (source archive)"
+  }
+}

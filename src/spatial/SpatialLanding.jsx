@@ -2,6 +2,8 @@ import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { viewpoints } from "./viewpoints";
 import { journey, artForms } from "./journey";
 import { exhibits } from "./exhibits";
+import { artworks } from "./artworks";
+import ArtCollection from "./ArtCollection";
 import ExhibitDialog from "./ExhibitDialog";
 import GalleryAtlas from "./GalleryAtlas";
 import ViewDock from "./ViewDock";
@@ -14,6 +16,7 @@ import "./rooms.css";
 import "./exhibition.css";
 import "./transitions.css";
 import "./navigation.css";
+import "./artworks.css";
 
 const RoomCanvas = lazy(() => import("./RoomCanvas"));
 
@@ -70,6 +73,7 @@ export default function SpatialLanding({
   const [spectrum, setSpectrum] = useState(0.5);
   const [travel, setTravel] = useState(null), [travelNotice, setTravelNotice] = useState("");
   const [interacting, setInteracting] = useState(false);
+  const [collection, setCollection] = useState(null);
   const controlsMotion = useControlsMotion(toolboxRef, () => controls.current?.stopJourney());
   const closeFocus = () => { restoreArtFocus.current = true; setFocused(false); };
   useEffect(() => {
@@ -113,6 +117,12 @@ export default function SpatialLanding({
     controls.current?.stopJourney();
     setFocused(false);
     setSelectedExhibit(exhibits.find((exhibit) => exhibit.id === id));
+  };
+  const openCollection = (id = "all") => {
+    controls.current?.stopJourney();
+    setFocused(false);
+    if (toolboxRef.current) toolboxRef.current.open = false;
+    setCollection(id);
   };
   const step = (x, y) => (e) => {
     e.preventDefault();
@@ -174,6 +184,7 @@ export default function SpatialLanding({
     setVisited(["pavilion"]); setAtlas(false); setFocused(false); setSpectrum(0.5);
     setTravel(null); setTravelNotice("");
     setInteracting(false);
+    setCollection(null);
     setAttempt((n) => n + 1);
   };
   return (
@@ -196,6 +207,7 @@ export default function SpatialLanding({
           onError={(message) => { setError(message); setFocused(false); setAtlas(false); setTravel(null); setInteracting(false); }}
           onInteractionChange={setInteracting}
           onExhibitSelect={openExhibit}
+          onArtworkSelect={openCollection}
           onRoomChange={({ id, view }) => {
             setActiveRoom(id); setActive(view); setHelp(false);
             if (toolboxRef.current) toolboxRef.current.open = false;
@@ -234,6 +246,13 @@ export default function SpatialLanding({
               return <button key={point.id} className="room-portal-hotspot" style={{ left: point.x, top: point.y }}
                 aria-label={`Door to ${destination.name}`} onClick={() => controls.current?.enterRoom(point.room)}>
                 <span aria-hidden="true"><Arrow /></span><span>{destination.name}</span>
+              </button>;
+            }
+            if (point.artwork) {
+              const artwork = artworks.find((item) => item.id === point.artwork);
+              return <button key={point.id} className="room-exhibit-hotspot room-artwork-hotspot" style={{ left: point.x, top: point.y }}
+                aria-label={`View ${artwork.title} by ${artwork.artist}`} onClick={() => openCollection(artwork.id)}>
+                <span aria-hidden="true"><Arrow /></span><span className="hotspot-title">{artwork.artist} · {artwork.title}</span>
               </button>;
             }
             const exhibit = exhibits.find((item) => item.id === point.id);
@@ -333,6 +352,10 @@ export default function SpatialLanding({
           {!capture && journeyStep === null && <button className="gallery-journey-launch" disabled={!ready} aria-label="Start guided journey" onClick={() => controls.current?.startJourney()}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" aria-hidden="true"><circle cx="12" cy="12" r="10" /><path d="m10 8 6 4-6 4Z" /></svg>
             <span>Take the journey<small>{rooms.length} rooms · {journey.length} moments</small></span><Arrow />
+          </button>}
+          {!capture && <button className="gallery-collection-launch" disabled={!ready} aria-label="Browse wall artworks" onClick={() => openCollection()}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" aria-hidden="true"><path d="M3 5h18v14H3zM6 8h12v8H6z" /></svg>
+            Art collection <span>{artworks.length}</span>
           </button>}
           <div className="room-view-label" aria-live="polite">
             <span>
@@ -578,6 +601,11 @@ export default function SpatialLanding({
           setSelectedExhibit(null); choose(id);
           requestAnimationFrame(() => controls.current?.focus());
         }} onEnter={enterStory} />}
+      {collection !== null && <ArtCollection initialArtwork={collection === "all" ? null : collection} onClose={() => setCollection(null)}
+        onViewOnWall={(id) => {
+          setCollection(null); controls.current?.inspectArtwork(id);
+          requestAnimationFrame(() => controls.current?.focus());
+        }} />}
     </main>
   );
 }

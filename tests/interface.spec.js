@@ -30,21 +30,21 @@ test("navigates the view dock by keyboard, keeps its selection visible, and yiel
   await expect(family).toBeFocused(); await expect(family).toHaveAttribute("aria-pressed", "true");
   await expect(canvas).toHaveAttribute("data-camera", "-4.000,2.450,-3.600");
   await page.keyboard.press("End");
-  const canopy = toolbar.getByRole("button", { name: "06 The canopy", exact: true });
-  await expect(canopy).toBeFocused();
-  await expect(canopy).toHaveAttribute("aria-pressed", "true");
+  const walls = toolbar.getByRole("button", { name: "07 On the walls", exact: true });
+  await expect(walls).toBeFocused();
+  await expect(walls).toHaveAttribute("aria-pressed", "true");
   await expect.poll(async () => {
-    const selected = await canopy.boundingBox(), dock = await page.getByRole("navigation", { name: "Room viewpoints" }).boundingBox();
+    const selected = await walls.boundingBox(), dock = await page.getByRole("navigation", { name: "Room viewpoints" }).boundingBox();
     return selected.x >= dock.x && selected.x + selected.width <= dock.x + dock.width + 1;
   }).toBe(true);
   await expect.poll(async () => {
-    const selected = await canopy.boundingBox(), indicator = await page.locator(".view-dock-indicator").boundingBox();
+    const selected = await walls.boundingBox(), indicator = await page.locator(".view-dock-indicator").boundingBox();
     return Math.abs(selected.x - indicator.x) < 1 && Math.abs(selected.width - indicator.width) < 1;
   }).toBe(true);
   const original = page.viewportSize();
   await page.setViewportSize({ width: original.width > 600 ? 720 : original.width - 35, height: original.height });
   await expect.poll(async () => {
-    const selected = await canopy.boundingBox(), dock = await page.getByRole("navigation", { name: "Room viewpoints" }).boundingBox();
+    const selected = await walls.boundingBox(), dock = await page.getByRole("navigation", { name: "Room viewpoints" }).boundingBox();
     return selected.x >= dock.x && selected.x + selected.width <= dock.x + dock.width + 1;
   }).toBe(true);
   await page.setViewportSize(original);
@@ -52,7 +52,12 @@ test("navigates the view dock by keyboard, keeps its selection visible, and yiel
   await expect(canvas).toHaveAttribute("data-camera", "7.400,3.400,10.800");
   await page.getByLabel("Gallery controls", { exact: true }).click();
   await expect(page.locator(".gallery-controls-panel")).toBeVisible();
-  await page.mouse.click(15, page.viewportSize().height / 2);
+  // The left wall now contains selectable paintings. Dismiss Controls on the
+  // empty ceiling, preserving the separate painting-selection interaction.
+  const viewport = page.viewportSize();
+  const outside = { x: viewport.width / 2, y: viewport.width < 600 ? 85 : viewport.height * 0.28 };
+  expect(await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.tagName, outside)).toBe("CANVAS");
+  await page.mouse.click(outside.x, outside.y);
   await expect.poll(() => page.locator(".gallery-toolbox").evaluate((element) => element.open)).toBe(false);
   await expect(canvas).toBeFocused();
   await page.keyboard.down("KeyW");

@@ -4,6 +4,7 @@ import { createGalleryArchitecture } from "./galleryArchitecture";
 import { exhibits } from "./exhibits";
 import { addRoomPortals, createOrbitHall, createSkyGarden } from "./galleryRooms";
 import { createPrismChamber } from "./prismChamber";
+import { addWallArt } from "./wallArt";
 
 const asset = (name) => `${import.meta.env.BASE_URL}assets/${name}`;
 
@@ -40,6 +41,7 @@ export function createArchiveRoom({ onProgress, reflectionSize, reflectionSample
   garden.visible = false;
   prism.visible = false;
   const roomGroups = { pavilion, orbit, garden, prism };
+  const wallArt = Object.fromEntries(Object.entries(roomGroups).map(([id, group]) => [id, addWallArt(group, id)]));
   const pavilionPortals = addRoomPortals(pavilion, "pavilion");
   room.userData.roomGroups = roomGroups;
   room.userData.portals = {
@@ -78,7 +80,7 @@ export function createArchiveRoom({ onProgress, reflectionSize, reflectionSample
     if (!roomGroups[id]) return;
     for (const [key, group] of Object.entries(roomGroups)) group.visible = key === id;
     room.userData.activeRoom = id;
-    room.userData.hitTargets = id === "pavilion" ? [...exhibitTargets, ...pavilionPortals] : roomGroups[id].userData.portalTargets;
+    room.userData.hitTargets = [...(id === "pavilion" ? [...exhibitTargets, ...pavilionPortals] : roomGroups[id].userData.portalTargets), ...wallArt[id].targets];
     // The pavilion's cached water reflection also depends on which scene is visible.
     pavilion.userData.reflectionVersion = (pavilion.userData.reflectionVersion || 0) + 1;
   };
@@ -143,7 +145,7 @@ export function createArchiveRoom({ onProgress, reflectionSize, reflectionSample
     },
   });
   pavilion.add(artwork);
-  room.initialized = artwork.initialized.then(() => {
+  room.initialized = Promise.all([artwork.initialized, ...Object.values(wallArt).map((art) => art.initialized)]).then(() => {
     room.splats = artwork.splats;
     room.userData.assetVersion = 1;
     pavilion.userData.reflectionVersion = (pavilion.userData.reflectionVersion || 0) + 1;

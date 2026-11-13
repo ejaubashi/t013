@@ -9,7 +9,8 @@ The default opening uses Three.js and Spark 2.4.0 to render approximately 70,000
 - **Live doorways and fluid room transfers:** visible entrances show rendered destination scenes with parallax. All twelve room-to-room directions use a short full-screen blend with a subtle spatial glide and velocity-based lens blur. The arrival is captured once; motion frames skip the expensive scene renderer. A quiet route caption replaces the framed reveal and large arrival title. Door clicks, projected markers, atlas choices, and guided stops share this system. **Skip**, Escape, or manual navigation can finish a transfer immediately; reduced motion uses direct room changes.
 - **Fluid interface:** a floating viewpoint dock shares one moving selection highlight and supports arrow keys, Home/End, and a single keyboard Tab stop. Controls opens beside it and dismisses without taking focus from the canvas. The atlas uses illustrated cards and becomes a swipeable phone sheet. Modal exits finish before room travel begins; the interface softens during direct exploration. See the [interface research and interaction study](docs/research/fluid-spatial-interface.md).
 - **Explore the rooms** opens a visual atlas for the Lumen Pavilion, Orbit Hall, Sky Garden, and Prism Chamber, with illustrated room cards, a schematic desktop floor plan, and visit indicators. Glowing doorways can also be selected in 3D or through their projected, keyboard-accessible entrance markers. Orbit Hall suspends nine gold light rings above an obsidian reflecting floor. The open-roof Sky Garden holds 1,100 iridescent petals above a shallow basin. Prism Chamber adds seven transmissive crystal forms, dispersion, a spectral backlight, and a floor light field. Each room has its own viewpoints and a route back to the pavilion.
-- Drag to orbit, scroll or pinch to move closer, and use fifteen composed viewpoints: six in the pavilion and three in each additional room. Mobile viewpoints scroll horizontally with larger labels.
+- **Art collection:** eight actual public-domain paintings are mounted across the four rooms, with frames, lights, and artist labels. Select a painting or its keyboard marker to read its details, enlarge the uncropped image, and pan with a mouse or touch. The collection browser filters by room; **View on the wall** brings the camera in front of the selected work, using the existing room transitions when needed. Images are hosted locally and credited individually. See the [collection and image provenance](docs/research/wall-art-collection.md).
+- Drag to orbit, scroll or pinch to move closer, and use nineteen composed viewpoints: seven in the pavilion and four in each additional room. Every room includes **On the walls**. Mobile viewpoints scroll horizontally with larger labels.
 - **Controls** groups lighting, artwork adjustments, reset, help, local captures, and walking into one disclosure. In Prism Chamber, **Move the light** adjusts the spectrum with a native pointer/keyboard slider.
 - **Just the art** hides the exhibition interface. Its exit button or Escape returns to the interface and restores focus.
 - **Shape the light**, inside Controls, transforms the installation in 1.5 seconds, or immediately with reduced motion. The camera entrance opens the constellation into Bloom when motion is allowed.
@@ -48,6 +49,8 @@ The framed portal treatment before the fluid full-screen revision is saved under
 
 The accepted fluid room-transfer version before the interface revision is saved under **`checkpoint-before-fluid-interface`**, commit `7381733`.
 
+The accepted interface version before the wall-art collection is saved under **`checkpoint-before-wall-art`**, commit `94afa71`.
+
 Direct links such as `?view=spatial&room=prism` open a specific room; `view=spatial` overrides the saved original-view preference for that URL.
 
 To inspect a checkpoint without changing files, use `git show <tag>:<path>`. **Original view** offers an immediate visual comparison without changing Git history. To restore an earlier version in Git history, revert subsequent updates in reverse order. Pushing changes to `main` triggers the Pages deployment; leave draft changes local until publication is requested.
@@ -70,7 +73,7 @@ npm run preview
 npm test
 ```
 
-Browser tests use `/usr/bin/chromium` when present, or a standard Playwright installation otherwise. Set `CHROMIUM_PATH` to use a different executable. On another machine, run `npx playwright install chromium` if no browser is installed. With software graphics, run `npm test -- --workers=1` so simultaneous browsers do not compete for the renderer. Tests cover desktop and mobile navigation, all twelve room transfers, interruption and reduced motion, video playback, modal focus, the archive carousel, deep links, history, and accessibility controls.
+Browser tests use `/usr/bin/chromium` when present, or a standard Playwright installation otherwise. Set `CHROMIUM_PATH` to use a different executable. On another machine, run `npx playwright install chromium` if no browser is installed. With software graphics, run `npm test -- --workers=1` so simultaneous browsers do not compete for the renderer. Tests cover desktop and mobile navigation, all twelve room transfers, physical painting selection, collection filters and zoom, interruption and reduced motion, video playback, modal focus, the archive carousel, deep links, history, and accessibility controls.
 
 ## Deploy to GitHub Pages
 

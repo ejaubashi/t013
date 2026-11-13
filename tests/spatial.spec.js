@@ -115,7 +115,7 @@ test.describe("Gaussian-splat room", () => {
     const canvas = page.locator(".spatial-canvas canvas");
     await expect(canvas).toHaveAttribute("data-art-form", "bloom", { timeout: 45000 });
     expect(Number(await canvas.getAttribute("data-mirrors"))).toBeGreaterThan(2000);
-    await expect(page.getByRole("navigation", { name: "Room viewpoints" }).getByRole("button")).toHaveCount(6);
+    await expect(page.getByRole("navigation", { name: "Room viewpoints" }).getByRole("button")).toHaveCount(7);
     await openControls(page);
     const transform = page.getByRole("button", { name: "Transform the installation" });
     await transform.click();
