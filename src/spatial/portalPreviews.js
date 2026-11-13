@@ -11,6 +11,7 @@ export class PortalPreviews {
     this.lastUpdate = -Infinity;
     this.lastKey = "";
     this.count = 0;
+    this.nextPortal = 0;
     this.previewCamera = new THREE.PerspectiveCamera(68, 2.65 / 5.4, 0.05, 100);
     // Spark keeps one main-camera sort. Small portal views use the native
     // archive image planes also used by the existing reflection camera.
@@ -90,10 +91,10 @@ export class PortalPreviews {
     }
   }
 
-  update(camera, activeRoom, visualKey, time, force = false) {
-    const key = `${activeRoom}:${camera.aspect.toFixed(3)}:${camera.fov.toFixed(1)}:${camera.position.toArray().map((n) => n.toFixed(3))}:${camera.quaternion.toArray().map((n) => n.toFixed(3))}:${visualKey}`;
+  update(camera, activeRoom, visualKey, time, force = false, moving = false) {
+    const key = `${activeRoom}:${moving ? "moving" : "still"}:${camera.aspect.toFixed(3)}:${camera.fov.toFixed(1)}:${camera.position.toArray().map((n) => n.toFixed(3))}:${camera.quaternion.toArray().map((n) => n.toFixed(3))}:${visualKey}`;
     if (!force && key === this.lastKey) return;
-    const interval = this.balanced ? 240 : 90;
+    const interval = moving ? (this.balanced ? 550 : 160) : (this.balanced ? 240 : 90);
     if (!force && time - this.lastUpdate < interval) {
       if (!this.timer) this.timer = setTimeout(() => { this.timer = null; this.onDirty(); }, interval);
       return;
@@ -103,9 +104,10 @@ export class PortalPreviews {
     camera.updateMatrixWorld();
     this.projection.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
     this.frustum.setFromProjectionMatrix(this.projection);
-    let count = 0;
+    let count = 0, rendered = 0;
     const portals = rooms.find((item) => item.id === activeRoom).portals;
-    for (let i = 0; i < portals.length; i++) {
+    for (let step = 0; step < portals.length; step++) {
+      const i = (step + this.nextPortal) % portals.length;
       const portal = portals[i], hit = this.room.userData.portals[activeRoom][i], surface = hit.userData.surface;
       if (camera.position.z <= portal.position[2] || !this.frustum.intersectsObject(surface)) continue;
       const id = `${activeRoom}:${portal.to}`;
@@ -116,11 +118,17 @@ export class PortalPreviews {
           target: new THREE.WebGLRenderTarget(width, width * 2, { type: THREE.HalfFloatType, depthBuffer: true, samples: 0 }) };
         this.records.set(id, record);
       }
-      this.renderRecord(record, this.viewFor(portal.to, camera, portal));
+      const view = this.viewFor(portal.to, camera, portal);
+      const position = new THREE.Vector3(...view.position), previous = record.view && new THREE.Vector3(...record.view.position);
+      const changed = !previous || previous.distanceTo(position) > (moving ? 0.025 : 0.001) || record.visualKey !== visualKey;
+      if (!record.ready || changed && (!moving || rendered < 1)) {
+        this.renderRecord(record, view); record.visualKey = visualKey; rendered++;
+      }
       count++;
     }
+    this.nextPortal = (this.nextPortal + 1) % portals.length;
     this.count = count;
-    if (count) this.room.userData.invalidateReflections();
+    if (rendered) this.room.userData.invalidateReflections();
   }
 
   dispose() {

@@ -17,6 +17,7 @@ import { journey } from "./journey";
 import { rooms, roomForView } from "./rooms";
 import { RoomTransitionPass, roomTransitions, smoothTravel } from "./roomTransitions";
 import { PortalPreviews } from "./portalPreviews";
+import { WalkController, eyeHeight, isWalkable, walkPosition, walkView } from "./walkNavigation";
 
 export default function RoomCanvas({
   onReady,
@@ -31,6 +32,8 @@ export default function RoomCanvas({
   onRoomChange,
   onRoomTransition,
   onInteractionChange,
+  onNavigationChange,
+  onWalkInput,
 }) {
   const hostRef = useRef(null);
   const motionRef = useRef(reducedMotion);
@@ -69,6 +72,17 @@ export default function RoomCanvas({
     let roomTravel = null, interruptedTravel = false, suppressNextTap = false;
     let viewportWidth = 0, viewportHeight = 0;
     let wasInteracting = false;
+    let navigationMode = "walk", walker, arrival = null, lookPointer = null, floorMarker;
+    const fieldOfView = () => navigationMode === "walk" ? (host.clientWidth < 600 ? 78 : 64) : (host.clientWidth < 600 ? 72 : 52);
+    const announceNavigation = () => onNavigationChange?.({ mode: navigationMode, arriving: Boolean(arrival) });
+    const cancelArrival = () => { if (arrival) { arrival = null; walker?.sync(); announceNavigation(); dirty = true; } };
+    const setNavigationMode = (mode) => {
+      if (navigationMode === mode) return;
+      navigationMode = mode; controls.enabled = mode === "views";
+      walker?.sync(); camera.fov = fieldOfView(); camera.updateProjectionMatrix();
+      if (floorMarker) floorMarker.visible = false;
+      announceNavigation(); dirty = true;
+    };
     const previewKey = () => `${lightLevel.toFixed(2)}:${activeRoom === "pavilion" ? "static" : artPhase.toFixed(2)}:${activeRoom === "garden" ? spectrum : 0}:${room?.userData.assetVersion || 0}`;
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(65, 1, 0.03, 100);
@@ -80,6 +94,9 @@ export default function RoomCanvas({
     const callbacks = [];
     let currentView = viewpoints[0];
     const stopJourney = () => {
+      cancelArrival(); walker?.halt();
+      dirty = true;
+      if (floorMarker) floorMarker.visible = false;
       finishRoomTravel(true);
       if (!journeyState) return;
       journeyState = null;
@@ -102,9 +119,10 @@ export default function RoomCanvas({
       const travel = roomTravel;
       camera.position.set(...travel.view.position);
       controls.target.set(...travel.view.target);
-      camera.fov = host.clientWidth < 600 ? 72 : 52;
+      camera.fov = fieldOfView();
       camera.updateProjectionMatrix();
       controls.update();
+      walker?.sync();
       roomTravel = null;
       transitionPass.finish(renderer);
       scenePass.enabled = true;
@@ -114,6 +132,8 @@ export default function RoomCanvas({
     };
     const moveTo = (view, instant = false) => {
       if (!controls) return;
+      cancelArrival(); walker?.halt();
+      setNavigationMode(view.walk ? "walk" : "views");
       if (roomTravel) finishRoomTravel(true);
       const nextRoom = roomForView(view);
       if (!imported && room && nextRoom !== activeRoom) {
@@ -134,8 +154,9 @@ export default function RoomCanvas({
           // The shader supplies the glide. Capture the exact final viewpoint
           // once so the live 3D scene resumes without a second camera move.
           camera.position.set(...view.position); controls.target.set(...view.target);
-          camera.fov = host.clientWidth < 600 ? 72 : 52;
+          camera.fov = fieldOfView();
           camera.updateProjectionMatrix(); controls.update();
+          walker?.sync();
           currentView = view;
           transition = null; interruptedTravel = false;
           onRoomChange?.({ id: activeRoom, view: view.id });
@@ -153,6 +174,7 @@ export default function RoomCanvas({
         camera.position.copy(position);
         controls.target.copy(target);
         controls.update();
+        walker?.sync();
         transition = null;
       } else
         transition = {
@@ -161,8 +183,27 @@ export default function RoomCanvas({
           fromTarget: controls.target.clone(),
           toTarget: target,
           started: performance.now(),
+          walk: Boolean(view.walk),
         };
       dirty = true;
+    };
+    const enterRoom = (id, instant = false) => {
+      if (!ready || imported) return;
+      const destination = rooms.find((item) => item.id === id);
+      if (!destination) return;
+      stopJourney();
+      moveTo(navigationMode === "walk" ? walkView(id) : viewpoints.find((view) => view.id === destination.entry), instant);
+    };
+    const approachDoor = (id) => {
+      if (!ready || imported) return;
+      if (navigationMode !== "walk" || motionRef.current) { enterRoom(id); return; }
+      const portal = rooms.find((item) => item.id === activeRoom).portals.find((item) => item.to === id);
+      if (!portal) return;
+      stopJourney(); onWalkInput?.();
+      const point = new THREE.Vector3(portal.position[0], eyeHeight, portal.position[2] + 1);
+      if (walker.go(point)) {
+        floorMarker.position.set(point.x, 0.035, point.z); floorMarker.visible = true; dirty = true;
+      }
     };
     const resize = () => {
       if (!renderer || disposed) return;
@@ -173,7 +214,7 @@ export default function RoomCanvas({
       viewportWidth = width; viewportHeight = height;
       renderer.setSize(width, height);
       camera.aspect = width / height;
-      camera.fov = width < 600 ? 72 : 52;
+      camera.fov = fieldOfView();
       camera.updateProjectionMatrix();
       composer?.setSize(width, height);
       antialiasPass?.uniforms.resolution.value.set(
@@ -260,7 +301,7 @@ export default function RoomCanvas({
         canvas.setAttribute("role", "img");
         canvas.setAttribute(
           "aria-label",
-          "Navigable 3D archive. Drag to look, scroll to zoom, use W A S D to move.",
+          "Navigable 3D gallery. Drag to look. Scroll or click the floor to walk. Use W A S D to move and Q E to turn.",
         );
         host.appendChild(canvas);
         spark = new SparkRenderer({
@@ -284,6 +325,8 @@ export default function RoomCanvas({
         controls.rotateSpeed = 0.45;
         controls.panSpeed = 0.65;
         controls.zoomSpeed = 0.55;
+        controls.enabled = false;
+        walker = new WalkController(camera, controls.target, () => activeRoom);
         controls.addEventListener("change", () => {
           dirty = true;
         });
@@ -294,11 +337,28 @@ export default function RoomCanvas({
           transition = null;
         });
         controls.addEventListener("end", () => { orbiting = false; });
-        moveTo(viewpoints[0], true);
+        moveTo(walkView(), true);
         resize();
         const raycaster = new THREE.Raycaster();
         raycaster.layers.set(3);
         const cursor = new THREE.Vector2();
+        const floor = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+        const floorPoint = new THREE.Vector3();
+        floorMarker = new THREE.Mesh(new THREE.RingGeometry(0.18, 0.215, 48),
+          new THREE.MeshBasicMaterial({ color: 0xe3edc9, transparent: true, opacity: 0.8, depthWrite: false, side: THREE.DoubleSide }));
+        floorMarker.rotation.x = -Math.PI / 2; floorMarker.visible = false; scene.add(floorMarker);
+        const pointOnFloor = (event) => {
+          const rect = canvas.getBoundingClientRect();
+          cursor.set(((event.clientX - rect.left) / rect.width) * 2 - 1, 1 - ((event.clientY - rect.top) / rect.height) * 2);
+          raycaster.setFromCamera(cursor, camera);
+          const point = raycaster.ray.intersectPlane(floor, floorPoint);
+          return point && point.distanceTo(camera.position) < 24 && isWalkable(point, activeRoom) ? point : null;
+        };
+        const interruptWalk = () => {
+          if (arrival || journeyState || roomTravel) stopJourney();
+          if (transition) { transition = null; walker.sync(); }
+          onWalkInput?.();
+        };
         const activePointers = new Set();
         let pointerDown = null;
         const pickExhibit = (event) => {
@@ -311,24 +371,59 @@ export default function RoomCanvas({
         listen(canvas, "pointerdown", (event) => {
           activePointers.add(event.pointerId);
           pointerDown = activePointers.size === 1 ? [event.clientX, event.clientY] : null;
+          if (navigationMode === "walk" && ready && !imported) {
+            suppressNextTap = Boolean(roomTravel);
+            interruptWalk(); walker.halt();
+            lookPointer = activePointers.size === 1 ? { id: event.pointerId, x: event.clientX, y: event.clientY } : null;
+            canvas.focus({ preventScroll: true }); canvas.setPointerCapture(event.pointerId);
+            orbiting = true;
+          }
         });
         listen(canvas, "pointermove", (event) => {
+          if (navigationMode === "walk" && ready && !imported) {
+            if (lookPointer?.id === event.pointerId && activePointers.size === 1) {
+              walker.look(event.clientX - lookPointer.x, event.clientY - lookPointer.y, event.pointerType === "touch");
+              lookPointer.x = event.clientX; lookPointer.y = event.clientY; dirty = true;
+            } else if (!activePointers.size && !roomTravel && !arrival) {
+              const point = pickExhibit(event) ? null : pointOnFloor(event);
+              if (!walker.route.length) {
+                canvas.dataset.walkFloor = point ? `${point.x.toFixed(3)},${point.z.toFixed(3)}` : "none";
+                floorMarker.visible = Boolean(point);
+                if (point) floorMarker.position.set(point.x, 0.035, point.z);
+                dirty = true;
+              }
+            }
+          }
           if (!pointerDown) canvas.style.cursor = pickExhibit(event) ? "pointer" : "grab";
         });
         listen(canvas, "pointerup", (event) => {
           const isTap = activePointers.size === 1 && pointerDown && Math.hypot(event.clientX - pointerDown[0], event.clientY - pointerDown[1]) < 7;
           activePointers.delete(event.pointerId);
           pointerDown = null;
+          lookPointer = null;
+          if (!activePointers.size) orbiting = false;
           if (!isTap || suppressNextTap) { suppressNextTap = false; return; }
           const selected = pickExhibit(event);
           if (selected) {
             stopJourney();
-            if (selected.portal) moveTo(viewpoints.find((view) => view.id === rooms.find((item) => item.id === selected.portal).entry));
+            if (selected.portal) approachDoor(selected.portal);
             else if (selected.artwork) onArtworkSelect?.(selected.artwork);
             else if (selected.exhibit) onExhibitSelect?.(selected.exhibit);
+          } else if (navigationMode === "walk" && !imported) {
+            const point = pointOnFloor(event);
+            if (point && walker.go(point, motionRef.current)) {
+              floorMarker.position.set(point.x, 0.035, point.z); floorMarker.visible = !motionRef.current; dirty = true;
+            }
           }
         });
-        listen(canvas, "pointercancel", (event) => { activePointers.delete(event.pointerId); pointerDown = null; });
+        listen(canvas, "pointercancel", (event) => { activePointers.delete(event.pointerId); pointerDown = null; lookPointer = null; orbiting = false; });
+        listen(canvas, "pointerleave", () => { if (!walker.route.length) { floorMarker.visible = false; dirty = true; } });
+        listen(canvas, "wheel", (event) => {
+          if (navigationMode !== "walk" || !ready || imported) return;
+          event.preventDefault(); interruptWalk();
+          walker.wheel(event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? host.clientHeight : 1));
+          canvas.focus({ preventScroll: true }); dirty = true;
+        }, { passive: false });
         listen(window, "keydown", (event) => { if (event.code === "Escape") stopJourney(); });
         room = createArchiveRoom({
           onProgress,
@@ -364,7 +459,7 @@ export default function RoomCanvas({
           motionQuality = tier;
           canvas.dataset.motion = moving ? "active" : "idle";
           if (softwareGraphics) {
-            renderer.setPixelRatio(fullPixelRatio * (tier === "travel" ? 0.6 : moving ? 0.7 : 1));
+            renderer.setPixelRatio(fullPixelRatio * (tier === "travel" ? 0.6 : moving ? navigationMode === "walk" ? 0.6 : 0.7 : 1));
             composer.setPixelRatio(renderer.getPixelRatio());
             resize();
           }
@@ -386,10 +481,14 @@ export default function RoomCanvas({
               "ArrowDown",
               "ArrowLeft",
               "ArrowRight",
+              "KeyQ", "KeyE",
             ].includes(e.code)
           ) {
             e.preventDefault();
-            stopJourney();
+            if (!keys.has(e.code)) {
+              if (navigationMode === "walk") { interruptWalk(); walker.route = []; }
+              else stopJourney();
+            }
             keys.add(e.code);
             transition = null;
           }
@@ -405,13 +504,16 @@ export default function RoomCanvas({
           movement.set(0, 0);
           orbiting = false;
           activePointers.clear(); pointerDown = null;
+          lookPointer = null; walker.halt();
         });
         listen(window, "resize", resize);
         listen(document, "visibilitychange", () => {
+          if (document.hidden) cancelArrival();
           keys.clear();
           movement.set(0, 0);
           orbiting = false;
           activePointers.clear(); pointerDown = null;
+          lookPointer = null; walker.halt();
           dirty = true;
           lastTime = performance.now();
           if (roomTravel) roomTravel.lastFrameTime = null;
@@ -426,16 +528,17 @@ export default function RoomCanvas({
           const dt = Math.min(elapsed, 0.045);
           lastTime = time;
           if (document.hidden) return;
-          const interacting = Boolean(orbiting || keys.size || movement.lengthSq());
+          const interacting = Boolean(orbiting || keys.size || movement.lengthSq() || navigationMode === "walk" && walker.moving);
           if (interacting !== wasInteracting) { wasInteracting = interacting; onInteractionChange?.(interacting); }
-          if ((journeyState || roomTravel) && document.querySelector("dialog[open]")) stopJourney();
+          const modalOpen = Boolean(document.querySelector("dialog[open]"));
+          if ((journeyState || roomTravel || arrival || walker.moving) && modalOpen) stopJourney();
           if (roomTravel && motionRef.current) finishRoomTravel(true);
           if (journeyState && !transition && !roomTravel && !artTransition && !lightingTransition) {
             if (journeyState.remaining === null) journeyState.remaining = 6.5;
             else journeyState.remaining -= Math.min(elapsed, 1);
             if (journeyState.remaining <= 0) showJourneyStep(journeyState.index + 1);
           }
-          updateMotionQuality(Boolean(orbiting || keys.size || movement.lengthSq() || transition || roomTravel || artTransition || lightingTransition));
+          updateMotionQuality(Boolean(orbiting || keys.size || movement.lengthSq() || transition || roomTravel || arrival || walker.moving || artTransition || lightingTransition));
           let finishAfterDraw = false;
           if (roomTravel) {
             // The capture can compile a room's materials. Start the motion
@@ -470,7 +573,7 @@ export default function RoomCanvas({
               ease = smoothTravel(p);
             camera.position.lerpVectors(transition.from, transition.to, ease);
             // A shallow camera arc adds lift while keeping both endpoints exact.
-            camera.position.y += Math.sin(ease * Math.PI) * 0.32;
+            if (!transition.walk) camera.position.y += Math.sin(ease * Math.PI) * 0.32;
             controls.target.lerpVectors(
               transition.fromTarget,
               transition.toTarget,
@@ -478,17 +581,36 @@ export default function RoomCanvas({
             );
             controls.update();
             dirty = true;
-            if (p === 1) transition = null;
+            if (p === 1) { transition = null; walker.sync(); }
+          }
+          if (arrival) {
+            // Shader compilation and Spark's first sort can outlast an intro.
+            // Begin only after the rendered room has actually been announced.
+            if (announced && arrival.started === null) arrival.started = time;
+            const p = motionRef.current ? 1 : arrival.started === null ? 0 : Math.min(1, (time - arrival.started) / 4400);
+            camera.position.lerpVectors(arrival.from, arrival.to, smoothTravel(p));
+            controls.target.copy(arrival.target); controls.update(); dirty = true;
+            if (p === 1) { arrival = null; walker.sync(); announceNavigation(); }
           }
           const x =
             movement.x +
-            Number(keys.has("KeyD") || keys.has("ArrowRight")) -
-            Number(keys.has("KeyA") || keys.has("ArrowLeft"));
+            Number(keys.has("KeyD") || navigationMode === "views" && keys.has("ArrowRight")) -
+            Number(keys.has("KeyA") || navigationMode === "views" && keys.has("ArrowLeft"));
           const z =
             movement.y +
             Number(keys.has("KeyW") || keys.has("ArrowUp")) -
             Number(keys.has("KeyS") || keys.has("ArrowDown"));
-          if (ready && (x || z)) {
+          if (ready && navigationMode === "walk" && !transition && !roomTravel && !arrival && !modalOpen) {
+            const turn = Number(keys.has("KeyQ") || keys.has("ArrowLeft")) - Number(keys.has("KeyE") || keys.has("ArrowRight"));
+            if (walker.moving || x || z || turn) {
+              dirty = walker.update(Math.min(elapsed, 0.25), x, z, turn, motionRef.current) || dirty;
+              if (floorMarker.visible && !walker.route.length) { floorMarker.visible = false; dirty = true; }
+              const door = rooms.find((item) => item.id === activeRoom).portals.find((portal) =>
+                camera.position.z < -8.4 && Math.hypot(camera.position.x - portal.position[0], camera.position.z - portal.position[2]) < 1.35);
+              if (door) enterRoom(door.to);
+            }
+          }
+          if (ready && navigationMode === "views" && (x || z)) {
             camera.getWorldDirection(forward);
             forward.y = 0;
             forward.normalize();
@@ -521,10 +643,14 @@ export default function RoomCanvas({
               // Spark can request another frame while rendering completes its
               // initial sort. Preserve that request instead of clearing it.
               dirty = false;
-              if (!imported && !roomTravel) portalPreviews.update(camera, activeRoom, previewKey(), time);
+              const walkingMotion = navigationMode === "walk" && Boolean(arrival || walker.moving || orbiting || keys.size || movement.lengthSq() || transition);
+              if (!imported && !roomTravel) portalPreviews.update(camera, activeRoom, previewKey(), time, false, walkingMotion);
               scenePass.enabled = !roomTravel || !transitionPass.prepared;
               const renderStage = !roomTravel ? "scene" : scenePass.enabled ? "capture" : "composite";
               const cameraLayers = camera.layers.mask;
+              // Stable photographic planes keep navigation light. Spark returns
+              // at rest; paintings, architecture, and lights remain fully 3D.
+              if (announced && !imported && !roomTravel && walkingMotion) { camera.layers.disable(1); camera.layers.enable(2); }
               // Keep archive images complete while Spark prepares its sort on
               // re-entry. These native photo planes sit on the same exhibits.
               if (roomTravel && scenePass.enabled && activeRoom === "pavilion" && !spark.activeSplats) camera.layers.enable(2);
@@ -548,6 +674,16 @@ export default function RoomCanvas({
               canvas.dataset.transitionEffect = roomTravel?.profile.effect || canvas.dataset.transitionEffect || "none";
               canvas.dataset.livePortals = imported ? "0" : String(portalPreviews.count);
               canvas.dataset.room = imported ? "capture" : activeRoom;
+              canvas.dataset.navigation = navigationMode;
+              canvas.dataset.motionRepresentation = walkingMotion ? "photographic" : "splats";
+              canvas.dataset.arrival = arrival ? "entering" : "complete";
+              canvas.dataset.walkRoute = String(walker.route.length);
+              canvas.dataset.walkSpeed = walker.velocity.length().toFixed(3);
+              if (!imported) {
+                const batches = room.userData.staticBatches[activeRoom];
+                canvas.dataset.staticBatches = `${batches.before}:${batches.after}`;
+              }
+              canvas.dataset.look = `${camera.rotation.x.toFixed(4)},${camera.rotation.y.toFixed(4)}`;
               canvas.dataset.petals = !imported && activeRoom === "garden" ? String(room.userData.petalCount || 0) : "0";
               canvas.dataset.mirrors = !imported && activeRoom === "pavilion" ? String(room.userData.mirrorCount || 0) : "0";
               canvas.dataset.artwork = imported ? "capture" : { pavilion: "afterimage", orbit: "golden-orbits", garden: "petal-cloud", prism: "spectral-crystals" }[activeRoom];
@@ -606,11 +742,18 @@ export default function RoomCanvas({
               moveTo(viewpoints.find((v) => v.id === id) || viewpoints[0]);
           },
           enterRoom: (id, { instant = false } = {}) => {
-            if (!ready || imported) return;
-            const destination = rooms.find((item) => item.id === id);
-            if (!destination) return;
+            enterRoom(id, instant);
+          },
+          approachDoor,
+          setNavigation: (mode) => {
+            if (!ready || imported || !["walk", "views"].includes(mode) || mode === navigationMode) return;
             stopJourney();
-            moveTo(viewpoints.find((view) => view.id === destination.entry), instant);
+            if (mode === "walk") {
+              const position = walkPosition(camera.position, activeRoom), direction = camera.getWorldDirection(new THREE.Vector3());
+              direction.y = THREE.MathUtils.clamp(direction.y, -0.5, 0.5); direction.normalize();
+              moveTo({ id: rooms.find((item) => item.id === activeRoom).entry, room: activeRoom, walk: true,
+                position: position.toArray(), target: position.clone().addScaledVector(direction, 6).toArray() });
+            } else moveTo(viewpoints.find((view) => view.id === rooms.find((item) => item.id === activeRoom).entry));
           },
           inspectArtwork: (id) => {
             if (!ready || imported) return;
@@ -625,11 +768,13 @@ export default function RoomCanvas({
             moveTo(
               imported
                 ? { position: [0, 0.5, 5.5], target: [0, 0, 0] }
-                : viewpoints.find((view) => view.id === rooms.find((item) => item.id === activeRoom).entry),
+                : navigationMode === "walk" ? walkView(activeRoom) : viewpoints.find((view) => view.id === rooms.find((item) => item.id === activeRoom).entry),
             );
           },
           move: (x, z) => {
-            if (x || z) { stopJourney(); transition = null; }
+            if ((x || z) && !movement.lengthSq()) {
+              stopJourney(); if (transition) { transition = null; walker.sync(); } onWalkInput?.();
+            }
             movement.set(x, z);
           },
           focus: () => canvas.focus({ preventScroll: true }),
@@ -716,10 +861,14 @@ export default function RoomCanvas({
           artPhase = 1;
           room.userData.setArtPhase(artPhase);
           artTransition = { from: 1, to: 2, started: performance.now(), duration: 3100 };
-          camera.position.set(9, 4.5, 14);
-          controls.target.set(0.8, 3.2, -2);
+          const entrance = walkView("pavilion", true), destination = walkView();
+          camera.position.set(...entrance.position);
+          controls.target.set(...destination.target);
           controls.update();
-          moveTo(viewpoints[0]);
+          walker.sync();
+          arrival = { from: camera.position.clone(), to: new THREE.Vector3(...destination.position),
+            target: new THREE.Vector3(...destination.target), started: null };
+          announceNavigation();
         }
         canvas.dataset.scene = "gaussian-archive";
         canvas.dataset.lighting = "day";
@@ -743,6 +892,7 @@ export default function RoomCanvas({
       controlRef.current = null;
       callbacks.forEach((remove) => remove());
       controls?.dispose();
+      floorMarker?.geometry.dispose(); floorMarker?.material.dispose();
       portalPreviews?.dispose();
       room?.dispose();
       spark?.dispose();

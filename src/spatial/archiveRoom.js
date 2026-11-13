@@ -5,6 +5,7 @@ import { exhibits } from "./exhibits";
 import { addRoomPortals, createOrbitHall, createSkyGarden } from "./galleryRooms";
 import { createPrismChamber } from "./prismChamber";
 import { addWallArt } from "./wallArt";
+import { batchArchitecture } from "./batchArchitecture";
 
 const asset = (name) => `${import.meta.env.BASE_URL}assets/${name}`;
 
@@ -145,6 +146,7 @@ export function createArchiveRoom({ onProgress, reflectionSize, reflectionSample
     },
   });
   pavilion.add(artwork);
+  room.userData.staticBatches = Object.fromEntries(Object.entries(roomGroups).map(([id, group]) => [id, batchArchitecture(group)]));
   room.initialized = Promise.all([artwork.initialized, ...Object.values(wallArt).map((art) => art.initialized)]).then(() => {
     room.splats = artwork.splats;
     room.userData.assetVersion = 1;

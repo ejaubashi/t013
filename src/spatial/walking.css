@@ -1,0 +1,53 @@
+.walk-mode-switch { display: flex; flex: 0 0 auto; padding: 6px; gap: 3px; border: 1px solid #cfe0d42b; border-radius: 22px; background: var(--ui-glass); backdrop-filter: blur(22px); box-shadow: 0 12px 40px #0003; }
+.walk-mode-switch button { display: flex; align-items: center; justify-content: center; min-height: 46px; min-width: 85px; padding: 11px 16px; gap: 9px; border-radius: 15px; color: #bfd0c3; font-size: 11px; transition: background 220ms, color 220ms; }
+.walk-mode-switch button[aria-pressed="true"] { color: #213c35; background: #dfe8ce; }
+.walk-mode-switch svg { width: 18px; height: 18px; }
+.walk-mode-switch button:focus-visible { outline: 2px solid #dce8bd; outline-offset: -2px; }
+.walk-mode-switch.mode-views button:last-child { display: none; }
+.walk-mode-switch.mode-views button { min-width: 70px; }
+.is-walking .gallery-journey-launch, .is-walking .room-view-label, .is-walking .gallery-room-heading, .is-walking .spatial-introduction { display: none; }
+.is-walking .gallery-collection-launch { left: 44px; }
+.is-walking .room-listen { bottom: 231px; }
+.is-walking .gallery-navigation { gap: 12px; }
+.is-walking .room-caption > span { display: none; }
+.walk-invitation { position: absolute; z-index: 3; left: 50%; bottom: 170px; transform: translateX(-50%); text-align: center; color: #dce8d6; pointer-events: none; transition: opacity 500ms, visibility 500ms; }
+.walk-location { display: block; font-size: 8px; text-transform: uppercase; letter-spacing: 1.5px; color: #a8bfad; }
+.walk-invitation p { margin: 9px 0 8px; font: 500 26px/1.1 "Cormorant Garamond", Georgia, serif; letter-spacing: -.3px; }
+.walk-desktop-hint, .walk-touch-hint { font-size: 10px; white-space: nowrap; color: #b8cbbd; }
+.walk-touch-hint { display: none; }
+.walk-invitation button { pointer-events: auto; border: 1px solid #d3dfc43b; background: #142c3199; backdrop-filter: blur(12px); border-radius: 22px; padding: 9px 14px; min-height: 38px; font-size: 10px; color: #dae5d0; }
+.walk-invitation button > span { margin-left: 12px; }
+.walk-invitation.is-learned { opacity: 0; visibility: hidden; }
+.spatial-stage.is-travelling .walk-invitation, .spatial-stage:not(.room-ready) .walk-invitation { opacity: 0; visibility: hidden; }
+.walk-thumbstick { display: none; }
+.walking-tour-action { min-height: 44px; font-size: 12px; width: 100%; text-align: left; color: #dbe7d0; padding: 12px 0; border-bottom: 1px solid #c8d6bf20; }
+@media (pointer: coarse) {
+  .walk-thumbstick { position: absolute; display: grid; place-items: center; left: 24px; bottom: 148px; z-index: 5; width: 94px; height: 94px; border: 1px solid #d6e4cc45; border-radius: 50%; background: #102b2e45; backdrop-filter: blur(10px); touch-action: none; color: #dfe7cf; }
+  .walk-thumb-knob { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: #deead1d9; color: #27413a; box-shadow: 0 5px 18px #0003; transform: translate(var(--thumb-x, 0px), var(--thumb-y, 0px)); }
+  .walk-thumb-knob svg { width: 21px; height: 21px; }
+  .walk-thumb-guides { position: absolute; font-size: 22px; font-weight: 200; opacity: .45; }
+  .walk-thumb-guides > i { position: absolute; left: 6px; top: -24px; height: 65px; width: 1px; background: #dfe7cf16; }
+  .walk-thumb-guides > i:last-child { transform: rotate(90deg); }
+  .walk-touch-hint { display: inline; }
+  .walk-desktop-hint { display: none; }
+  .spatial-stage.is-travelling .walk-thumbstick, .spatial-stage:not(.room-ready) .walk-thumbstick { visibility: hidden; pointer-events: none; }
+}
+@media (max-width: 600px) {
+  .walk-mode-switch button { min-width: 82px; padding: 11px 13px; }
+  .walk-mode-switch.mode-views button { min-width: 44px; padding: 11px; }
+  .walk-mode-switch.mode-views button > span { display: none; }
+  .is-walking .gallery-collection-launch { left: auto; right: 20px; bottom: 161px; }
+  .is-walking .room-listen { bottom: auto; }
+  .walk-invitation { bottom: 260px; width: calc(100% - 40px); }
+  .walk-invitation p { font-size: 24px; }
+  .walk-location { font-size: 7px; }
+  .walk-invitation.is-arriving { bottom: 238px; }
+  .is-walking .gallery-navigation { justify-content: center; }
+}
+@media (max-height: 620px) and (min-width: 601px) {
+  .walk-invitation { bottom: 143px; }
+  .is-walking .gallery-collection-launch { left: 44px; right: auto; top: auto; bottom: 152px; }
+  .walk-invitation p { font-size: 22px; }
+  .walk-thumbstick { left: 28px; bottom: 65px; width: 78px; height: 78px; }
+}
+@media (prefers-reduced-motion: reduce) { .walk-invitation, .walk-mode-switch button { transition: none; } }

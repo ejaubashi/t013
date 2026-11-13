@@ -7,6 +7,13 @@ test.use({
 });
 
 
+async function openComposedViews(page) {
+  const button = page.getByRole("button", { name: "Switch to composed views", exact: true });
+  await expect(button).toBeEnabled({ timeout: 60000 });
+  await button.click();
+  await expect(page.locator(".spatial-canvas canvas")).toHaveAttribute("data-navigation", "views");
+}
+
 async function openControls(page) {
   const tools = page.locator(".gallery-toolbox");
   if (!(await tools.evaluate((element) => element.open))) await page.getByLabel("Gallery controls", { exact: true }).click();
@@ -32,6 +39,7 @@ test.describe("Gaussian-splat room", () => {
     const errors = [];
     page.on("pageerror", (error) => errors.push(error.message));
     await page.goto("/");
+    await openComposedViews(page);
     const canvas = page.locator(".spatial-canvas canvas");
     await expect(canvas).toHaveAttribute("data-scene", "gaussian-archive", {
       timeout: 45000,
@@ -112,6 +120,7 @@ test.describe("Gaussian-splat room", () => {
       if (message.type() === "error") errors.push(message.text());
     });
     await page.goto("/");
+    await openComposedViews(page);
     const canvas = page.locator(".spatial-canvas canvas");
     await expect(canvas).toHaveAttribute("data-art-form", "bloom", { timeout: 45000 });
     expect(Number(await canvas.getAttribute("data-mirrors"))).toBeGreaterThan(2000);
@@ -140,6 +149,7 @@ test.describe("Gaussian-splat room", () => {
   test("guides all twelve journey stops across four rooms and yields to manual navigation", async ({ page }) => {
     test.setTimeout(180000);
     await page.goto("/");
+    await openComposedViews(page);
     const canvas = page.locator(".spatial-canvas canvas");
     await expect(canvas).toHaveAttribute("data-art-form", "bloom", { timeout: 45000 });
     await closeControls(page);
@@ -172,6 +182,7 @@ test.describe("Gaussian-splat room", () => {
     page.on("pageerror", (error) => errors.push(error.message));
     page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
     await page.goto("/");
+    await openComposedViews(page);
     const canvas = page.locator(".spatial-canvas canvas");
     await expect(canvas).toHaveAttribute("data-room", "pavilion", { timeout: 45000 });
     await openAtlas(page);
@@ -233,6 +244,7 @@ test.describe("Gaussian-splat room", () => {
     const errors = [];
     page.on("pageerror", (error) => errors.push(error.message));
     await page.goto("/");
+    await openComposedViews(page);
     const canvas = page.locator(".spatial-canvas canvas");
     await expect(canvas).toHaveAttribute("data-art-form", "bloom", { timeout: 45000 });
     await page.getByRole("button", { name: "02 The family" }).click();
@@ -273,6 +285,7 @@ test.describe("Gaussian-splat room", () => {
     page,
   }) => {
     await page.goto("/");
+    await openComposedViews(page);
     const canvas = page.locator(".spatial-canvas canvas");
     await expect(canvas).toHaveAttribute("data-scene", "gaussian-archive", {
       timeout: 45000,
@@ -323,6 +336,7 @@ test.describe("Gaussian-splat room", () => {
     page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
     await page.addInitScript(() => sessionStorage.setItem("benno-classic", "1"));
     await page.goto("/?view=spatial&room=prism");
+    await openComposedViews(page);
     const canvas = page.locator(".spatial-canvas canvas");
     await expect(canvas).toHaveAttribute("data-room", "prism", { timeout: 45000 });
     await expect(canvas).toHaveAttribute("data-artwork", "spectral-crystals");

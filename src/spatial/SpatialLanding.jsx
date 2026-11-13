@@ -4,6 +4,7 @@ import { journey, artForms } from "./journey";
 import { exhibits } from "./exhibits";
 import { artworks } from "./artworks";
 import ArtCollection from "./ArtCollection";
+import WalkControls, { WalkModeSwitch } from "./WalkControls";
 import ExhibitDialog from "./ExhibitDialog";
 import GalleryAtlas from "./GalleryAtlas";
 import ViewDock from "./ViewDock";
@@ -17,6 +18,7 @@ import "./exhibition.css";
 import "./transitions.css";
 import "./navigation.css";
 import "./artworks.css";
+import "./walking.css";
 
 const RoomCanvas = lazy(() => import("./RoomCanvas"));
 
@@ -74,6 +76,8 @@ export default function SpatialLanding({
   const [travel, setTravel] = useState(null), [travelNotice, setTravelNotice] = useState("");
   const [interacting, setInteracting] = useState(false);
   const [collection, setCollection] = useState(null);
+  const [navigation, setNavigation] = useState({ mode: "walk", arriving: false });
+  const [walkLearned, setWalkLearned] = useState(false);
   const controlsMotion = useControlsMotion(toolboxRef, () => controls.current?.stopJourney());
   const closeFocus = () => { restoreArtFocus.current = true; setFocused(false); };
   useEffect(() => {
@@ -95,15 +99,6 @@ export default function SpatialLanding({
   }, [focused]);
   const openAtlas = () => { controls.current?.stopJourney(); if (toolboxRef.current) toolboxRef.current.open = false; setAtlas(true); };
   const selectRoom = (id) => { setAtlas(false); controls.current?.enterRoom(id); };
-  useEffect(() => {
-    const stop = () => controls.current?.move(0, 0);
-    window.addEventListener("pointerup", stop);
-    window.addEventListener("pointercancel", stop);
-    return () => {
-      window.removeEventListener("pointerup", stop);
-      window.removeEventListener("pointercancel", stop);
-    };
-  }, []);
   const choose = (id) => {
     controls.current?.navigate(id);
     setActive(id);
@@ -185,10 +180,11 @@ export default function SpatialLanding({
     setTravel(null); setTravelNotice("");
     setInteracting(false);
     setCollection(null);
+    setNavigation({ mode: "walk", arriving: false }); setWalkLearned(false);
     setAttempt((n) => n + 1);
   };
   return (
-    <main className={`spatial-stage gallery-${activeRoom} ${focused ? "is-focus" : ""} ${interacting ? "is-interacting" : ""} ${travel ? "is-travelling" : ""} ${ready ? "room-ready" : ""} ${night ? "after-hours" : ""} ${journeyStep !== null ? "is-journey" : ""}`}>
+    <main className={`spatial-stage gallery-${activeRoom} ${navigation.mode === "walk" && !capture ? "is-walking" : ""} ${focused ? "is-focus" : ""} ${interacting ? "is-interacting" : ""} ${travel ? "is-travelling" : ""} ${ready ? "room-ready" : ""} ${night ? "after-hours" : ""} ${journeyStep !== null ? "is-journey" : ""}`}>
       <div className="spatial-fallback" aria-hidden="true" />
       <Suspense fallback={null}>
         <RoomCanvas
@@ -206,6 +202,8 @@ export default function SpatialLanding({
           onProgress={setProgress}
           onError={(message) => { setError(message); setFocused(false); setAtlas(false); setTravel(null); setInteracting(false); }}
           onInteractionChange={setInteracting}
+          onNavigationChange={setNavigation}
+          onWalkInput={() => setWalkLearned(true)}
           onExhibitSelect={openExhibit}
           onArtworkSelect={openCollection}
           onRoomChange={({ id, view }) => {
@@ -244,7 +242,7 @@ export default function SpatialLanding({
             if (point.room) {
               const destination = rooms.find((room) => room.id === point.room);
               return <button key={point.id} className="room-portal-hotspot" style={{ left: point.x, top: point.y }}
-                aria-label={`Door to ${destination.name}`} onClick={() => controls.current?.enterRoom(point.room)}>
+                aria-label={`Door to ${destination.name}`} onClick={() => controls.current?.approachDoor(point.room)}>
                 <span aria-hidden="true"><Arrow /></span><span>{destination.name}</span>
               </button>;
             }
@@ -371,7 +369,7 @@ export default function SpatialLanding({
               {capture || viewpoints.find((v) => v.id === active)?.label}
             </strong>
           </div>
-          {(active !== "arrival" || capture || journeyStep !== null) && (
+          {(active !== "arrival" || capture || journeyStep !== null || navigation.mode === "walk") && (
             <button
               className="room-listen"
               onClick={enterStory}
@@ -394,11 +392,15 @@ export default function SpatialLanding({
             </aside>
           )}
           <div className={`gallery-navigation ${capture ? "is-capture" : ""}`}>
-          {!capture && <ViewDock views={roomViews} active={active} ready={ready} onSelect={choose} reducedMotion={reducedMotion} />}
+          {!capture && <WalkModeSwitch mode={navigation.mode} ready={ready} onChange={(mode) => controls.current?.setNavigation(mode)} />}
+          {!capture && navigation.mode === "views" && <ViewDock views={roomViews} active={active} ready={ready} onSelect={choose} reducedMotion={reducedMotion} />}
           <details className="gallery-toolbox" ref={toolboxRef} onToggle={controlsMotion.onToggle} onKeyDown={controlsMotion.onKeyDown}>
             <summary aria-label="Gallery controls" onClick={controlsMotion.onSummaryClick}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" aria-hidden="true"><path d="M4 7h16M4 17h16M9 4v6m6 4v6" /></svg><span className="controls-label">Controls</span><span className="controls-symbol" aria-hidden="true">+</span></summary>
             <div className="gallery-controls-panel">
               <p className="controls-eyebrow">Light, movement & view</p>
+              {!capture && navigation.mode === "walk" && <button className="walking-tour-action" aria-label="Start guided journey" onClick={() => {
+                toolboxRef.current.open = false; controls.current?.startJourney();
+              }}>Take the guided journey ↗</button>}
           {!capture && (
             <>
               <button
@@ -518,11 +520,14 @@ export default function SpatialLanding({
               <span className="spatial-kicker">Find your way</span>
               <h2>Take your time.</h2>
               <p>
-                Drag to look around. Scroll or pinch to move closer. Focus the
-                room and use W A S D or the arrow keys to move.
+                In Walk, drag to turn your head. Scroll or select the floor to
+                walk, or use W A S D to move and Q E to turn. On a phone, move
+                the thumbstick while dragging with your other hand to look.
+                Pools, benches, and installations stay outside your walking route.
               </p>
               <p>
-                Choose a viewpoint for a composed view. Reset returns you to the
+                Choose Views for composed viewpoints and orbit controls. Walk
+                returns you to eye level. Reset returns you to the
                 entrance. Shape the light transforms the installation between a
                 ribbon, constellation, and Bloom. Take the journey for a guided
                 camera route across all four rooms. Select a glowing doorway
@@ -578,8 +583,8 @@ export default function SpatialLanding({
           <p className="room-caption">
             {capture
               ? "Your capture stays on this device."
-              : "Drag to look around"}
-            <span>Scroll or pinch to move closer</span>
+              : navigation.mode === "walk" ? "Drag to look · W A S D to walk" : "Drag to look around"}
+            <span>{navigation.mode === "walk" ? "Scroll or click the floor to walk" : "Scroll or pinch to move closer"}</span>
           </p>
           {loadingCapture && (
             <div className="capture-status" role="status">
@@ -593,6 +598,8 @@ export default function SpatialLanding({
           )}
         </>
       )}
+      {!error && !capture && navigation.mode === "walk" && <WalkControls arriving={navigation.arriving} learned={walkLearned} room={currentRoom}
+        onMove={(x, z) => controls.current?.move(x, z)} onSkip={() => { controls.current?.stopJourney(); controls.current?.focus(); }} />}
       {atlas && <GalleryAtlas activeRoom={activeRoom} visited={visited} onClose={() => setAtlas(false)} onSelect={selectRoom}
         onJourney={() => { setAtlas(false); controls.current?.startJourney(); }} />}
       {selectedExhibit && <ExhibitDialog exhibit={selectedExhibit} onClose={() => setSelectedExhibit(null)}

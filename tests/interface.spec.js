@@ -8,6 +8,9 @@ async function ready(page, room = "pavilion") {
   await expect(canvas).toHaveAttribute("data-room", room, { timeout: 60000 });
   await expect(canvas).toHaveAttribute("data-motion", "idle", { timeout: 45000 });
   await expect(page.getByRole("button", { name: "Open gallery atlas" })).toBeEnabled({ timeout: 45000 });
+  await page.getByRole("button", { name: "Switch to composed views", exact: true }).click();
+  await expect(canvas).toHaveAttribute("data-navigation", "views");
+  await expect(canvas).toHaveAttribute("data-motion", "idle", { timeout: 15000 });
   return canvas;
 }
 
