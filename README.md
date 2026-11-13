@@ -4,8 +4,9 @@ A responsive React experience based on the supplied Benno’s Light recordings. 
 
 ## 3D archive experiment
 
-The default opening uses Three.js and Spark 2.4.0 to render approximately 70,000 Gaussian splats in the photographic exhibits. A monumental circular opening, a sculpted canopy, glass exhibition wings, and a distant sunrise frame a suspended installation of 2,420 mirrors. Bloom is the opening composition; **Shape the light** cycles through Ribbon, Constellation, and Bloom. A larger reflecting pool follows the transformation, with softened reflections and viewing-angle-dependent strength. Light shafts, floating motes, an HDR rendering pipeline, and an opening camera arc complete the scene. This is an **imagined gallery and technical study**, not a captured historical location. It uses the supplied photographs and runs locally without requesting external scene assets. See the [original art direction](docs/research/pavilion-art-direction.md) and the new [UI/UX and optical implementation study](docs/research/atlas-ui-and-optics.md).
+The default opening uses Three.js and Spark 2.4.0 to render approximately 70,000 Gaussian splats in the photographic exhibits. A monumental circular opening, a sculpted canopy, glass exhibition wings, and a distant sunrise frame a suspended installation of 2,420 mirrors. Bloom is the opening composition; **Shape the light** cycles through Ribbon, Constellation, and Bloom. A larger reflecting pool follows the transformation, with softened reflections and viewing-angle-dependent strength. Light shafts, floating motes, an HDR rendering pipeline, and an opening camera arc complete the scene. This is an **imagined gallery and technical study**, not a captured historical location. It uses the supplied photographs and runs locally without requesting external scene assets. See the [original art direction](docs/research/pavilion-art-direction.md), the [UI/UX and optical implementation study](docs/research/atlas-ui-and-optics.md), and the [room-transition research](docs/research/room-transition-system.md).
 
+- **Live doorways and room transfers:** visible entrances show rendered destination scenes with parallax. Every one of the twelve room-to-room directions uses a GPU aperture and a coordinated camera arrival. Destination treatments include orbital gold, mint silk, spectral refraction, and ivory afterimage light. Door clicks, projected markers, atlas choices, and guided stops share this system. **Skip**, Escape, or manual navigation can finish a transfer immediately; reduced motion uses direct room changes.
 - **Explore the rooms** opens a visual atlas for the Lumen Pavilion, Orbit Hall, Sky Garden, and Prism Chamber, with illustrated room cards, a schematic desktop floor plan, and visit indicators. Glowing doorways can also be selected in 3D or through their projected, keyboard-accessible entrance markers. Orbit Hall suspends nine gold light rings above an obsidian reflecting floor. The open-roof Sky Garden holds 1,100 iridescent petals above a shallow basin. Prism Chamber adds seven transmissive crystal forms, dispersion, a spectral backlight, and a floor light field. Each room has its own viewpoints and a route back to the pavilion.
 - Drag to orbit, scroll or pinch to move closer, and use fifteen composed viewpoints: six in the pavilion and three in each additional room. Mobile viewpoints scroll horizontally with larger labels.
 - **Controls** groups lighting, artwork adjustments, reset, help, local captures, and walking into one disclosure. In Prism Chamber, **Move the light** adjusts the spectrum with a native pointer/keyboard slider.
@@ -40,6 +41,8 @@ The single-room Bloom gallery before the room expansion is saved under **`checkp
 
 The three-room gallery before the atlas, UI redesign, and Prism Chamber is saved under **`checkpoint-before-atlas-prism`**, commit `b2ab6c3`.
 
+The atlas/Prism version before live doorway views and cinematic transfers is saved under **`checkpoint-before-portal-transitions`**, commit `18916e6`.
+
 Direct links such as `?view=spatial&room=prism` open a specific room; `view=spatial` overrides the saved original-view preference for that URL.
 
 To inspect a checkpoint without changing files, use `git show <tag>:<path>`. **Original view** offers an immediate visual comparison without changing Git history. To restore an earlier version in Git history, revert subsequent updates in reverse order. Pushing changes to `main` triggers the Pages deployment; leave draft changes local until publication is requested.
@@ -62,7 +65,7 @@ npm run preview
 npm test
 ```
 
-Browser tests use `/usr/bin/chromium` when present, or a standard Playwright installation otherwise. Set `CHROMIUM_PATH` to use a different executable. On another machine, run `npx playwright install chromium` if no browser is installed. Tests cover desktop and mobile navigation, video playback, modal focus, the archive carousel, deep links, history, and accessibility controls.
+Browser tests use `/usr/bin/chromium` when present, or a standard Playwright installation otherwise. Set `CHROMIUM_PATH` to use a different executable. On another machine, run `npx playwright install chromium` if no browser is installed. With software graphics, run `npm test -- --workers=1` so simultaneous browsers do not compete for the renderer. Tests cover desktop and mobile navigation, all twelve room transfers, interruption and reduced motion, video playback, modal focus, the archive carousel, deep links, history, and accessibility controls.
 
 ## Deploy to GitHub Pages
 

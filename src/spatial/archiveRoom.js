@@ -41,6 +41,17 @@ export function createArchiveRoom({ onProgress, reflectionSize, reflectionSample
   prism.visible = false;
   const roomGroups = { pavilion, orbit, garden, prism };
   const pavilionPortals = addRoomPortals(pavilion, "pavilion");
+  room.userData.roomGroups = roomGroups;
+  room.userData.portals = {
+    pavilion: pavilionPortals,
+    orbit: orbit.userData.portalTargets,
+    garden: garden.userData.portalTargets,
+    prism: prism.userData.portalTargets,
+  };
+  room.userData.invalidateReflections = () => {
+    pavilion.userData.reflectionVersion = (pavilion.userData.reflectionVersion || 0) + 1;
+    orbit.userData.previewVersion = (orbit.userData.previewVersion || 0) + 1;
+  };
   room.userData.setLighting = (night) => {
     architecture.userData.setLighting(night);
     orbit.userData.setLighting(night);
@@ -134,6 +145,7 @@ export function createArchiveRoom({ onProgress, reflectionSize, reflectionSample
   pavilion.add(artwork);
   room.initialized = artwork.initialized.then(() => {
     room.splats = artwork.splats;
+    room.userData.assetVersion = 1;
     pavilion.userData.reflectionVersion = (pavilion.userData.reflectionVersion || 0) + 1;
     return room;
   });

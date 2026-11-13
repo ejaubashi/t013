@@ -24,8 +24,8 @@ function label(text, color = "#e4d9bb") {
   return new THREE.Mesh(new THREE.PlaneGeometry(2.8, 0.47), new THREE.MeshBasicMaterial({ map: texture, transparent: true, depthWrite: false, toneMapped: false }));
 }
 
-// Small, locally drawn previews keep the thresholds legible without rendering
-// two additional scenes into textures on every camera movement.
+// Locally drawn fallback art is replaced by rendered destination views when
+// the portal preview manager initializes each visible doorway.
 export function addRoomPortals(parent, roomId) {
   return rooms.find((item) => item.id === roomId).portals.map((portal) => {
     const destination = rooms.find((item) => item.id === portal.to);
@@ -63,6 +63,8 @@ export function addRoomPortals(parent, roomId) {
     const hit = new THREE.Mesh(new THREE.PlaneGeometry(2.9, 5.6), new THREE.MeshBasicMaterial());
     hit.layers.set(3);
     hit.userData.portal = portal.to;
+    hit.userData.surface = preview;
+    hit.userData.sourceRoom = roomId;
     hit.position.z = 0.15;
     doorway.add(hit);
     parent.add(doorway);
@@ -106,13 +108,13 @@ function reflectingFloor(parent, options, color = 0x0d1317) {
   // The room is still until a visitor changes the view or lighting.
   const render = floor.onBeforeRender;
   const view = new THREE.Matrix4(), projection = new THREE.Matrix4();
-  let initialized = false, previousLevel = -1;
+  let initialized = false, previousLevel = -1, previousPreview = -1;
   floor.onBeforeRender = (...args) => {
-    const camera = args[2], level = parent.userData.lightLevel ?? 0;
-    if (initialized && view.equals(camera.matrixWorldInverse) && projection.equals(camera.projectionMatrix) && previousLevel === level) return;
+    const camera = args[2], level = parent.userData.lightLevel ?? 0, preview = parent.userData.previewVersion ?? 0;
+    if (initialized && view.equals(camera.matrixWorldInverse) && projection.equals(camera.projectionMatrix) && previousLevel === level && previousPreview === preview) return;
     render.apply(floor, args);
     view.copy(camera.matrixWorldInverse); projection.copy(camera.projectionMatrix);
-    previousLevel = level; initialized = true;
+    previousLevel = level; previousPreview = preview; initialized = true;
   };
   parent.add(floor);
 }

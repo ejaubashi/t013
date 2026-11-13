@@ -10,6 +10,7 @@ import "./atrium.css";
 import "./journey.css";
 import "./rooms.css";
 import "./exhibition.css";
+import "./transitions.css";
 
 const RoomCanvas = lazy(() => import("./RoomCanvas"));
 
@@ -64,6 +65,7 @@ export default function SpatialLanding({
   const [atlas, setAtlas] = useState(false), [focused, setFocused] = useState(false);
   const [visited, setVisited] = useState(["pavilion"]);
   const [spectrum, setSpectrum] = useState(0.5);
+  const [travel, setTravel] = useState(null), [travelNotice, setTravelNotice] = useState("");
   const closeFocus = () => { restoreArtFocus.current = true; setFocused(false); };
   useEffect(() => {
     if (!focused && restoreArtFocus.current) {
@@ -165,10 +167,11 @@ export default function SpatialLanding({
     setActiveRoom("pavilion");
     setActive("arrival");
     setVisited(["pavilion"]); setAtlas(false); setFocused(false); setSpectrum(0.5);
+    setTravel(null); setTravelNotice("");
     setAttempt((n) => n + 1);
   };
   return (
-    <main className={`spatial-stage gallery-${activeRoom} ${focused ? "is-focus" : ""} ${ready ? "room-ready" : ""} ${night ? "after-hours" : ""} ${journeyStep !== null ? "is-journey" : ""}`}>
+    <main className={`spatial-stage gallery-${activeRoom} ${focused ? "is-focus" : ""} ${travel ? "is-travelling" : ""} ${ready ? "room-ready" : ""} ${night ? "after-hours" : ""} ${journeyStep !== null ? "is-journey" : ""}`}>
       <div className="spatial-fallback" aria-hidden="true" />
       <Suspense fallback={null}>
         <RoomCanvas
@@ -180,16 +183,21 @@ export default function SpatialLanding({
             const destination = new URLSearchParams(location.search).get("room");
             if (rooms.some((room) => room.id === destination)) {
               setVisited([destination]);
-              controls.current?.enterRoom(destination);
+              controls.current?.enterRoom(destination, { instant: true });
             }
           }}
           onProgress={setProgress}
-          onError={(message) => { setError(message); setFocused(false); setAtlas(false); }}
+          onError={(message) => { setError(message); setFocused(false); setAtlas(false); setTravel(null); }}
           onExhibitSelect={openExhibit}
           onRoomChange={({ id, view }) => {
             setActiveRoom(id); setActive(view); setHelp(false);
             if (toolboxRef.current) toolboxRef.current.open = false;
             setVisited((previous) => previous.includes(id) ? previous : [...previous, id]);
+          }}
+          onRoomTransition={(event) => {
+            setTravel(event.active ? event : null);
+            const destination = rooms.find((room) => room.id === event.to);
+            setTravelNotice(event.active ? `Entering ${destination.name}. Press Escape to skip the transition.` : `You are now in ${destination.name}.`);
           }}
           onExhibitPositions={(next) => setExhibitPositions((previous) => {
             if (previous.length === next.length && previous.every((point, index) =>
@@ -204,7 +212,14 @@ export default function SpatialLanding({
         />
       </Suspense>
       <div className="spatial-vignette" aria-hidden="true" />
-      {ready && <div key={activeRoom} className="room-reveal" aria-hidden="true" />}
+      <span className="sr-only" role="status" aria-live="polite">{travelNotice}</span>
+      {travel && <aside className="room-transit-hud" aria-label="Room transition">
+        <div><span className="transit-origin">{rooms.find((room) => room.id === travel.from).short} <span aria-hidden="true"><Arrow direction="right" /></span></span>
+          <span className="transit-caption">Entering room {rooms.find((room) => room.id === travel.to).number}</span>
+          <strong>{rooms.find((room) => room.id === travel.to).name}</strong>
+          <span className="transit-progress" aria-hidden="true"><i /></span></div>
+        <button aria-label="Skip room transition" onClick={() => controls.current?.skipRoomTransition()}>Skip <Arrow /></button>
+      </aside>}
       {!error && !capture && ready && (
         <div className="room-exhibit-hotspots" aria-label="Explore the gallery">
           {exhibitPositions.filter((point) => point.visible).map((point) => {

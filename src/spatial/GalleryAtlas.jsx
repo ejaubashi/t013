@@ -28,6 +28,8 @@ const mapPositions = [{ x: 8, y: 8 }, { x: 55, y: 8 }, { x: 8, y: 55 }, { x: 55,
 
 export default function GalleryAtlas({ activeRoom, visited, onSelect, onClose, onJourney }) {
   const ref = useRef(null);
+  const select = (id) => { ref.current.close(); onSelect(id); };
+  const startJourney = () => { ref.current.close(); onJourney(); };
   useEffect(() => {
     const previous = document.activeElement, dialog = ref.current;
     dialog.showModal();
@@ -44,7 +46,7 @@ export default function GalleryAtlas({ activeRoom, visited, onSelect, onClose, o
         <div className="atlas-plan">
           <svg className="atlas-corridors" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M29 29H74V74H29V29M29 74 74 29" /></svg>
           {rooms.map((room, index) => <button key={room.id} className={`atlas-map-room ${activeRoom === room.id ? "is-current" : ""}`}
-            style={{ left: `${mapPositions[index].x}%`, top: `${mapPositions[index].y}%` }} aria-label={`Map: enter ${room.name}`} onClick={() => onSelect(room.id)}>
+            style={{ left: `${mapPositions[index].x}%`, top: `${mapPositions[index].y}%` }} aria-label={`Map: enter ${room.name}`} onClick={() => select(room.id)}>
             <span className="atlas-map-number">{room.number}</span><RoomIllustration room={room.id} /><span>{room.short}</span>
           </button>)}
           <span className="atlas-north" aria-hidden="true">N ↑</span>
@@ -53,7 +55,7 @@ export default function GalleryAtlas({ activeRoom, visited, onSelect, onClose, o
       </section>
       <nav className="atlas-room-list" aria-label="Gallery rooms">
         {rooms.map((room) => <button key={room.id} className={`atlas-room-card atlas-${room.id}`} aria-label={`Enter ${room.name}`}
-          aria-pressed={activeRoom === room.id} onClick={() => onSelect(room.id)}>
+          aria-pressed={activeRoom === room.id} onClick={() => select(room.id)}>
           <div className="atlas-card-art"><RoomIllustration room={room.id} /></div>
           <div className="atlas-card-copy"><span className="atlas-card-number">Room {room.number} <i>{activeRoom === room.id ? "You are here" : visited.includes(room.id) ? "Explored" : "Discover"}</i></span>
             <h3>{room.name}</h3><p>{room.description}</p></div>
@@ -61,6 +63,6 @@ export default function GalleryAtlas({ activeRoom, visited, onSelect, onClose, o
         </button>)}
       </nav>
     </div>
-    <footer className="atlas-footer"><span>Take your time.<br /><small>An imagined gallery for a life remembered.</small></span><button onClick={onJourney}>Follow the guided journey <span aria-hidden="true">→</span></button></footer>
+    <footer className="atlas-footer"><span>Take your time.<br /><small>An imagined gallery for a life remembered.</small></span><button onClick={startJourney}>Follow the guided journey <span aria-hidden="true">→</span></button></footer>
   </dialog>;
 }

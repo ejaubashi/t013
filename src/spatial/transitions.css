@@ -1,0 +1,35 @@
+.spatial-stage.is-travelling .spatial-introduction,
+.spatial-stage.is-travelling .gallery-room-heading,
+.spatial-stage.is-travelling .room-view-label,
+.spatial-stage.is-travelling .room-viewpoints,
+.spatial-stage.is-travelling .room-listen,
+.spatial-stage.is-travelling .gallery-journey-launch,
+.spatial-stage.is-travelling .room-journey-card,
+.spatial-stage.is-travelling .room-exhibit-hotspots,
+.spatial-stage.is-travelling .spatial-chapters { opacity: 0; pointer-events: none; visibility: hidden; }
+.room-transit-hud {
+  position: absolute; left: 44px; right: 44px; bottom: 88px; z-index: 5;
+  display: flex; align-items: flex-end; justify-content: space-between;
+  color: #f0efdc; pointer-events: none;
+}
+.room-transit-hud > div { width: min(350px, 70vw); text-shadow: 0 2px 18px #071e20a3; }
+.transit-origin { display: block; color: #ced9c8; font-size: 11px; margin-bottom: 28px; }
+.transit-origin > span { margin-left: 18px; font-family: Arial, sans-serif; }
+.transit-origin svg { width: 16px; height: 16px; vertical-align: middle; }
+.transit-caption { display: block; font-size: 8px; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; color: #d0dac7; }
+.room-transit-hud strong { display: block; font: italic 500 47px/1.1 "Cormorant Garamond", Georgia, serif; letter-spacing: -1px; }
+.transit-progress { display: block; height: 1px; background: #d9e4d13b; margin-top: 22px; }
+.transit-progress > i { display: block; height: 100%; background: #e4edbd; transform-origin: left; transform: scaleX(var(--room-travel-progress, 0)); }
+.room-transit-hud > button { min-height: 44px; padding: 10px 16px; display: flex; align-items: center; gap: 27px; border: 1px solid #d0dfc461; color: #e7eedb; background: #11262b9e; backdrop-filter: blur(12px); font-size: 11px; pointer-events: auto; }
+.room-transit-hud > button > svg { width: 16px; height: 16px; }
+@media (max-height: 850px) and (min-width: 601px) {
+  .spatial-stage .spatial-introduction h1 { font-size: 64px; margin: 16px 0; }
+}
+@media (max-width: 600px) {
+  .room-transit-hud { left: 23px; right: 20px; bottom: 91px; }
+  .room-transit-hud > div { width: 210px; }
+  .room-transit-hud strong { font-size: 35px; }
+  .transit-origin { margin-bottom: 18px; font-size: 10px; }
+  .transit-caption { font-size: 7px; }
+  .room-transit-hud > button { padding: 9px 12px; gap: 15px; }
+}
