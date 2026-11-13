@@ -4,6 +4,8 @@ Research and implementation: 12 November 2026.
 
 The subsequent live doorway and room-transfer implementation is documented in [Room-to-room transitions](room-transition-system.md).
 
+The current floating dock, animated atlas, phone sheet, and focus behavior are documented in [A quieter interface that follows the visitor](fluid-spatial-interface.md).
+
 ## Sources and method
 
 This is a primary-source implementation study, not a ranking of museum websites or a visitor study. The following public READMEs, source files, and accessibility example were retrieved and read. Their principles informed the design; their frameworks were not added as dependencies.

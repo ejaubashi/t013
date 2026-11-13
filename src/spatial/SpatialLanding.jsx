@@ -4,6 +4,8 @@ import { journey, artForms } from "./journey";
 import { exhibits } from "./exhibits";
 import ExhibitDialog from "./ExhibitDialog";
 import GalleryAtlas from "./GalleryAtlas";
+import ViewDock from "./ViewDock";
+import { useControlsMotion } from "./useControlsMotion";
 import { rooms, roomForView } from "./rooms";
 import "./spatial.css";
 import "./atrium.css";
@@ -11,6 +13,7 @@ import "./journey.css";
 import "./rooms.css";
 import "./exhibition.css";
 import "./transitions.css";
+import "./navigation.css";
 
 const RoomCanvas = lazy(() => import("./RoomCanvas"));
 
@@ -66,6 +69,8 @@ export default function SpatialLanding({
   const [visited, setVisited] = useState(["pavilion"]);
   const [spectrum, setSpectrum] = useState(0.5);
   const [travel, setTravel] = useState(null), [travelNotice, setTravelNotice] = useState("");
+  const [interacting, setInteracting] = useState(false);
+  const controlsMotion = useControlsMotion(toolboxRef, () => controls.current?.stopJourney());
   const closeFocus = () => { restoreArtFocus.current = true; setFocused(false); };
   useEffect(() => {
     if (!focused && restoreArtFocus.current) {
@@ -168,10 +173,11 @@ export default function SpatialLanding({
     setActive("arrival");
     setVisited(["pavilion"]); setAtlas(false); setFocused(false); setSpectrum(0.5);
     setTravel(null); setTravelNotice("");
+    setInteracting(false);
     setAttempt((n) => n + 1);
   };
   return (
-    <main className={`spatial-stage gallery-${activeRoom} ${focused ? "is-focus" : ""} ${travel ? "is-travelling" : ""} ${ready ? "room-ready" : ""} ${night ? "after-hours" : ""} ${journeyStep !== null ? "is-journey" : ""}`}>
+    <main className={`spatial-stage gallery-${activeRoom} ${focused ? "is-focus" : ""} ${interacting ? "is-interacting" : ""} ${travel ? "is-travelling" : ""} ${ready ? "room-ready" : ""} ${night ? "after-hours" : ""} ${journeyStep !== null ? "is-journey" : ""}`}>
       <div className="spatial-fallback" aria-hidden="true" />
       <Suspense fallback={null}>
         <RoomCanvas
@@ -187,7 +193,8 @@ export default function SpatialLanding({
             }
           }}
           onProgress={setProgress}
-          onError={(message) => { setError(message); setFocused(false); setAtlas(false); setTravel(null); }}
+          onError={(message) => { setError(message); setFocused(false); setAtlas(false); setTravel(null); setInteracting(false); }}
+          onInteractionChange={setInteracting}
           onExhibitSelect={openExhibit}
           onRoomChange={({ id, view }) => {
             setActiveRoom(id); setActive(view); setHelp(false);
@@ -248,7 +255,7 @@ export default function SpatialLanding({
       {!error && <div className="gallery-actions">
         {!capture && <button className="atlas-launcher" aria-label="Open gallery atlas" aria-haspopup="dialog" disabled={!ready} onClick={openAtlas}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.25" aria-hidden="true"><path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z" /></svg>
-          Explore the rooms <span>01—0{rooms.length}</span>
+          Explore the rooms <span className="atlas-visit-dots" aria-hidden="true">{rooms.map((room) => <i key={room.id} className={activeRoom === room.id ? "is-current" : visited.includes(room.id) ? "is-visited" : ""} />)}</span>
         </button>}
       </div>}
       {!error && <button ref={focusTriggerRef} className={`gallery-focus-toggle ${focused ? "gallery-focus-exit" : ""}`}
@@ -350,21 +357,6 @@ export default function SpatialLanding({
               Listen to Benno <Arrow />
             </button>
           )}
-          <nav className="room-viewpoints" aria-label="Room viewpoints" style={{ "--view-count": roomViews.length }}>
-            {!capture &&
-              roomViews.map((view, index) => (
-                <button
-                  key={view.id}
-                  onClick={() => choose(view.id)}
-                  aria-pressed={active === view.id}
-                  disabled={!ready}
-                >
-                  <span>{String(index + 1).padStart(2, "0")}</span>
-                  {view.label}
-                  <i />
-                </button>
-              ))}
-          </nav>
           {journeyStep !== null && (
             <aside className="room-journey-card" aria-label="Guided journey" aria-live="polite">
               <span className="spatial-kicker">A journey in light · {journeyStep + 1} / {journey.length}</span>
@@ -378,9 +370,10 @@ export default function SpatialLanding({
               </div>
             </aside>
           )}
-          <details className="gallery-toolbox" ref={toolboxRef} onToggle={(event) => { if (event.currentTarget.open) controls.current?.stopJourney(); }}
-            onKeyDown={(event) => { if (event.key === "Escape") { event.preventDefault(); toolboxRef.current.open = false; toolboxRef.current.querySelector("summary").focus(); } }}>
-            <summary aria-label="Gallery controls"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" aria-hidden="true"><path d="M4 7h16M4 17h16M9 4v6m6 4v6" /></svg>Controls<span aria-hidden="true">+</span></summary>
+          <div className={`gallery-navigation ${capture ? "is-capture" : ""}`}>
+          {!capture && <ViewDock views={roomViews} active={active} ready={ready} onSelect={choose} reducedMotion={reducedMotion} />}
+          <details className="gallery-toolbox" ref={toolboxRef} onToggle={controlsMotion.onToggle} onKeyDown={controlsMotion.onKeyDown}>
+            <summary aria-label="Gallery controls" onClick={controlsMotion.onSummaryClick}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" aria-hidden="true"><path d="M4 7h16M4 17h16M9 4v6m6 4v6" /></svg><span className="controls-label">Controls</span><span className="controls-symbol" aria-hidden="true">+</span></summary>
             <div className="gallery-controls-panel">
               <p className="controls-eyebrow">Light, movement & view</p>
           {!capture && (
@@ -555,6 +548,7 @@ export default function SpatialLanding({
           </div>
             </div>
           </details>
+          </div>
           <button className="spatial-chapters" onClick={() => { controls.current?.stopJourney(); onChapters(); }}>
             Explore all chapters <Arrow />
           </button>

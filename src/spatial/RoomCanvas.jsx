@@ -28,6 +28,7 @@ export default function RoomCanvas({
   onExhibitPositions,
   onRoomChange,
   onRoomTransition,
+  onInteractionChange,
 }) {
   const hostRef = useRef(null);
   const motionRef = useRef(reducedMotion);
@@ -65,6 +66,7 @@ export default function RoomCanvas({
     let spectrum = 0.5;
     let roomTravel = null, interruptedTravel = false, suppressNextTap = false;
     let viewportWidth = 0, viewportHeight = 0;
+    let wasInteracting = false;
     const previewKey = () => `${lightLevel.toFixed(2)}:${activeRoom === "pavilion" ? "static" : artPhase.toFixed(2)}:${activeRoom === "garden" ? spectrum : 0}:${room?.userData.assetVersion || 0}`;
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(65, 1, 0.03, 100);
@@ -421,6 +423,8 @@ export default function RoomCanvas({
           const dt = Math.min(elapsed, 0.045);
           lastTime = time;
           if (document.hidden) return;
+          const interacting = Boolean(orbiting || keys.size || movement.lengthSq());
+          if (interacting !== wasInteracting) { wasInteracting = interacting; onInteractionChange?.(interacting); }
           if ((journeyState || roomTravel) && document.querySelector("dialog[open]")) stopJourney();
           if (roomTravel && motionRef.current) finishRoomTravel(true);
           if (journeyState && !transition && !roomTravel && !artTransition && !lightingTransition) {

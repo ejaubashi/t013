@@ -1,5 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { rooms } from "./rooms";
+import { useDialogMotion } from "./useDialogMotion";
 
 export function RoomIllustration({ room, className = "" }) {
   return <svg className={`room-illustration ${className}`} viewBox="0 0 200 150" fill="none" aria-hidden="true">
@@ -28,17 +29,14 @@ const mapPositions = [{ x: 8, y: 8 }, { x: 55, y: 8 }, { x: 8, y: 55 }, { x: 55,
 
 export default function GalleryAtlas({ activeRoom, visited, onSelect, onClose, onJourney }) {
   const ref = useRef(null);
-  const select = (id) => { ref.current.close(); onSelect(id); };
-  const startJourney = () => { ref.current.close(); onJourney(); };
-  useEffect(() => {
-    const previous = document.activeElement, dialog = ref.current;
-    dialog.showModal();
-    return () => { dialog.close(); if (previous?.isConnected) previous.focus({ preventScroll: true }); };
-  }, []);
-  return <dialog ref={ref} className="gallery-atlas" aria-labelledby="atlas-title" onCancel={(event) => { event.preventDefault(); onClose(); }}>
-    <header className="atlas-header">
+  const { close, dragProps } = useDialogMotion(ref, onClose);
+  const select = (id) => close(() => onSelect(id));
+  const startJourney = () => close(onJourney);
+  return <dialog ref={ref} className="gallery-atlas" aria-labelledby="atlas-title" onCancel={(event) => { event.preventDefault(); close(); }}
+    onClick={(event) => { if (event.target === event.currentTarget) close(); }}>
+    <header className="atlas-header" {...dragProps}>
       <div><span className="atlas-eyebrow">Benno’s Light / Exhibition guide</span><h2 id="atlas-title">An atlas <em>of light.</em></h2></div>
-      <button className="atlas-close" autoFocus aria-label="Close gallery atlas" onClick={onClose}>×</button>
+      <button className="atlas-close" autoFocus aria-label="Close gallery atlas" onClick={() => close()}>×</button>
     </header>
     <div className="atlas-body">
       <section className="atlas-plan-section" aria-label="Exhibition floor plan">

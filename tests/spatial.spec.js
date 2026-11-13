@@ -41,7 +41,7 @@ test.describe("Gaussian-splat room", () => {
     );
     await expect(
       page.getByRole("heading", { name: "Some light never leaves." }),
-    ).toBeVisible();
+    ).toBeVisible({ timeout: 45000 });
     await expect.poll(async () => Number(await canvas.getAttribute("data-drawn-splats")), { timeout: 45000 }).toBeGreaterThan(50000);
     expect(
       await page.evaluate(
