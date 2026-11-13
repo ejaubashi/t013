@@ -30,12 +30,6 @@ export class PortalPreviews {
     };
   }
 
-  getView(from, to, sourceCamera) {
-    const record = this.records.get(`${from}:${to}`);
-    if (record?.view) return { position: [...record.view.position], target: [...record.view.target], fov: record.view.fov };
-    return this.viewFor(to, sourceCamera, rooms.find((item) => item.id === from).portals.find((item) => item.to === to));
-  }
-
   corners(from, to, camera, aspect, preferDoor = true) {
     if (preferDoor) {
       const portal = rooms.find((item) => item.id === from).portals.find((item) => item.to === to);

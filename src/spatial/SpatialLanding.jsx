@@ -214,10 +214,9 @@ export default function SpatialLanding({
       <div className="spatial-vignette" aria-hidden="true" />
       <span className="sr-only" role="status" aria-live="polite">{travelNotice}</span>
       {travel && <aside className="room-transit-hud" aria-label="Room transition">
-        <div><span className="transit-origin">{rooms.find((room) => room.id === travel.from).short} <span aria-hidden="true"><Arrow direction="right" /></span></span>
-          <span className="transit-caption">Entering room {rooms.find((room) => room.id === travel.to).number}</span>
-          <strong>{rooms.find((room) => room.id === travel.to).name}</strong>
-          <span className="transit-progress" aria-hidden="true"><i /></span></div>
+        <div><span className="transit-origin">{rooms.find((room) => room.id === travel.from).short}</span>
+          <span className="transit-direction" aria-hidden="true"><Arrow direction="right" /></span>
+          <strong>{rooms.find((room) => room.id === travel.to).name}</strong></div>
         <button aria-label="Skip room transition" onClick={() => controls.current?.skipRoomTransition()}>Skip <Arrow /></button>
       </aside>}
       {!error && !capture && ready && (

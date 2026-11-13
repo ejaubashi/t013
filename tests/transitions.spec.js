@@ -30,6 +30,7 @@ async function ready(page, room = "pavilion") {
       const frame = { time: performance.now(), phase: canvas.dataset.roomTransition,
         progress: Number(canvas.dataset.transitionProgress), route: canvas.dataset.transitionRoute,
         effect: canvas.dataset.transitionEffect, journey: canvas.dataset.journey,
+        renderer: canvas.dataset.transitionRenderer,
         skip: Boolean(skip?.getClientRects().length && getComputedStyle(skip).visibility === "visible") };
       const previous = window.__roomFrames.at(-1);
       if (!previous || previous.phase !== frame.phase || previous.progress !== frame.progress || previous.route !== frame.route)
@@ -73,7 +74,10 @@ test("animates every directed room pair with a live destination and exact arriva
     await expect(canvas).toHaveAttribute("data-camera", rooms[to].camera);
     await expect(page.getByRole("complementary", { name: "Room transition" })).toHaveCount(0);
     await expect.poll(async () => Number(await canvas.getAttribute("data-live-portals")), { timeout: 15000 }).toBeGreaterThan(0);
-    expect(await page.evaluate((route) => window.__roomFrames.some((frame) => frame.route === route && frame.progress > 0 && frame.progress < 1), `${from}:${to}`)).toBe(true);
+    const frames = await page.evaluate((route) => window.__roomFrames.filter((frame) => frame.route === route && frame.phase === "travelling"), `${from}:${to}`);
+    expect(frames.some((frame) => frame.progress > 0.15 && frame.progress < 0.45 && frame.renderer === "composite")).toBe(true);
+    expect(frames.some((frame) => frame.progress > 0.55 && frame.progress < 0.9 && frame.renderer === "composite")).toBe(true);
+    await expect(canvas).toHaveAttribute("data-transition-scene-draws", "1");
     traversed.add(`${from}:${to}`);
   }
   expect(traversed.size).toBe(12);

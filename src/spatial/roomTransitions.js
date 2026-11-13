@@ -15,54 +15,32 @@ export const roomTransitions = Object.fromEntries(rooms.flatMap((from, i) =>
     return [`${from.id}:${to.id}`, {
       from: from.id, to: to.id, ...identities[to.id],
       sourceColor: identities[from.id].color, direction: i < j ? 1 : -1,
-      seed: (i * 4 + j + 1) * 0.173, duration: 2450 + Math.abs(i - j) % 2 * 160,
+      seed: (i * 4 + j + 1) * 0.173, duration: 1250 + Math.abs(i - j) % 2 * 80,
     }];
   }),
 ));
 
 export const smoothTravel = (t) => t * t * t * (t * (t * 6 - 15) + 10);
 
-// Projective mapping from an arbitrary convex screen quadrilateral to a unit
-// square. A tiny 8x8 solve avoids per-fragment iterative inversion.
-export function apertureMatrix(corners) {
-  const target = [[0, 0], [1, 0], [1, 1], [0, 1]], rows = [];
-  corners.forEach(([x, y], i) => {
-    const [u, v] = target[i];
-    rows.push([x, y, 1, 0, 0, 0, -u * x, -u * y, u]);
-    rows.push([0, 0, 0, x, y, 1, -v * x, -v * y, v]);
-  });
-  for (let column = 0; column < 8; column++) {
-    let pivot = column;
-    for (let row = column + 1; row < 8; row++)
-      if (Math.abs(rows[row][column]) > Math.abs(rows[pivot][column])) pivot = row;
-    [rows[column], rows[pivot]] = [rows[pivot], rows[column]];
-    const divisor = rows[column][column];
-    if (Math.abs(divisor) < 1e-9) return new THREE.Matrix3();
-    for (let j = column; j <= 8; j++) rows[column][j] /= divisor;
-    for (let row = 0; row < 8; row++) if (row !== column) {
-      const factor = rows[row][column];
-      for (let j = column; j <= 8; j++) rows[row][j] -= factor * rows[column][j];
-    }
-  }
-  const h = rows.map((row) => row[8]);
-  return new THREE.Matrix3().set(h[0], h[1], h[2], h[3], h[4], h[5], h[6], h[7], 1);
-}
-
 const vertexShader = `varying vec2 vUv;
 void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`;
 
+// Capture the arrival once, then animate two HDR images on a full-screen
+// triangle. Mirrors, transmission and Spark sorting stay off the motion path.
 export class RoomTransitionPass extends Pass {
   constructor({ balanced = false } = {}) {
     super();
     this.needsSwap = false;
     this.active = false;
+    this.prepared = false;
     this.hasHistory = false;
+    this.frames = 0;
+    this.captures = 0;
     this.maxHistoryEdge = balanced ? 1024 : 1536;
-    this.targets = [0, 1].map(() => new THREE.WebGLRenderTarget(1, 1, {
+    this.targets = [0, 1, 2].map(() => new THREE.WebGLRenderTarget(1, 1, {
       type: THREE.HalfFloatType, depthBuffer: false, stencilBuffer: false,
     }));
-    this.history = this.targets[0];
-    this.source = this.targets[1];
+    [this.history, this.source, this.arrival] = this.targets;
     this.copy = new THREE.ShaderMaterial({
       uniforms: { image: { value: null } }, toneMapped: false, depthTest: false, depthWrite: false,
       vertexShader, fragmentShader: "uniform sampler2D image; varying vec2 vUv; void main(){gl_FragColor=texture2D(image,vUv);}",
@@ -71,130 +49,165 @@ export class RoomTransitionPass extends Pass {
       depthTest: false, depthWrite: false, toneMapped: false,
       uniforms: {
         outgoing: { value: null }, incoming: { value: null }, progress: { value: 0 },
-        screenToWindow: { value: new THREE.Matrix3() }, sourceWarp: { value: new THREE.Matrix3() },
-        crop: { value: 1 }, effect: { value: 0 }, seed: { value: 0 }, direction: { value: 1 },
+        focus: { value: new THREE.Vector2(0.5, 0.5) }, axis: { value: new THREE.Vector2(1, 0) },
+        aspect: { value: 1 }, effect: { value: 0 }, seed: { value: 0 },
         fromColor: { value: new THREE.Color() }, toColor: { value: new THREE.Color() },
       },
       vertexShader,
       fragmentShader: `
         uniform sampler2D outgoing, incoming;
-        uniform mat3 screenToWindow, sourceWarp;
-        uniform float progress, crop, effect, seed, direction;
+        uniform float progress, aspect, effect, seed;
+        uniform vec2 focus, axis;
         uniform vec3 fromColor, toColor;
         varying vec2 vUv;
-        vec2 project(mat3 m, vec2 uv){vec3 p=m*vec3(uv,1.0);return p.xy/max(p.z,0.00001);}
-        vec3 spectral(float t){return 0.55+0.45*cos(6.28318*(vec3(0.0,0.33,0.67)+t));}
+        vec2 safeUv(vec2 uv){return clamp(uv,vec2(0.001),vec2(0.999));}
+        vec3 glide(sampler2D image,vec2 uv,vec2 velocity){
+          vec3 color=texture2D(image,safeUv(uv)).rgb*0.5;
+          color+=texture2D(image,safeUv(uv-velocity)).rgb*0.25;
+          color+=texture2D(image,safeUv(uv+velocity)).rgb*0.25;
+          return color;
+        }
         void main(){
-          float p=progress, envelope=sin(3.14159265*p);
-          vec2 windowUv=project(screenToWindow,vUv);
-          vec2 q=windowUv-0.5;
-          float rounding=0.035+0.13*envelope;
-          vec2 d=abs(q)-vec2(0.5-rounding);
-          float distanceToEdge=length(max(d,0.0))+min(max(d.x,d.y),0.0)-rounding;
-          float angle=dot(q,q)>0.0000001?atan(q.y,q.x):0.0;
-          float weave=sin(angle*8.0+seed*9.0+p*4.0)*0.004;
-          if(effect>1.5&&effect<2.5) distanceToEdge+=weave*envelope;
-          float edgeWidth=max(fwidth(distanceToEdge)*1.5,0.0025);
-          float mask=1.0-smoothstep(-edgeWidth,edgeWidth,distanceToEdge);
-          mask*=smoothstep(0.0,0.045,p);
-          mask=mix(mask,1.0,smoothstep(0.87,1.0,p));
-          vec2 oldUv=clamp(project(sourceWarp,vUv),vec2(0.001),vec2(0.999));
-          vec2 newUv=vec2(0.5+q.x*crop,windowUv.y);
-          float edge=exp(-abs(distanceToEdge)*115.0)*envelope;
-          vec2 bend=normalize(q+vec2(0.0001))*edge*0.008;
-          newUv+=bend*(effect>2.5?1.4:0.4);
-          newUv=clamp(newUv,vec2(0.001),vec2(0.999));
-          vec3 nextColor=texture2D(incoming,newUv).rgb;
+          float p=progress;
+          float ease=p*p*p*(p*(p*6.0-15.0)+10.0);
+          // Normalized derivative of the timing curve: no blur at either end.
+          float speed=16.0*p*p*(1.0-p)*(1.0-p);
+          vec2 q=(vUv-0.5)*vec2(aspect,1.0);
+          vec2 flow=vec2(sin(q.y*2.8+seed+p*1.8),cos(q.x*2.2-seed-p*1.2));
+          if(effect>0.5&&effect<1.5)flow+=vec2(-q.y,q.x)*0.28;
+          if(effect>1.5&&effect<2.5)flow.y+=sin(q.x*3.2+p*2.0)*0.35;
+          flow.x/=aspect;
+          vec2 oldUv=vUv-(vUv-focus)*ease*0.12+axis*speed*0.012+flow*speed*0.006;
+          vec2 newUv=vUv+(vUv-0.5)*(1.0-ease)*0.035-axis*(1.0-ease)*0.018-flow*speed*0.004;
+          vec2 velocity=((vUv-focus)*0.018+axis*0.009)*speed;
+          vec3 previous=glide(outgoing,oldUv,velocity);
+          vec3 next=glide(incoming,newUv,velocity*0.65);
           if(effect>2.5){
-            float split=edge*0.006*direction;
-            nextColor.r=texture2D(incoming,clamp(newUv+vec2(split,0.0),0.001,0.999)).r;
-            nextColor.b=texture2D(incoming,clamp(newUv-vec2(split,0.0),0.001,0.999)).b;
+            vec2 dispersion=vec2(0.0015*speed,0.0);
+            next.r=mix(next.r,texture2D(incoming,safeUv(newUv+dispersion)).r,0.45);
+            next.b=mix(next.b,texture2D(incoming,safeUv(newUv-dispersion)).b,0.45);
           }
-          vec3 result=mix(texture2D(outgoing,oldUv).rgb,nextColor,mask);
-          vec3 tint=mix(fromColor,toColor,smoothstep(0.1,0.8,p));
-          if(effect>2.5)tint=mix(tint,spectral(angle/6.28318+p*0.2),0.75);
-          float filaments=0.0;
-          if(effect>0.5&&effect<1.5){
-            filaments=pow(max(0.0,cos(distanceToEdge*420.0+p*2.0)),12.0)*exp(-abs(distanceToEdge)*40.0)*0.12;
-          }else if(effect<0.5){
-            filaments=pow(max(0.0,sin(angle*24.0+seed)),16.0)*exp(-abs(distanceToEdge)*45.0)*0.1;
-          }
-          result+=tint*(edge*0.6+filaments*envelope);
-          gl_FragColor=vec4(result,1.0);
+          float luminance=dot(previous,vec3(0.2126,0.7152,0.0722));
+          float spatial=dot(vUv-0.5,axis)*0.09+flow.x*0.025+(luminance-0.5)*0.025;
+          float blend=smoothstep(0.07,0.93,ease+spatial*speed);
+          vec3 color=mix(previous,next,blend);
+          color+=mix(fromColor,toColor,ease)*speed*0.012;
+          gl_FragColor=vec4(color,1.0);
         }`,
     });
+    // Software graphics do the blend and output conversion in one draw. The
+    // detail tier keeps its normal bloom/output/AA composer on physical GPUs.
+    this.displayMaterial = balanced ? new THREE.ShaderMaterial({
+      uniforms: this.material.uniforms, depthTest: false, depthWrite: false,
+      toneMapped: true, vertexShader,
+      fragmentShader: this.material.fragmentShader.replace("gl_FragColor=vec4(color,1.0);",
+        "gl_FragColor=vec4(color,1.0);\n#include <tonemapping_fragment>\n#include <colorspace_fragment>"),
+    }) : null;
     this.quad = new FullScreenQuad(this.copy);
-    this.corners = null;
-    this.sourceFromWindow = new THREE.Matrix3();
   }
 
   setSize(width, height) {
-    // Keep history storage stable during DPR changes, rotation and resizing.
-    // Normalized UV copies retain the current framing at a bounded resolution.
-    // The composer's 1px bootstrap target may arrive multiplied by device DPR.
+    // Ignore the composer's DPR-scaled 1px bootstrap target. Keep image
+    // storage stable when motion quality changes the drawing resolution.
     if (!this.allocated && width >= 2 && height >= 2) {
       const scale = Math.min(1, this.maxHistoryEdge / Math.max(width, height));
       this.targets.forEach((target) => target.setSize(Math.max(1, Math.round(width * scale)), Math.max(1, Math.round(height * scale))));
       this.allocated = true;
     }
-    this.aspect = width / height;
+    this.material.uniforms.aspect.value = width / height;
   }
 
   begin(profile, corners) {
     if (!this.hasHistory) return false;
     [this.history, this.source] = [this.source, this.history];
-    this.material.uniforms.outgoing.value = this.source.texture;
-    this.material.uniforms.fromColor.value.set(profile.sourceColor);
-    this.material.uniforms.toColor.value.set(profile.color);
-    this.material.uniforms.effect.value = profile.index;
-    this.material.uniforms.seed.value = profile.seed;
-    this.material.uniforms.direction.value = profile.direction;
-    this.corners = corners;
-    this.sourceFromWindow.copy(apertureMatrix(corners)).invert();
-    const width = Math.hypot(corners[1][0] - corners[0][0], corners[1][1] - corners[0][1]);
-    const height = Math.hypot(corners[3][0] - corners[0][0], corners[3][1] - corners[0][1]);
-    this.initialCrop = THREE.MathUtils.clamp(width / height, 0.12, 1.4);
+    const uniforms = this.material.uniforms;
+    uniforms.outgoing.value = this.source.texture;
+    uniforms.incoming.value = this.arrival.texture;
+    uniforms.fromColor.value.set(profile.sourceColor);
+    uniforms.toColor.value.set(profile.color);
+    uniforms.effect.value = profile.index;
+    uniforms.seed.value = profile.seed;
+    const center = corners.reduce((point, [x, y]) => point.add(new THREE.Vector2(x, y)), new THREE.Vector2()).multiplyScalar(0.25);
+    uniforms.focus.value.set(THREE.MathUtils.clamp(center.x, 0.15, 0.85), THREE.MathUtils.clamp(center.y, 0.2, 0.8));
+    uniforms.axis.value.set(profile.direction, 0.14).normalize();
     this.active = true;
+    this.prepared = false;
     this.needsSwap = true;
+    this.frames = 0;
+    this.captures = 0;
     this.setProgress(0);
     return true;
   }
 
-  setProgress(value) {
-    const p = THREE.MathUtils.clamp(value, 0, 1), eased = smoothTravel(p);
-    const full = [[0, 0], [1, 0], [1, 1], [0, 1]];
-    const corners = this.corners.map((point, i) => [
-      THREE.MathUtils.lerp(point[0], full[i][0], eased),
-      THREE.MathUtils.lerp(point[1], full[i][1], eased),
-    ]);
-    this.material.uniforms.screenToWindow.value.copy(apertureMatrix(corners));
-    this.material.uniforms.sourceWarp.value.multiplyMatrices(this.sourceFromWindow, this.material.uniforms.screenToWindow.value);
-    this.material.uniforms.progress.value = p;
-    this.material.uniforms.crop.value = THREE.MathUtils.lerp(this.initialCrop, 1, eased);
+  setProgress(value) { this.material.uniforms.progress.value = THREE.MathUtils.clamp(value, 0, 1); }
+
+  finish(renderer) {
+    // Save the displayed composition only at hand-off or interruption. A
+    // full-size HDR history copy on every animation frame wastes bandwidth.
+    if (this.active && this.prepared) {
+      const previousTarget = renderer.getRenderTarget();
+      try {
+        this.quad.material = this.material;
+        renderer.setRenderTarget(this.history);
+        this.quad.render(renderer);
+      } finally { renderer.setRenderTarget(previousTarget); }
+    }
+    this.active = false; this.prepared = false; this.needsSwap = false;
   }
 
-  finish() { this.active = false; this.needsSwap = false; }
+  copyImage(renderer, texture, target) {
+    this.quad.material = this.copy;
+    this.copy.uniforms.image.value = texture;
+    renderer.setRenderTarget(target);
+    this.quad.render(renderer);
+  }
+
+  renderToDisplay(renderer) {
+    const previousTarget = renderer.getRenderTarget();
+    try {
+      this.quad.material = this.displayMaterial;
+      renderer.setRenderTarget(null);
+      this.quad.render(renderer);
+      this.frames++;
+    } finally { renderer.setRenderTarget(previousTarget); }
+  }
 
   render(renderer, writeBuffer, readBuffer) {
-    const previous = renderer.getRenderTarget();
-    let image = readBuffer.texture;
-    if (this.active) {
-      this.quad.material = this.material;
-      this.material.uniforms.incoming.value = readBuffer.texture;
-      renderer.setRenderTarget(writeBuffer);
-      this.quad.render(renderer);
-      image = writeBuffer.texture;
-    }
-    this.quad.material = this.copy;
-    this.copy.uniforms.image.value = image;
-    renderer.setRenderTarget(this.history);
-    this.quad.render(renderer);
-    renderer.setRenderTarget(previous);
-    this.hasHistory = true;
+    const previousTarget = renderer.getRenderTarget();
+    try {
+      let image = readBuffer.texture;
+      if (this.active) {
+        if (!this.prepared) {
+          this.copyImage(renderer, readBuffer.texture, this.arrival);
+          this.prepared = true;
+          this.captures++;
+        }
+        this.quad.material = this.material;
+        renderer.setRenderTarget(writeBuffer);
+        this.quad.render(renderer);
+        image = writeBuffer.texture;
+        this.frames++;
+      } else if (!this.warmed) {
+        // Compile and allocate before the first click, not at peak movement.
+        this.material.uniforms.outgoing.value = this.material.uniforms.incoming.value = readBuffer.texture;
+        this.quad.material = this.material;
+        renderer.setRenderTarget(this.arrival);
+        this.quad.render(renderer);
+        this.copyImage(renderer, image, this.source);
+        if (this.displayMaterial) {
+          this.quad.material = this.displayMaterial;
+          renderer.setRenderTarget(null);
+          this.quad.render(renderer);
+        }
+        this.warmed = true;
+      }
+      if (!this.active) this.copyImage(renderer, image, this.history);
+      this.hasHistory = true;
+    } finally { renderer.setRenderTarget(previousTarget); }
   }
 
   dispose() {
     this.targets.forEach((target) => target.dispose());
-    this.material.dispose(); this.copy.dispose(); this.quad.dispose();
+    this.material.dispose(); this.displayMaterial?.dispose(); this.copy.dispose(); this.quad.dispose();
   }
 }

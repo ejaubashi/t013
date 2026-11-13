@@ -42,6 +42,7 @@ export default function RoomCanvas({
       controls,
       environmentTarget,
       composer,
+      scenePass,
       antialiasPass,
       transitionPass,
       portalPreviews,
@@ -63,6 +64,7 @@ export default function RoomCanvas({
     let activeRoom = "pavilion";
     let spectrum = 0.5;
     let roomTravel = null, interruptedTravel = false, suppressNextTap = false;
+    let viewportWidth = 0, viewportHeight = 0;
     const previewKey = () => `${lightLevel.toFixed(2)}:${activeRoom === "pavilion" ? "static" : artPhase.toFixed(2)}:${activeRoom === "garden" ? spectrum : 0}:${room?.userData.assetVersion || 0}`;
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(65, 1, 0.03, 100);
@@ -100,9 +102,9 @@ export default function RoomCanvas({
       camera.updateProjectionMatrix();
       controls.update();
       roomTravel = null;
-      transitionPass.finish();
+      transitionPass.finish(renderer);
+      scenePass.enabled = true;
       interruptedTravel = interrupted;
-      host.parentElement.style.setProperty("--room-travel-progress", "1");
       onRoomTransition?.({ active: false, from: travel.from, to: travel.to });
       dirty = true;
     };
@@ -115,28 +117,25 @@ export default function RoomCanvas({
         const profile = roomTransitions[`${from}:${nextRoom}`];
         const animate = !instant && !motionRef.current && transitionPass?.hasHistory;
         const corners = animate ? portalPreviews.corners(from, nextRoom, camera, camera.aspect, !interruptedTravel) : null;
-        const entrance = animate ? portalPreviews.getView(from, nextRoom, camera) : null;
         activeRoom = nextRoom;
         room.userData.setRoom(activeRoom);
         renderer.shadowMap.needsUpdate = true;
         keys.clear(); movement.set(0, 0);
+        // A cached arrival must include any presentation change already
+        // requested by the visitor, rather than freezing a half-lit artwork.
+        if (artTransition) setArtForm(artTransition.to, true);
+        if (lightingTransition) setLighting(lightingTransition.to, true);
         if (animate && transitionPass.begin(profile, corners)) {
-          const start = new THREE.Vector3(...entrance.position), end = new THREE.Vector3(...view.position);
-          const offset = end.clone().sub(start);
-          const first = start.clone().addScaledVector(offset, 0.33);
-          const second = start.clone().addScaledVector(offset, 0.74);
-          first.x += profile.direction * 0.5; first.y += 0.3;
-          second.x += profile.direction * 0.25; second.y += 0.2;
-          roomTravel = { from, to: nextRoom, view, profile, elapsed: 0, progress: 0, lastFrameTime: null,
-            curve: new THREE.CubicBezierCurve3(start, first, second, end),
-            fromTarget: new THREE.Vector3(...entrance.target), toTarget: new THREE.Vector3(...view.target), fromFov: entrance.fov };
-          camera.position.copy(start); controls.target.set(...entrance.target);
-          camera.fov = entrance.fov; camera.updateProjectionMatrix(); controls.update();
+          roomTravel = { from, to: nextRoom, view, profile, elapsed: 0, progress: 0, lastFrameTime: null, sceneDraws: 0 };
+          // The shader supplies the glide. Capture the exact final viewpoint
+          // once so the live 3D scene resumes without a second camera move.
+          camera.position.set(...view.position); controls.target.set(...view.target);
+          camera.fov = host.clientWidth < 600 ? 72 : 52;
+          camera.updateProjectionMatrix(); controls.update();
           currentView = view;
           transition = null; interruptedTravel = false;
           onRoomChange?.({ id: activeRoom, view: view.id });
           onRoomTransition?.({ active: true, from, to: nextRoom, effect: profile.effect });
-          host.parentElement.style.setProperty("--room-travel-progress", "0");
           dirty = true;
           return;
         }
@@ -166,6 +165,8 @@ export default function RoomCanvas({
       const width = host.clientWidth,
         height = host.clientHeight;
       if (!width || !height) return;
+      if (roomTravel && viewportWidth && (width !== viewportWidth || height !== viewportHeight)) finishRoomTravel(true);
+      viewportWidth = width; viewportHeight = height;
       renderer.setSize(width, height);
       camera.aspect = width / height;
       camera.fov = width < 600 ? 72 : 52;
@@ -177,9 +178,9 @@ export default function RoomCanvas({
       );
       dirty = true;
     };
-    const setLighting = (night) => {
+    const setLighting = (night, instant = false) => {
       if (imported) return;
-      if (motionRef.current) {
+      if (instant || motionRef.current) {
         lightLevel = Number(night);
         room.userData.setLighting(lightLevel);
         scene.environmentIntensity = night ? 0.18 : 0.38;
@@ -188,10 +189,10 @@ export default function RoomCanvas({
       renderer.domElement.dataset.lighting = night ? "night" : "day";
       dirty = true;
     };
-    const setArtForm = (form) => {
+    const setArtForm = (form, instant = false) => {
       if (imported) return;
       const next = THREE.MathUtils.clamp(Number(form), 0, 2);
-      if (motionRef.current) {
+      if (instant || motionRef.current) {
         artPhase = next;
         room.userData.setArtPhase(artPhase);
         artTransition = null;
@@ -204,8 +205,8 @@ export default function RoomCanvas({
       journeyState = { index: Math.max(0, index), remaining: null };
       keys.clear(); movement.set(0, 0);
       moveTo(viewpoints.find((view) => view.id === step.view));
-      setArtForm(step.form);
-      setLighting(step.night);
+      setArtForm(step.form, Boolean(roomTravel));
+      setLighting(step.night, Boolean(roomTravel));
       onJourneyChange?.({ index: journeyState.index, ...step });
     };
     const initialize = async () => {
@@ -336,7 +337,8 @@ export default function RoomCanvas({
           samples: softwareGraphics ? 0 : 2,
         });
         composer = new EffectComposer(renderer, renderTarget);
-        composer.addPass(new RenderPass(scene, camera));
+        scenePass = new RenderPass(scene, camera);
+        composer.addPass(scenePass);
         transitionPass = new RoomTransitionPass({ balanced: softwareGraphics });
         composer.addPass(transitionPass);
         portalPreviews = new PortalPreviews({ renderer, scene, room, balanced: softwareGraphics, onDirty: () => { dirty = true; } });
@@ -357,7 +359,7 @@ export default function RoomCanvas({
           motionQuality = tier;
           canvas.dataset.motion = moving ? "active" : "idle";
           if (softwareGraphics) {
-            renderer.setPixelRatio(fullPixelRatio * (tier === "travel" ? 0.5 : moving ? 0.7 : 1));
+            renderer.setPixelRatio(fullPixelRatio * (tier === "travel" ? 0.6 : moving ? 0.7 : 1));
             composer.setPixelRatio(renderer.getPixelRatio());
             resize();
           }
@@ -429,16 +431,15 @@ export default function RoomCanvas({
           updateMotionQuality(Boolean(orbiting || keys.size || movement.lengthSq() || transition || roomTravel || artTransition || lightingTransition));
           let finishAfterDraw = false;
           if (roomTravel) {
-            if (roomTravel.lastFrameTime !== null) roomTravel.elapsed += Math.max(0, time - roomTravel.lastFrameTime);
-            roomTravel.lastFrameTime = time;
-            const p = Math.min(1, roomTravel.elapsed / roomTravel.profile.duration), ease = smoothTravel(p);
+            // The capture can compile a room's materials. Start the motion
+            // clock on the following frame, after that one-time work finishes.
+            if (transitionPass.prepared) {
+              if (roomTravel.lastFrameTime !== null) roomTravel.elapsed += Math.max(0, time - roomTravel.lastFrameTime);
+              roomTravel.lastFrameTime = time;
+            }
+            const p = Math.min(1, roomTravel.elapsed / roomTravel.profile.duration);
             roomTravel.progress = p;
-            camera.position.copy(roomTravel.curve.getPoint(ease));
-            controls.target.lerpVectors(roomTravel.fromTarget, roomTravel.toTarget, ease);
-            camera.fov = THREE.MathUtils.lerp(roomTravel.fromFov, host.clientWidth < 600 ? 72 : 52, ease);
-            camera.updateProjectionMatrix(); controls.update();
             transitionPass.setProgress(p);
-            host.parentElement.style.setProperty("--room-travel-progress", p.toFixed(4));
             finishAfterDraw = p === 1;
             dirty = true;
           }
@@ -513,15 +514,28 @@ export default function RoomCanvas({
               // Spark can request another frame while rendering completes its
               // initial sort. Preserve that request instead of clearing it.
               dirty = false;
-              if (!imported && (!roomTravel || !roomTravel.previewsReady)) {
-                portalPreviews.update(camera, activeRoom, previewKey(), time, Boolean(roomTravel));
-                if (roomTravel) roomTravel.previewsReady = true;
+              if (!imported && !roomTravel) portalPreviews.update(camera, activeRoom, previewKey(), time);
+              scenePass.enabled = !roomTravel || !transitionPass.prepared;
+              const renderStage = !roomTravel ? "scene" : scenePass.enabled ? "capture" : "composite";
+              const cameraLayers = camera.layers.mask;
+              // Keep archive images complete while Spark prepares its sort on
+              // re-entry. These native photo planes sit on the same exhibits.
+              if (roomTravel && scenePass.enabled && activeRoom === "pavilion" && !spark.activeSplats) camera.layers.enable(2);
+              try {
+                if (softwareGraphics && roomTravel && transitionPass.prepared) transitionPass.renderToDisplay(renderer);
+                else composer.render();
               }
-              composer.render();
+              finally { camera.layers.mask = cameraLayers; }
+              if (roomTravel) {
+                roomTravel.sceneDraws += Number(scenePass.enabled);
+                canvas.dataset.transitionSceneDraws = String(roomTravel.sceneDraws);
+                canvas.dataset.transitionFrames = String(transitionPass.frames);
+              }
               const drawnProgress = roomTravel?.progress ?? 1;
               if (finishAfterDraw) finishRoomTravel();
               canvas.dataset.drawnSplats = String(spark.activeSplats);
               canvas.dataset.roomTransition = roomTravel ? "travelling" : "idle";
+              canvas.dataset.transitionRenderer = renderStage;
               canvas.dataset.transitionProgress = drawnProgress.toFixed(3);
               canvas.dataset.transitionRoute = roomTravel ? `${roomTravel.from}:${roomTravel.to}` : canvas.dataset.transitionRoute || "none";
               canvas.dataset.transitionEffect = roomTravel?.profile.effect || canvas.dataset.transitionEffect || "none";
@@ -532,6 +546,7 @@ export default function RoomCanvas({
               canvas.dataset.artwork = imported ? "capture" : { pavilion: "afterimage", orbit: "golden-orbits", garden: "petal-cloud", prism: "spectral-crystals" }[activeRoom];
               canvas.dataset.crystals = !imported && activeRoom === "prism" ? String(room.userData.crystalCount) : "0";
               canvas.dataset.spectrum = spectrum.toFixed(2);
+              canvas.dataset.lightLevel = lightLevel.toFixed(3);
               if (!imported) {
                 canvas.dataset.artPhase = artPhase.toFixed(3);
                 canvas.dataset.artForm = artPhase < 0.001 ? "ribbon" : Math.abs(artPhase - 1) < 0.001 ? "constellation" : artPhase > 1.999 ? "bloom" : "transforming";
