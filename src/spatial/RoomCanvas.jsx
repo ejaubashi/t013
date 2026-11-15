@@ -134,7 +134,6 @@ export default function RoomCanvas({
     const moveTo = (view, instant = false) => {
       if (!controls) return;
       cancelArrival(); walker?.halt();
-      setNavigationMode(view.walk ? "walk" : "views");
       if (roomTravel) finishRoomTravel(true);
       const nextRoom = roomForView(view);
       if (!imported && room && nextRoom !== activeRoom) {
@@ -142,6 +141,7 @@ export default function RoomCanvas({
         const profile = roomTransitions[`${from}:${nextRoom}`];
         const animate = !instant && !motionRef.current && transitionPass?.hasHistory;
         const corners = animate ? portalPreviews.corners(from, nextRoom, camera, camera.aspect, !interruptedTravel) : null;
+        setNavigationMode(view.walk ? "walk" : "views");
         activeRoom = nextRoom;
         room.userData.setRoom(activeRoom);
         renderer.shadowMap.needsUpdate = true;
@@ -150,9 +150,9 @@ export default function RoomCanvas({
         // requested by the visitor, rather than freezing a half-lit artwork.
         if (artTransition) setArtForm(artTransition.to, true);
         if (lightingTransition) setLighting(lightingTransition.to, true);
-        if (animate && transitionPass.begin(profile, corners)) {
+        if (animate && transitionPass.begin(corners)) {
           roomTravel = { from, to: nextRoom, view, profile, elapsed: 0, progress: 0, lastFrameTime: null, sceneDraws: 0 };
-          // The shader supplies the glide. Capture the exact final viewpoint
+          // The depth portal supplies the travel. Capture the exact final viewpoint
           // once so the live 3D scene resumes without a second camera move.
           camera.position.set(...view.position); controls.target.set(...view.target);
           camera.fov = fieldOfView();
@@ -167,6 +167,7 @@ export default function RoomCanvas({
         }
       }
       interruptedTravel = false;
+      setNavigationMode(view.walk ? "walk" : "views");
       currentView = view;
       if (!imported && room) onRoomChange?.({ id: activeRoom, view: view.id });
       const position = new THREE.Vector3(...view.position),
@@ -436,11 +437,12 @@ export default function RoomCanvas({
         const renderTarget = new THREE.WebGLRenderTarget(1, 1, {
           type: THREE.HalfFloatType,
           samples: softwareGraphics ? 0 : 2,
+          depthTexture: new THREE.DepthTexture(1, 1, THREE.UnsignedIntType),
         });
         composer = new EffectComposer(renderer, renderTarget);
         scenePass = new RenderPass(scene, camera);
         composer.addPass(scenePass);
-        transitionPass = new RoomTransitionPass({ balanced: softwareGraphics });
+        transitionPass = new RoomTransitionPass({ balanced: softwareGraphics, camera });
         composer.addPass(transitionPass);
         portalPreviews = new PortalPreviews({ renderer, scene, room, balanced: softwareGraphics, onDirty: () => { dirty = true; } });
         if (!softwareGraphics)
@@ -672,6 +674,8 @@ export default function RoomCanvas({
               canvas.dataset.transitionRenderer = renderStage;
               canvas.dataset.transitionProgress = drawnProgress.toFixed(3);
               canvas.dataset.transitionRoute = roomTravel ? `${roomTravel.from}:${roomTravel.to}` : canvas.dataset.transitionRoute || "none";
+              canvas.dataset.transitionTechnique = "projective-depth-portal";
+              canvas.dataset.transitionDepth = String(Boolean(transitionPass?.material.uniforms.depthAvailable.value));
               canvas.dataset.transitionEffect = roomTravel?.profile.effect || canvas.dataset.transitionEffect || "none";
               canvas.dataset.livePortals = imported ? "0" : String(portalPreviews.count);
               canvas.dataset.room = imported ? "capture" : activeRoom;

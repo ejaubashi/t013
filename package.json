@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview --host 0.0.0.0",
     "test": "playwright test",
-    "test:navigation": "node --test checks/walk-navigation.test.mjs"
+    "test:navigation": "node --test checks/walk-navigation.test.mjs",
+    "test:portals": "node --test checks/portal-projection.test.mjs"
   },
   "dependencies": {
     "@fontsource/archivo": "^5.2.0",

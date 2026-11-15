@@ -8,7 +8,9 @@ import WalkControls, { WalkModeSwitch } from "./WalkControls";
 import ExhibitDialog from "./ExhibitDialog";
 import GalleryAtlas from "./GalleryAtlas";
 import ViewDock from "./ViewDock";
+import RoomNavigator from "./RoomNavigator";
 import { useControlsMotion } from "./useControlsMotion";
+import { useDockMorph } from "./useDockMorph";
 import { rooms, roomForView } from "./rooms";
 import "./spatial.css";
 import "./atrium.css";
@@ -20,6 +22,7 @@ import "./navigation.css";
 import "./artworks.css";
 import "./walking.css";
 import "./minimal.css";
+import "./spatial-interface.css";
 
 const RoomCanvas = lazy(() => import("./RoomCanvas"));
 
@@ -50,7 +53,8 @@ export default function SpatialLanding({
   onOriginal,
   reducedMotion,
 }) {
-  const controls = useRef(null);
+  const controls = useRef(null), dockLayer = useRef(null);
+  const morphDock = useDockMorph(dockLayer, reducedMotion);
   const [ready, setReady] = useState(false),
     [progress, setProgress] = useState(0);
   const [error, setError] = useState(""),
@@ -232,7 +236,7 @@ export default function SpatialLanding({
       <div className="spatial-vignette" aria-hidden="true" />
       <span className="sr-only" role="status" aria-live="polite">{travelNotice}</span>
       {travel && <aside className="room-transit-hud" aria-label="Room transition">
-        <div><span className="transit-origin">{rooms.find((room) => room.id === travel.from).short}</span>
+        <div><span className="transit-label">Moving through light</span><span className="transit-origin">{rooms.find((room) => room.id === travel.from).short}</span>
           <span className="transit-direction" aria-hidden="true"><Arrow direction="right" /></span>
           <strong>{rooms.find((room) => room.id === travel.to).name}</strong></div>
         <button aria-label="Skip room transition" onClick={() => controls.current?.skipRoomTransition()}>Skip <Arrow /></button>
@@ -270,13 +274,10 @@ export default function SpatialLanding({
           Original view <Arrow />
         </button>
       </div>
-      {!error && <div className="gallery-actions">
-        {!capture && <button className="atlas-launcher" aria-label="Open gallery atlas" aria-haspopup="dialog" disabled={!ready} onClick={openAtlas}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.25" aria-hidden="true"><path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z" /></svg>
-          Explore the rooms <span className="atlas-visit-dots" aria-hidden="true">{rooms.map((room) => <i key={room.id} className={activeRoom === room.id ? "is-current" : visited.includes(room.id) ? "is-visited" : ""} />)}</span>
-        </button>}
-      </div>}
+      {!error && !capture && <RoomNavigator active={activeRoom} visited={visited} ready={ready} travelling={travel}
+        onSelect={(id) => controls.current?.enterRoom(id)} onAtlas={openAtlas} />}
       {!error && <button ref={focusTriggerRef} className={`gallery-focus-toggle ${focused ? "gallery-focus-exit" : ""}`}
+          title={focused ? "Return to gallery interface" : "Just the art"}
           aria-label={focused ? "Return to gallery interface" : "View artwork without interface"} aria-pressed={focused} disabled={!ready}
           onClick={() => {
             if (focused) { closeFocus(); return; }
@@ -352,10 +353,6 @@ export default function SpatialLanding({
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" aria-hidden="true"><circle cx="12" cy="12" r="10" /><path d="m10 8 6 4-6 4Z" /></svg>
             <span>Take the journey<small>{rooms.length} rooms · {journey.length} moments</small></span><Arrow />
           </button>}
-          {!capture && <button className="gallery-collection-launch" disabled={!ready} aria-label="Browse wall artworks" onClick={() => openCollection()}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" aria-hidden="true"><path d="M3 5h18v14H3zM6 8h12v8H6z" /></svg>
-            Art collection <span>{artworks.length}</span>
-          </button>}
           <div className="room-view-label" aria-live="polite">
             <span>
               {capture
@@ -392,8 +389,13 @@ export default function SpatialLanding({
               </div>
             </aside>
           )}
+          <div ref={dockLayer} className="gallery-navigation-layer">
           <div className={`gallery-navigation ${capture ? "is-capture" : ""}`}>
-          {!capture && <WalkModeSwitch mode={navigation.mode} ready={ready} onChange={(mode) => controls.current?.setNavigation(mode)} />}
+          {!capture && <button className="gallery-collection-launch" disabled={!ready} aria-label="Browse wall artworks" onClick={() => openCollection()}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" aria-hidden="true"><path d="M3 5h18v14H3zM6 8h12v8H6z" /></svg>
+            <span className="collection-dock-label">Collection</span><span className="collection-dock-count">{artworks.length}</span>
+          </button>}
+          {!capture && <WalkModeSwitch mode={navigation.mode} ready={ready} onChange={(mode) => morphDock(() => controls.current?.setNavigation(mode))} />}
           {!capture && navigation.mode === "views" && <ViewDock views={roomViews} active={active} ready={ready} onSelect={choose} reducedMotion={reducedMotion} />}
           <details className="gallery-toolbox" ref={toolboxRef} onToggle={controlsMotion.onToggle} onKeyDown={controlsMotion.onKeyDown}>
             <summary aria-label="Gallery controls" onClick={controlsMotion.onSummaryClick}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" aria-hidden="true"><path d="M4 7h16M4 17h16M9 4v6m6 4v6" /></svg><span className="controls-label">Controls</span><span className="controls-symbol" aria-hidden="true">+</span></summary>
@@ -577,6 +579,7 @@ export default function SpatialLanding({
           </div>
             </div>
           </details>
+          </div>
           </div>
           <button className="spatial-chapters" onClick={() => { controls.current?.stopJourney(); onChapters(); }}>
             Explore all chapters <Arrow />

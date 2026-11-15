@@ -1,6 +1,7 @@
 import * as THREE from "three";
-import { rooms } from "./rooms";
-import { viewpoints } from "./viewpoints";
+import { rooms } from "./rooms.js";
+import { viewpoints } from "./viewpoints.js";
+import { eyeHeight, walkView } from "./walkNavigation.js";
 
 export class PortalPreviews {
   constructor({ renderer, scene, room, balanced, onDirty }) {
@@ -20,14 +21,15 @@ export class PortalPreviews {
   }
 
   viewFor(to, sourceCamera, portal) {
-    const view = viewpoints.find((item) => item.id === rooms.find((item) => item.id === to).entry);
+    const walking = Math.abs(sourceCamera.position.y - eyeHeight) < 0.08;
+    const view = walking ? walkView(to) : viewpoints.find((item) => item.id === rooms.find((item) => item.id === to).entry);
     const dx = portal ? sourceCamera.position.x - portal.position[0] : 0;
-    const dy = sourceCamera.position.y - 2.7;
+    const dy = sourceCamera.position.y - (walking ? eyeHeight : 2.7);
     return {
       position: [view.position[0] + THREE.MathUtils.clamp(dx, -12, 12) * 0.085,
         view.position[1] + THREE.MathUtils.clamp(dy, -3, 5) * 0.06,
         view.position[2] + 3.3],
-      target: [...view.target], fov: 68,
+      target: [...view.target], fov: walking ? 64 : 68,
     };
   }
 
@@ -44,7 +46,11 @@ export class PortalPreviews {
         const area = Math.abs(corners.reduce((sum, point, i) => {
           const next = corners[(i + 1) % 4]; return sum + point[0] * next[1] - next[0] * point[1];
         }, 0)) / 2;
-        if (area > 0.001 && corners.every(([u, v]) => Number.isFinite(u) && Number.isFinite(v) && u > -0.1 && u < 1.1 && v > -0.1 && v < 1.1)) return corners;
+        // At walking distance a real doorway can extend beyond the screen.
+        // Keep its projection instead of inventing a small central doorway.
+        const xs = corners.map(([u]) => u), ys = corners.map(([, v]) => v);
+        const intersects = Math.max(...xs) > 0 && Math.min(...xs) < 1 && Math.max(...ys) > 0 && Math.min(...ys) < 1;
+        if (area > 0.001 && intersects && corners.every(([u, v]) => Number.isFinite(u) && Number.isFinite(v) && Math.abs(u) < 10 && Math.abs(v) < 10)) return corners;
       }
     }
     const height = 0.44, width = height * 0.54 / aspect;

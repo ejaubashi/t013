@@ -12,10 +12,10 @@ test.afterEach(async ({ page }, info) => {
 });
 
 const rooms = {
-  pavilion: { name: "Lumen Pavilion", camera: "7.400,3.400,10.800", effect: "afterimage" },
-  orbit: { name: "Orbit Hall", camera: "7.400,3.600,10.800", effect: "orbital" },
-  garden: { name: "Sky Garden", camera: "7.400,3.800,10.800", effect: "silk" },
-  prism: { name: "Prism Chamber", camera: "7.400,3.800,11.200", effect: "spectral" },
+  pavilion: { name: "Lumen Pavilion", camera: "7.400,3.400,10.800", effect: "depth-portal" },
+  orbit: { name: "Orbit Hall", camera: "7.400,3.600,10.800", effect: "depth-portal" },
+  garden: { name: "Sky Garden", camera: "7.400,3.800,10.800", effect: "depth-portal" },
+  prism: { name: "Prism Chamber", camera: "7.400,3.800,11.200", effect: "depth-portal" },
 };
 
 async function ready(page, room = "pavilion") {
@@ -29,7 +29,7 @@ async function ready(page, room = "pavilion") {
       const skip = document.querySelector('button[aria-label="Skip room transition"]');
       const frame = { time: performance.now(), phase: canvas.dataset.roomTransition,
         progress: Number(canvas.dataset.transitionProgress), route: canvas.dataset.transitionRoute,
-        effect: canvas.dataset.transitionEffect, journey: canvas.dataset.journey,
+        effect: canvas.dataset.transitionEffect, depth: canvas.dataset.transitionDepth, technique: canvas.dataset.transitionTechnique, journey: canvas.dataset.journey,
         renderer: canvas.dataset.transitionRenderer,
         skip: Boolean(skip?.getClientRects().length && getComputedStyle(skip).visibility === "visible") };
       const previous = window.__roomFrames.at(-1);
@@ -80,6 +80,7 @@ test("animates every directed room pair with a live destination and exact arriva
     const frames = await page.evaluate((route) => window.__roomFrames.filter((frame) => frame.route === route && frame.phase === "travelling"), `${from}:${to}`);
     expect(frames.some((frame) => frame.progress > 0.15 && frame.progress < 0.45 && frame.renderer === "composite")).toBe(true);
     expect(frames.some((frame) => frame.progress > 0.55 && frame.progress < 0.9 && frame.renderer === "composite")).toBe(true);
+    expect(frames.some((frame) => frame.progress > 0.15 && frame.progress < 0.9 && frame.depth === "true" && frame.technique === "projective-depth-portal")).toBe(true);
     await expect(canvas).toHaveAttribute("data-transition-scene-draws", "1");
     traversed.add(`${from}:${to}`);
   }
