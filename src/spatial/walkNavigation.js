@@ -8,7 +8,7 @@ const clamp = THREE.MathUtils.clamp;
 export function walkView(room = "pavilion", entrance = false) {
   return { id: rooms.find((item) => item.id === room).entry, room, walk: true,
     position: entrance ? [7.3, eyeHeight, 11.8] : [7.1, eyeHeight, 7.4],
-    target: room === "pavilion" ? [-1.6, 3.1, -0.8] : [0, 3.3, -0.8] };
+    target: room === "pavilion" ? [-1.6, 2.2, -0.8] : [0, 2.3, -0.8] };
 }
 
 // Ground footprints include visitor clearance. The display scale is authored,

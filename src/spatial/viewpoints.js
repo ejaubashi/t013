@@ -1,4 +1,4 @@
-export const viewpoints = [
+const authored = [
   {
     id: "arrival",
     label: "The pavilion",
@@ -54,3 +54,20 @@ export const viewpoints = [
     id: `${room}-artworks`, room, label: "On the walls", position: [-2.8, 3.8, 6.8], target: [-9.67, 3.35, -0.5],
   })),
 ];
+
+
+// Every authored visit is a standing viewpoint, including the guided route.
+export const viewpoints = authored.map(view => {
+  const position = [...view.position]; position[1] = 1.72;
+  const target = [...view.target];
+  if (["family", "vienna", "testimony"].includes(view.id)) target[1] = 2.2;
+  else if (view.id.endsWith("-artworks")) target[1] = 2.1;
+  else target[1] = Math.min(target[1], 2.7);
+  if (view.id === "canopy") { position[0] = -7.4; position[2] = 7.7; }
+  if (view.id === "vienna") { position[0] = 5.25; position[2] = -4.1; }
+  if (view.id === "testimony") { position[0] = .1; position[2] = -4.4; }
+  if (view.id === "garden-sky") { position[0] = -8; position[2] = 5.8; }
+  if (view.id === "prism-spectrum") { position[0] = -7.8; position[2] = 4.8; }
+  return { ...view, walk: true, position, target,
+    label: ({ canopy: "The threshold", "garden-sky": "Beneath the night", "prism-spectrum": "The afterglow" })[view.id] || view.label };
+});

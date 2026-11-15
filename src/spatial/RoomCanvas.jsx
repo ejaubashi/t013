@@ -18,7 +18,7 @@ import { rooms, roomForView } from "./rooms";
 import { RoomTransitionPass, roomTransitions, smoothTravel } from "./roomTransitions";
 import { PortalPreviews } from "./portalPreviews";
 import { galleryPalette as palette } from "./galleryPalette";
-import { WalkController, eyeHeight, isWalkable, walkPosition, walkView } from "./walkNavigation";
+import { WalkController, eyeHeight, findWalkPath, isWalkable, walkPosition, walkView } from "./walkNavigation";
 
 export default function RoomCanvas({
   onReady,
@@ -26,6 +26,8 @@ export default function RoomCanvas({
   onProgress,
   controlRef,
   reducedMotion,
+  entered = true,
+  audioControl,
   onJourneyChange,
   onExhibitSelect,
   onArtworkSelect,
@@ -37,7 +39,8 @@ export default function RoomCanvas({
   onWalkInput,
 }) {
   const hostRef = useRef(null);
-  const motionRef = useRef(reducedMotion);
+  const motionRef = useRef(reducedMotion), enteredRef = useRef(entered), audioRef = useRef(audioControl);
+  enteredRef.current = entered; audioRef.current = audioControl;
   useEffect(() => {
     motionRef.current = reducedMotion;
   }, [reducedMotion]);
@@ -64,7 +67,7 @@ export default function RoomCanvas({
       lightingTransition = null,
       artTransition = null,
       artPhase = 2,
-      lightLevel = 0,
+      lightLevel = 1,
       journeyState = null,
       orbiting = false,
       imported = false;
@@ -72,12 +75,14 @@ export default function RoomCanvas({
     let spectrum = 0.5;
     let roomTravel = null, interruptedTravel = false, suppressNextTap = false;
     let viewportWidth = 0, viewportHeight = 0;
-    let wasInteracting = false;
+    let wasInteracting = false, lastAudioPose = 0;
+    const audioDirection = new THREE.Vector3();
     let navigationMode = "walk", walker, arrival = null, lookPointer = null, floorMarker;
     const fieldOfView = () => navigationMode === "walk" ? (host.clientWidth < 600 ? 78 : 64) : (host.clientWidth < 600 ? 72 : 52);
     const announceNavigation = () => onNavigationChange?.({ mode: navigationMode, arriving: Boolean(arrival) });
     const cancelArrival = () => { if (arrival) { arrival = null; walker?.sync(); announceNavigation(); dirty = true; } };
     const setNavigationMode = (mode) => {
+      if (!imported) mode = "walk";
       if (navigationMode === mode) return;
       navigationMode = mode; controls.enabled = mode === "views";
       walker?.sync(); camera.fov = fieldOfView(); camera.updateProjectionMatrix();
@@ -104,6 +109,16 @@ export default function RoomCanvas({
       transition = null;
       dirty = true;
       onJourneyChange?.(null);
+    };
+    const beginVisit = () => {
+      if (!ready || imported) return;
+      stopJourney();
+      const destination = walkView(activeRoom);
+      if (motionRef.current) { setArtForm(2, true); moveTo(destination, true); return; }
+      arrival = { from: camera.position.clone(), to: new THREE.Vector3(...destination.position), target: new THREE.Vector3(...destination.target), started: null };
+      artPhase = 1; room.userData.setArtPhase(1);
+      artTransition = { from: 1, to: 2, started: performance.now(), duration: 3100 };
+      announceNavigation(); dirty = true;
     };
     const listen = (target, type, listener, options) => {
       target.addEventListener(type, listener, options);
@@ -178,8 +193,16 @@ export default function RoomCanvas({
         controls.update();
         walker?.sync();
         transition = null;
-      } else
+      } else {
+        const points = view.walk ? findWalkPath(camera.position, position, activeRoom) : [];
+        const curve = points.length ? new THREE.CatmullRomCurve3([camera.position.clone(), ...points], false, "centripetal") : null;
+        // A look-only reset can have identical start/end positions. Arc-length
+        // sampling is undefined for a zero-length curve; interpolate in place.
+        const validCurve = curve && curve.getLength() > 1e-5 && Array.from({ length: 129 }, (_, i) => curve.getPoint(i / 128)).every(point => isWalkable(point, activeRoom));
         transition = {
+          curve: validCurve ? curve : null,
+          path: points.length ? [camera.position.clone(), ...points] : null,
+          duration: view.walk ? Math.max(1700, (curve?.getLength() || camera.position.distanceTo(position)) / 2.2 * 1000) : 1700,
           from: camera.position.clone(),
           to: position,
           fromTarget: controls.target.clone(),
@@ -187,6 +210,7 @@ export default function RoomCanvas({
           started: performance.now(),
           walk: Boolean(view.walk),
         };
+      }
       dirty = true;
     };
     const enterRoom = (id, instant = false) => {
@@ -230,7 +254,7 @@ export default function RoomCanvas({
       if (instant || motionRef.current) {
         lightLevel = Number(night);
         room.userData.setLighting(lightLevel);
-        scene.environmentIntensity = night ? 0.25 : 0.5;
+        scene.environmentIntensity = night ? 0.18 : 0.3;
         lightingTransition = null;
       } else lightingTransition = { from: lightLevel, to: Number(night), started: performance.now() };
       renderer.domElement.dataset.lighting = night ? "night" : "day";
@@ -278,7 +302,7 @@ export default function RoomCanvas({
         );
         renderer.setClearColor(palette.sky, 1);
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.0;
+        renderer.toneMappingExposure = 1.15;
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         const environmentGenerator = new THREE.PMREMGenerator(renderer);
@@ -288,7 +312,7 @@ export default function RoomCanvas({
           0.04,
         );
         scene.environment = environmentTarget.texture;
-        scene.environmentIntensity = 0.5;
+        scene.environmentIntensity = 0.18;
         environmentRoom.traverse((object) => {
           object.geometry?.dispose();
           object.material?.dispose();
@@ -347,7 +371,7 @@ export default function RoomCanvas({
         const floor = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
         const floorPoint = new THREE.Vector3();
         floorMarker = new THREE.Mesh(new THREE.RingGeometry(0.18, 0.215, 48),
-          new THREE.MeshBasicMaterial({ color: palette.charcoal, transparent: true, opacity: 0.65, depthWrite: false, side: THREE.DoubleSide }));
+          new THREE.MeshBasicMaterial({ color: palette.warmLight, transparent: true, opacity: 0.8, depthWrite: false, side: THREE.DoubleSide }));
         floorMarker.rotation.x = -Math.PI / 2; floorMarker.visible = false; scene.add(floorMarker);
         const pointOnFloor = (event) => {
           const rect = canvas.getBoundingClientRect();
@@ -434,6 +458,7 @@ export default function RoomCanvas({
         artPhase = motionRef.current ? 2 : 1;
         room.userData.setArtPhase(artPhase);
         scene.add(room);
+        room.userData.setLighting(1);
         const renderTarget = new THREE.WebGLRenderTarget(1, 1, {
           type: THREE.HalfFloatType,
           samples: softwareGraphics ? 0 : 2,
@@ -567,16 +592,23 @@ export default function RoomCanvas({
             const p = Math.min(1, (time - lightingTransition.started) / 750);
             lightLevel = THREE.MathUtils.lerp(lightingTransition.from, lightingTransition.to, p * p * (3 - 2 * p));
             room.userData.setLighting?.(lightLevel);
-            scene.environmentIntensity = THREE.MathUtils.lerp(0.5, 0.25, lightLevel);
+            scene.environmentIntensity = THREE.MathUtils.lerp(0.3, 0.18, lightLevel);
             dirty = true;
             if (p === 1) lightingTransition = null;
           }
           if (transition) {
-            const p = Math.min(1, (time - transition.started) / 1700),
-              ease = smoothTravel(p);
-            camera.position.lerpVectors(transition.from, transition.to, ease);
-            // A shallow camera arc adds lift while keeping both endpoints exact.
-            if (!transition.walk) camera.position.y += Math.sin(ease * Math.PI) * 0.32;
+            // An animation frame's timestamp can precede an input handler's
+            // performance.now(). Curve sampling must stay inside [0, 1].
+            const p = THREE.MathUtils.clamp((time - transition.started) / transition.duration, 0, 1),
+              ease = THREE.MathUtils.clamp(smoothTravel(p), 0, 1);
+            if (transition.curve) camera.position.copy(transition.curve.getPointAt(ease));
+            else if (transition.path) {
+              const lengths = transition.path.slice(1).map((point, i) => point.distanceTo(transition.path[i]));
+              let distance = ease * lengths.reduce((sum, length) => sum + length, 0), segment = 0;
+              while (segment < lengths.length - 1 && distance > lengths[segment]) distance -= lengths[segment++];
+              camera.position.lerpVectors(transition.path[segment], transition.path[segment + 1], lengths[segment] ? distance / lengths[segment] : 1);
+            } else camera.position.lerpVectors(transition.from, transition.to, ease);
+            if (!imported) camera.position.y = eyeHeight;
             controls.target.lerpVectors(
               transition.fromTarget,
               transition.toTarget,
@@ -680,6 +712,11 @@ export default function RoomCanvas({
               canvas.dataset.livePortals = imported ? "0" : String(portalPreviews.count);
               canvas.dataset.room = imported ? "capture" : activeRoom;
               canvas.dataset.navigation = navigationMode;
+              if (audioRef.current?.enabled && time - lastAudioPose > 90) {
+                camera.getWorldDirection(audioDirection);
+                audioRef.current.pose({ position: camera.position.toArray(), direction: audioDirection.toArray(), speed: walker?.velocity.length() || 0 });
+                lastAudioPose = time;
+              }
               canvas.dataset.motionRepresentation = walkingMotion ? "photographic" : "splats";
               canvas.dataset.arrival = arrival ? "entering" : "complete";
               canvas.dataset.walkRoute = String(walker.route.length);
@@ -703,7 +740,7 @@ export default function RoomCanvas({
               }
               canvas.dataset.journey = journeyState ? String(journeyState.index) : "stopped";
               const markers = activeRoom === "pavilion" ? exhibits.map((exhibit) => {
-                const point = new THREE.Vector3(exhibit.x + exhibit.width / 2 - 0.18, 2.75, -7.43).project(camera);
+                const point = new THREE.Vector3(exhibit.x + exhibit.width / 2 - 0.18, 2.2, -7.43).project(camera);
                 return { id: exhibit.id, x: (point.x + 1) * host.clientWidth / 2, y: (1 - point.y) * host.clientHeight / 2,
                   visible: camera.position.z > -7.43 && point.z > -1 && point.z < 1 && Math.abs(point.x) < 0.94 && Math.abs(point.y) < 0.88 };
               }) : [];
@@ -741,6 +778,7 @@ export default function RoomCanvas({
         };
         frame = requestAnimationFrame(tick);
         controlRef.current = {
+          beginVisit,
           navigate: (id) => {
             stopJourney();
             if (!imported)
@@ -751,8 +789,12 @@ export default function RoomCanvas({
           },
           approachDoor,
           setNavigation: (mode) => {
-            if (!ready || imported || !["walk", "views"].includes(mode) || mode === navigationMode) return;
+            if (!ready || imported || !["walk", "views"].includes(mode)) return;
             stopJourney();
+            if (mode === "walk" && mode === navigationMode) {
+              transition = null; walker.sync(); dirty = true;
+              return;
+            }
             if (mode === "walk") {
               const position = walkPosition(camera.position, activeRoom), direction = camera.getWorldDirection(new THREE.Vector3());
               direction.y = THREE.MathUtils.clamp(direction.y, -0.5, 0.5); direction.normalize();
@@ -834,7 +876,7 @@ export default function RoomCanvas({
               artTransition = null;
               canvas.dataset.artForm = "capture";
               canvas.dataset.mirrors = "0";
-              scene.environmentIntensity = 0.5;
+              scene.environmentIntensity = 0.18;
               controls.maxDistance = 18;
               moveTo({ position: [0, 0.5, 5.5], target: [0, 0, 0] }, true);
               canvas.dataset.splats = String(
@@ -862,21 +904,11 @@ export default function RoomCanvas({
         }
         ready = true;
         dirty = true;
-        if (!motionRef.current) {
-          artPhase = 1;
-          room.userData.setArtPhase(artPhase);
-          artTransition = { from: 1, to: 2, started: performance.now(), duration: 3100 };
-          const entrance = walkView("pavilion", true), destination = walkView();
-          camera.position.set(...entrance.position);
-          controls.target.set(...destination.target);
-          controls.update();
-          walker.sync();
-          arrival = { from: camera.position.clone(), to: new THREE.Vector3(...destination.position),
-            target: new THREE.Vector3(...destination.target), started: null };
-          announceNavigation();
-        }
+        const entrance = walkView("pavilion", true);
+        camera.position.set(...entrance.position); controls.target.set(...entrance.target); controls.update(); walker.sync();
+        if (enteredRef.current) beginVisit();
         canvas.dataset.scene = "gaussian-archive";
-        canvas.dataset.lighting = "day";
+        canvas.dataset.lighting = "night";
         canvas.dataset.mirrors = String(room.userData.mirrorCount || 0);
         canvas.dataset.splats = String(
           room.splats?.getNumSplats() || room.packedSplats?.numSplats || 0,
@@ -910,5 +942,5 @@ export default function RoomCanvas({
         host.removeChild(renderer.domElement);
     };
   }, []);
-  return <div className="spatial-canvas" ref={hostRef} />;
+  return <div className="spatial-canvas" ref={hostRef} inert={!entered ? true : undefined} />;
 }

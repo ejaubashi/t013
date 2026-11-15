@@ -5,7 +5,9 @@ test.use({ trace: "off" });
 async function ready(page, reduced = false) {
   await page.emulateMedia({ reducedMotion: reduced ? "reduce" : "no-preference" });
   await page.goto("/?view=spatial");
-  await expect(page.getByRole("button", { name: "Walk in first person", exact: true })).toBeEnabled({ timeout: 60000 });
+  await expect(page.getByRole("button", { name: "Enter quietly", exact: true })).toBeEnabled({ timeout: 60000 });
+  await page.getByRole("button", { name: "Enter quietly", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Walk in first person", exact: true })).toBeEnabled();
   const canvas = page.locator(".spatial-canvas canvas");
   await expect(canvas).toHaveAttribute("data-navigation", "walk");
   return canvas;
@@ -111,7 +113,7 @@ test("walks around the installation and through a physical doorway into the next
   const errors = errorsFrom(page), canvas = await ready(page);
   await page.keyboard.press("Escape");
   await expect(canvas).toHaveAttribute("data-arrival", "complete");
-  await page.getByRole("button", { name: "Door to Orbit Hall", exact: true }).click();
+  await page.getByRole("button", { name: "Door to Scarlet Room", exact: true }).click();
   await expect.poll(async () => Number(await canvas.getAttribute("data-walk-route"))).toBeGreaterThan(0);
   await expect(canvas).toHaveAttribute("data-room", "orbit", { timeout: 120000 });
   await expect(canvas).toHaveAttribute("data-room-transition", "idle", { timeout: 30000 });
@@ -131,7 +133,7 @@ test("walks to the floor, visits every room at eye level, and moves between pain
     const camera = (await canvas.getAttribute("data-camera")).split(",").map(Number);
     return Math.hypot(camera[0] - point.target[0], camera[2] - point.target[1]);
   }).toBeLessThan(0.02);
-  for (const [id, name] of [["orbit", "Orbit Hall"], ["garden", "Sky Garden"], ["prism", "Prism Chamber"], ["pavilion", "Lumen Pavilion"]]) {
+  for (const [id, name] of [["orbit", "Scarlet Room"], ["garden", "Night Garden"], ["prism", "Obsidian Room"], ["pavilion", "Nocturne Hall"]]) {
     await page.getByRole("button", { name: "Open gallery atlas" }).click();
     await page.getByRole("button", { name: `Enter ${name}`, exact: true }).click();
     await expect(canvas).toHaveAttribute("data-room", id);
@@ -140,11 +142,11 @@ test("walks to the floor, visits every room at eye level, and moves between pain
     await expect(canvas).toHaveAttribute("data-room-transition", "idle");
   }
   await page.getByRole("button", { name: "Browse wall artworks" }).click();
-  await page.getByRole("button", { name: "Inspect Composition VI by Wassily Kandinsky", exact: true }).click();
+  await page.getByRole("button", { name: "Inspect Dance by Henri Matisse", exact: true }).click();
   await page.getByRole("button", { name: "View on the wall" }).click();
-  await expect(canvas).toHaveAttribute("data-navigation", "views");
-  await expect(canvas).toHaveAttribute("data-camera", "-4.500,3.350,-4.600");
-  await expect(page.getByRole("toolbar", { name: "Choose a viewpoint" })).toBeVisible();
+  await expect(canvas).toHaveAttribute("data-navigation", "walk");
+  await expect(canvas).toHaveAttribute("data-camera", "-4.500,1.720,-4.600");
+  await expect(page.getByRole("toolbar", { name: "Choose a viewpoint" })).toHaveCount(0);
   await page.getByRole("button", { name: "Walk in first person", exact: true }).click();
   await expect(canvas).toHaveAttribute("data-navigation", "walk");
   await expect(canvas).toHaveAttribute("data-camera", "-4.500,1.720,-4.600");
@@ -183,7 +185,7 @@ test("interrupts arrival, combines touch walking and looking, and keeps fluid ro
     await expect(canvas).toHaveAttribute("data-walk-route", "0");
   }
   await page.getByRole("button", { name: "Open gallery atlas" }).click();
-  await page.getByRole("button", { name: "Enter Orbit Hall", exact: true }).click();
+  await page.getByRole("button", { name: "Enter Scarlet Room", exact: true }).click();
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await expect(canvas).toHaveAttribute("data-room-transition", "travelling");
   await page.getByRole("button", { name: "Skip room transition" }).click();

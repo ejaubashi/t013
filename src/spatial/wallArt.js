@@ -6,13 +6,13 @@ function plaque(artwork) {
   const canvas = document.createElement("canvas");
   canvas.width = 1024; canvas.height = 240;
   const context = canvas.getContext("2d");
-  context.fillStyle = "#f5f2eb"; context.fillRect(0, 0, 1024, 240);
-  context.fillStyle = "#393a35";
+  context.fillStyle = "#141318"; context.fillRect(0, 0, 1024, 240);
+  context.fillStyle = "#e1d8da";
   context.font = "500 34px Archivo, Arial, sans-serif";
   context.fillText(artwork.artist, 42, 66);
   context.font = "400 27px Archivo, Arial, sans-serif";
   context.fillText(artwork.title, 42, 120, 940);
-  context.fillStyle = "#777268"; context.font = "400 24px Archivo, Arial, sans-serif";
+  context.fillStyle = "#9a909a"; context.font = "400 24px Archivo, Arial, sans-serif";
   context.fillText(`${artwork.date}   /   ${artwork.medium}`, 42, 179);
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
@@ -35,7 +35,7 @@ export function addWallArt(parent, roomId) {
     };
     box(frame, 0, 0, -0.05, width + 0.15, height + 0.15, 0.16);
     box(backing, 0, 0, 0.04, width + 0.025, height + 0.025, 0.025);
-    const material = new THREE.MeshBasicMaterial({ color: 0xffffff, toneMapped: false });
+    const material = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: .95, metalness: 0, envMapIntensity: .08 });
     const painting = new THREE.Mesh(new THREE.PlaneGeometry(width, height), material);
     painting.position.z = 0.065; painting.name = `painting-${artwork.id}`;
     group.add(painting);
@@ -45,10 +45,11 @@ export function addWallArt(parent, roomId) {
       material.map = texture; material.needsUpdate = true;
     }));
     const caption = plaque(artwork);
-    caption.position.set(0, -height / 2 - 0.36, -0.075); group.add(caption);
+    // Read the label beside the work at standing height, rather than at its feet.
+    caption.position.set(width / 2 + 1.1, 1.25 - artwork.position[1], 0.07); group.add(caption);
     box(frame, 0, height / 2 + 0.36, 0.04, width * 0.65, 0.055, 0.13);
     box(lamp, 0, height / 2 + 0.32, 0.07, width * 0.6, 0.012, 0.08);
-    const light = new THREE.SpotLight(palette.daylight, 18, 6, 0.56, 0.8, 2);
+    const light = new THREE.SpotLight(palette.daylight, 32, 7, 0.68, 0.78, 1.5);
     light.position.set(0, height / 2 + 0.55, 1.2);
     light.target.position.set(0, 0, -0.1); group.add(light, light.target);
     const hit = new THREE.Mesh(new THREE.PlaneGeometry(width, height), new THREE.MeshBasicMaterial());

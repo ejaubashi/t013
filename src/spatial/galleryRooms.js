@@ -11,7 +11,7 @@ const box = (parent, material, position, size) => {
   return mesh;
 };
 
-function label(text, color = "#777268") {
+function label(text, color = "#a59ba5") {
   const canvas = document.createElement("canvas");
   canvas.width = 768; canvas.height = 128;
   const context = canvas.getContext("2d");
@@ -38,10 +38,10 @@ export function addRoomPortals(parent, roomId) {
     canvas.width = 256; canvas.height = 512;
     const context = canvas.getContext("2d");
     const gradient = context.createLinearGradient(0, 0, 256, 512);
-    gradient.addColorStop(0, "#e8e4dc");
-    gradient.addColorStop(1, "#f5f2eb");
+    gradient.addColorStop(0, "#09080d");
+    gradient.addColorStop(1, "#180a11");
     context.fillStyle = gradient; context.fillRect(0, 0, 256, 512);
-    context.strokeStyle = "#a7a195";
+    context.strokeStyle = "#55232f";
     context.lineWidth = 2;
     for (let i = 0; i < 9; i++) {
       context.beginPath();
@@ -90,7 +90,7 @@ export function createOrbitHall(options = {}) {
   for (const x of [-8.4, 8.4]) box(hall, stone, [x, 8, -10.2], [3.5, 4, 0.5]);
   const halo = new THREE.Mesh(new THREE.TorusGeometry(3.65, 0.055, 10, 160), gold);
   halo.position.set(0, 4.6, -9.85); hall.add(halo);
-  const disc = new THREE.Mesh(new THREE.CircleGeometry(3.5, 128), new THREE.MeshBasicMaterial({ color: palette.stone }));
+  const disc = new THREE.Mesh(new THREE.CircleGeometry(3.5, 128), new THREE.MeshStandardMaterial({ color: palette.stone, roughness: 0.65 }));
   disc.position.set(0, 4.6, -9.8); hall.add(disc);
   for (const x of [-6, 6]) box(hall, gold, [x, 9.72, 0], [0.035, 0.02, 26]);
   const sculpture = new THREE.Group();
@@ -109,14 +109,14 @@ export function createOrbitHall(options = {}) {
   hall.add(sculpture);
   const plinth = new THREE.Mesh(new THREE.CylinderGeometry(3.4, 3.4, 0.16, 96), new THREE.MeshStandardMaterial({ color: palette.porcelain, roughness: 0.95 }));
   plinth.position.set(0, 0.08, -0.8); plinth.receiveShadow = true; hall.add(plinth);
-  const ambient = new THREE.HemisphereLight(palette.daylight, palette.stone, 1.25);
+  const ambient = new THREE.HemisphereLight(palette.daylight, palette.stone, .35);
   const key = new THREE.PointLight(palette.daylight, 45, 25, 1.5); key.position.set(0, 5.5, 1);
   hall.add(ambient, key);
   hall.userData.setLighting = (level) => {
     hall.userData.lightLevel = level;
-    gold.color.lerpColors(new THREE.Color(palette.silver), new THREE.Color(0xd3cabc), level);
+    gold.color.lerpColors(new THREE.Color(palette.silver), new THREE.Color(0x9c9099), level);
     key.color.lerpColors(new THREE.Color(palette.daylight), new THREE.Color(palette.warmLight), level);
-    ambient.intensity = 1.25 - level * 0.6;
+    ambient.intensity = .35 - level * .13;
   };
   hall.userData.portalTargets = addRoomPortals(hall, "orbit");
   return hall;
@@ -147,7 +147,7 @@ export function createSkyGarden() {
   const skyCanvas = document.createElement("canvas"); skyCanvas.width = 16; skyCanvas.height = 256;
   const context = skyCanvas.getContext("2d");
   const gradient = context.createLinearGradient(0, 0, 0, 256);
-  gradient.addColorStop(0, "#e4e5e0"); gradient.addColorStop(0.55, "#f1efe9"); gradient.addColorStop(1, "#faf7ef");
+  gradient.addColorStop(0, "#03040b"); gradient.addColorStop(0.55, "#090b17"); gradient.addColorStop(1, "#17101c");
   context.fillStyle = gradient; context.fillRect(0, 0, 16, 256);
   const skyTexture = new THREE.CanvasTexture(skyCanvas); skyTexture.colorSpace = THREE.SRGBColorSpace;
   const skyMaterial = new THREE.MeshBasicMaterial({ map: skyTexture, side: THREE.BackSide, depthWrite: false });
@@ -156,7 +156,7 @@ export function createSkyGarden() {
   basin.position.set(0, 0.11, -0.8); garden.add(basin);
   const water = new THREE.Mesh(new THREE.CircleGeometry(4.08, 96), new THREE.MeshStandardMaterial({ color: palette.stone, metalness: 0, roughness: 0.95 }));
   water.rotation.x = -Math.PI / 2; water.position.set(0, 0.225, -0.8); garden.add(water);
-  const petalsMaterial = new THREE.MeshPhysicalMaterial({ color: palette.porcelain, metalness: 0, roughness: 0.82, iridescence: 0, clearcoat: 0, envMapIntensity: 0.5, side: THREE.DoubleSide });
+  const petalsMaterial = new THREE.MeshPhysicalMaterial({ color: palette.silver, metalness: 0, roughness: 0.82, iridescence: 0, clearcoat: 0, envMapIntensity: 0.5, side: THREE.DoubleSide });
   const petalGeometry = new THREE.SphereGeometry(1, 12, 6);
   const petals = new THREE.InstancedMesh(petalGeometry, petalsMaterial, 1100);
   petals.name = "eleven-hundred-paper-petals";
@@ -170,7 +170,7 @@ export function createSkyGarden() {
     dummy.rotation.set(t * 6 + jitter * 1.6, angle, angle * 0.3 + jitter);
     dummy.scale.set(0.07 + (i % 9) * 0.006, 0.008, 0.13 + (i % 7) * 0.008);
     dummy.updateMatrix(); petals.setMatrixAt(i, dummy.matrix);
-    color.setHSL(0.1, 0.06, 0.74 + (i % 11) / 85);
+    color.setHSL(0.92, 0.04, 0.56 + (i % 11) / 50);
     petals.setColorAt(i, color);
   }
   garden.add(petals);
@@ -179,13 +179,13 @@ export function createSkyGarden() {
     box(garden, ivory, [x, 0.55, 0], [1.1, 0.35, 6]);
     box(garden, seam, [x, 0.18, 0], [0.65, 0.36, 5.5]);
   }
-  const ambient = new THREE.HemisphereLight(palette.daylight, palette.stone, 1.4);
-  const sun = new THREE.DirectionalLight(palette.daylight, 2.2); sun.position.set(-4, 12, 4);
+  const ambient = new THREE.HemisphereLight(0xa8b7df, palette.stone, .45);
+  const sun = new THREE.DirectionalLight(0xabb8dc, 1.1); sun.position.set(-4, 12, 4);
   garden.add(ambient, sun);
   garden.userData.setLighting = (level) => {
-    skyMaterial.color.lerpColors(new THREE.Color(0xffffff), new THREE.Color(0x938a7b), level);
-    ambient.intensity = 1.4 - level * 0.65;
-    sun.intensity = 2.2 - level * 1.7;
+    skyMaterial.color.lerpColors(new THREE.Color(0xffffff), new THREE.Color(0x48465e), level);
+    ambient.intensity = .45 - level * .16;
+    sun.intensity = 1.1 - level * .35;
     petalsMaterial.emissive.setHex(0x000000); petalsMaterial.emissiveIntensity = 0;
   };
   garden.userData.portalTargets = addRoomPortals(garden, "garden");

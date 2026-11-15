@@ -71,7 +71,7 @@ export function createArchiveRoom({ onProgress, reflectionSize, reflectionSample
   const hitMaterial = new THREE.MeshBasicMaterial({ side: THREE.FrontSide });
   const exhibitTargets = exhibits.map((exhibit) => {
     const target = new THREE.Mesh(new THREE.PlaneGeometry(exhibit.width, exhibit.height), hitMaterial);
-    target.position.set(exhibit.x, 2.75, -7.445);
+    target.position.set(exhibit.x, 2.2, -7.445);
     target.layers.set(3);
     target.userData.exhibit = exhibit.id;
     pavilion.add(target);
@@ -117,7 +117,7 @@ export function createArchiveRoom({ onProgress, reflectionSize, reflectionSample
             toneMapped: false,
           }),
         );
-        reflectedArtwork.position.set(work.x, 2.75, -7.455);
+        reflectedArtwork.position.set(work.x, 2.2, -7.455);
         reflectedArtwork.layers.set(2);
         reflections.add(reflectedArtwork);
         for (let row = 0; row < work.rows; row++) {
@@ -125,7 +125,7 @@ export function createArchiveRoom({ onProgress, reflectionSize, reflectionSample
             const i = (row * work.columns + col) * 4;
             center.set(
               work.x + (col / (work.columns - 1) - 0.5) * work.width,
-              2.75 + (0.5 - row / (work.rows - 1)) * work.height,
+              2.2 + (0.5 - row / (work.rows - 1)) * work.height,
               -7.455,
             );
             scales.set(

@@ -36,7 +36,7 @@ export function createPrismChamber() {
   const islandRim = new THREE.Mesh(new THREE.TorusGeometry(4.42, 0.018, 6, 144), glow);
   islandRim.rotation.x = Math.PI / 2; islandRim.position.set(0, 0.29, -0.8); chamber.add(islandRim);
   const glass = new THREE.MeshPhysicalMaterial({
-    color: 0xf5f2eb, roughness: 0.25, metalness: 0,
+    color: 0x79717c, roughness: 0.2, metalness: 0,
     transmission: 0.58, thickness: 1.5, ior: 1.48,
     dispersion: 0.08, clearcoat: 0.4,
     iridescence: 0, iridescenceIOR: 1.35,
@@ -63,19 +63,19 @@ export function createPrismChamber() {
   }
   installation.scale.setScalar(0.72);
   chamber.add(installation);
-  const ambient = new THREE.HemisphereLight(palette.daylight, palette.stone, 1.25);
+  const ambient = new THREE.HemisphereLight(palette.daylight, palette.stone, .32);
   const key = new THREE.PointLight(palette.daylight, 45, 23, 1.6); key.position.set(-4, 7.5, 4);
   const fill = new THREE.PointLight(palette.daylight, 32, 20, 1.6); fill.position.set(4, 5, -4);
   chamber.add(ambient, key, fill);
   chamber.userData.setSpectrum = (value) => {
     const level = THREE.MathUtils.clamp(value, 0, 1);
     installation.rotation.y = (level - 0.5) * 0.18;
-    key.color.lerpColors(new THREE.Color(palette.warmLight), new THREE.Color(0xf5f7f6), level);
-    fill.color.lerpColors(new THREE.Color(palette.daylight), new THREE.Color(0xe9e7e1), level);
+    key.color.lerpColors(new THREE.Color(palette.warmLight), new THREE.Color(0xd9d9ec), level);
+    fill.color.lerpColors(new THREE.Color(palette.daylight), new THREE.Color(0x8966a2), level);
     chamber.userData.spectrum = level;
   };
   chamber.userData.setLighting = (level) => {
-    ambient.intensity = 1.25 - level * 0.65;
+    ambient.intensity = .32 - level * .1;
     key.intensity = 45 + level * 8;
     fill.intensity = 32 + level * 8;
   };

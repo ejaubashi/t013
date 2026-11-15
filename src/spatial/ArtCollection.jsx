@@ -5,6 +5,7 @@ import { useDialogMotion } from "./useDialogMotion";
 
 const asset = (name) => `${import.meta.env.BASE_URL}assets/${name}`;
 const roomName = (id) => rooms.find((room) => room.id === id).name;
+const Arrow = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" aria-hidden="true"><path d="M5 19 19 5M5 5h14v14" /></svg>;
 
 export default function ArtCollection({ initialArtwork, onClose, onViewOnWall }) {
   const ref = useRef(null), titleRef = useRef(null), mediaRef = useRef(null), lastArtwork = useRef(initialArtwork);
@@ -42,7 +43,7 @@ export default function ArtCollection({ initialArtwork, onClose, onViewOnWall })
     <header className="art-collection-header">
       <div>
         {artwork && <button className="art-back" aria-label="Back to art collection" onClick={() => select(null)}>← All artworks</button>}
-        <span className="art-eyebrow">{artwork ? `On view in ${roomName(artwork.room)}` : "Light, colour & landscape"}</span>
+        <span className="art-eyebrow">{artwork ? `On view in ${roomName(artwork.room)}` : "Nocturne / Colour in the dark"}</span>
         <h2 id="art-collection-title" ref={titleRef} tabIndex={-1}>{artwork ? artwork.title : "The art collection."}</h2>
       </div>
       <button autoFocus className="art-collection-close" aria-label="Close art collection" onClick={() => close()}>×</button>
@@ -77,9 +78,9 @@ export default function ArtCollection({ initialArtwork, onClose, onViewOnWall })
         <p className="artwork-artist">{artwork.artist}</p>
         <dl><div><dt>Date</dt><dd>{artwork.date}</dd></div><div><dt>Medium</dt><dd>{artwork.medium}</dd></div><div><dt>Original collection</dt><dd>{artwork.collection}</dd></div></dl>
         <p className="artwork-description">{artwork.description}</p>
-        <button className="art-view-on-wall" onClick={() => close(() => onViewOnWall(artwork.id))}>View on the wall <span aria-hidden="true">↗</span></button>
+        <button className="art-view-on-wall" onClick={() => close(() => onViewOnWall(artwork.id))}>View on the wall <Arrow /></button>
         <p className="artwork-rights">{artwork.reproduction}</p>
-        <div className="artwork-sources"><a href={artwork.source} target="_blank" rel="noreferrer">Source image ↗</a><a href={asset("artworks/CC0-1.0.txt")} target="_blank" rel="noreferrer">Image license ↗</a></div>
+        <div className="artwork-sources"><a href={artwork.source} target="_blank" rel="noreferrer">Source image <Arrow /></a><a href={asset("artworks/CC0-1.0.txt")} target="_blank" rel="noreferrer">Image license <Arrow /></a></div>
       </section>
     </div> : <>
       <div className="art-collection-filters" role="group" aria-label="Filter artworks by room">

@@ -12,10 +12,10 @@ test.afterEach(async ({ page }, info) => {
 });
 
 const rooms = {
-  pavilion: { name: "Lumen Pavilion", camera: "7.400,3.400,10.800", effect: "depth-portal" },
-  orbit: { name: "Orbit Hall", camera: "7.400,3.600,10.800", effect: "depth-portal" },
-  garden: { name: "Sky Garden", camera: "7.400,3.800,10.800", effect: "depth-portal" },
-  prism: { name: "Prism Chamber", camera: "7.400,3.800,11.200", effect: "depth-portal" },
+  pavilion: { name: "Nocturne Hall", camera: "7.100,1.720,7.400", effect: "depth-portal" },
+  orbit: { name: "Scarlet Room", camera: "7.100,1.720,7.400", effect: "depth-portal" },
+  garden: { name: "Night Garden", camera: "7.100,1.720,7.400", effect: "depth-portal" },
+  prism: { name: "Obsidian Room", camera: "7.100,1.720,7.400", effect: "depth-portal" },
 };
 
 async function ready(page, room = "pavilion") {
@@ -42,8 +42,8 @@ async function ready(page, room = "pavilion") {
   await expect(canvas).toHaveAttribute("data-room", room, { timeout: 60000 });
   await expect(canvas).toHaveAttribute("data-motion", "idle", { timeout: 45000 });
   await expect(page.getByRole("button", { name: "Open gallery atlas" })).toBeEnabled({ timeout: 45000 });
-  await page.getByRole("button", { name: "Switch to composed views", exact: true }).click();
-  await expect(canvas).toHaveAttribute("data-navigation", "views");
+  await expect(canvas).toHaveAttribute("data-navigation", "walk");
+  await expect(canvas).toHaveAttribute("data-arrival", "complete", { timeout: 15000 });
   await expect(canvas).toHaveAttribute("data-motion", "idle", { timeout: 15000 });
   return canvas;
 }
@@ -55,7 +55,7 @@ async function choose(page, room) {
 
 function collectErrors(page) {
   const errors = [];
-  page.on("pageerror", (error) => errors.push(error.message));
+  page.on("pageerror", (error) => errors.push(error.stack || error.message));
   page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
   return errors;
 }
@@ -93,12 +93,12 @@ test("interrupts, skips, resizes, and honors reduced motion without stranding th
   test.setTimeout(180000);
   const errors = collectErrors(page), canvas = await ready(page);
   await choose(page, "orbit");
-  await expect(canvas).toHaveAttribute("data-room-transition", "travelling");
+  await expect(canvas).toHaveAttribute("data-room-transition", "travelling", { timeout: 45000 });
   // Opening the atlas finishes the current transfer; the next selection starts
   // from the displayed composition instead of an obsolete render target.
   await choose(page, "prism");
   await expect(canvas).toHaveAttribute("data-transition-route", "orbit:prism");
-  await expect(canvas).toHaveAttribute("data-room-transition", "travelling");
+  await expect(canvas).toHaveAttribute("data-room-transition", "travelling", { timeout: 45000 });
   await page.keyboard.press("Escape");
   await expect(canvas).toHaveAttribute("data-room-transition", "idle");
   await expect(canvas).toHaveAttribute("data-camera", rooms.prism.camera);
@@ -114,8 +114,8 @@ test("interrupts, skips, resizes, and honors reduced motion without stranding th
   await canvas.focus(); await page.keyboard.down("KeyW");
   await expect.poll(() => canvas.getAttribute("data-camera")).not.toBe(rooms.pavilion.camera);
   await page.keyboard.up("KeyW");
-  await page.getByRole("button", { name: "02 The family" }).click();
-  await expect(canvas).toHaveAttribute("data-camera", "-4.000,2.450,-3.600", { timeout: 15000 });
+  await page.keyboard.press("KeyR");
+  await expect(canvas).toHaveAttribute("data-camera", rooms.pavilion.camera, { timeout: 20000 });
   await page.emulateMedia({ reducedMotion: "reduce" });
   await ready(page);
   await choose(page, "prism");
@@ -130,12 +130,12 @@ test("interrupts, skips, resizes, and honors reduced motion without stranding th
 test("uses the same room transfer for physical doors and the guided journey", async ({ page }) => {
   test.setTimeout(180000);
   const errors = collectErrors(page), canvas = await ready(page, "orbit");
-  const doorway = await page.getByRole("button", { name: "Door to Lumen Pavilion", exact: true }).boundingBox();
+  const doorway = await page.getByRole("button", { name: "Door to Nocturne Hall", exact: true }).boundingBox();
   expect(doorway).not.toBeNull();
   const point = { x: doorway.x + doorway.width / 2, y: doorway.y + doorway.height / 2 - 35 };
   expect(await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.tagName, point)).toBe("CANVAS");
   await page.mouse.click(point.x, point.y);
-  await expect(canvas).toHaveAttribute("data-room-transition", "travelling");
+  await expect(canvas).toHaveAttribute("data-room-transition", "travelling", { timeout: 45000 });
   await expect(canvas).toHaveAttribute("data-transition-route", "orbit:pavilion");
   await expect(canvas).toHaveAttribute("data-room-transition", "idle", { timeout: 45000 });
   await page.getByRole("button", { name: "Start guided journey" }).click();

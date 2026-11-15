@@ -15,7 +15,7 @@ export function createGalleryArchitecture({ reflectionSize, reflectionSamples, b
     color: palette.plaster, map: texture, bumpMap: texture, bumpScale: 0.003, roughness: 0.86,
   });
   const darkStone = new THREE.MeshStandardMaterial({
-    color: palette.stone, map: texture, bumpMap: texture, bumpScale: 0.004, roughness: 0.92, metalness: 0,
+    color: palette.stone, map: texture, bumpMap: texture, bumpScale: 0.004, roughness: 0.38, metalness: 0.22,
   });
   // Screen-space filtering keeps distant floor joints from breaking into dots.
   darkStone.onBeforeCompile = (shader) => {
@@ -102,10 +102,10 @@ export function createGalleryArchitecture({ reflectionSize, reflectionSamples, b
       box(work.x + edge, 2.6, -7.82, 0.018, 5.2, 0.085, bronze);
     box(work.x, 0.065, -7.82, 3.75, 0.13, 0.4, bronze, true);
     box(work.x, 0.14, -7.6, 3.5, 0.018, 0.025, coolLight);
-    box(work.x, 2.75, -7.53, work.width + 0.12, work.height + 0.12, 0.07, bronze);
-    box(work.x, 2.75, -7.48, work.width + 0.035, work.height + 0.035, 0.02, charcoal);
+    box(work.x, 2.2, -7.53, work.width + 0.12, work.height + 0.12, 0.07, bronze);
+    box(work.x, 2.2, -7.48, work.width + 0.035, work.height + 0.035, 0.02, charcoal);
     box(work.x, 5.06, -7.51, 3.35, 0.018, 0.02, warmLight);
-    const labelY = 2.75 - work.height / 2 - 0.32;
+    const labelY = 2.2 - work.height / 2 - 0.32;
     const labelX = work.x - work.width / 2 + 0.8;
     box(labelX, labelY, -7.505, 1.7, 0.29, 0.025, charcoal);
     const label = labelMesh(work.title, work.detail, "#f4f1e9");
@@ -140,8 +140,8 @@ export function createGalleryArchitecture({ reflectionSize, reflectionSamples, b
   caption.rotation.x = -Math.PI / 2;
   caption.scale.setScalar(1.8);
   gallery.add(caption);
-  const ambient = new THREE.HemisphereLight(palette.daylight, palette.stone, 1.25);
-  const sun = new THREE.DirectionalLight(palette.daylight, 2.4);
+  const ambient = new THREE.HemisphereLight(palette.daylight, palette.stone, 0.42);
+  const sun = new THREE.DirectionalLight(palette.daylight, 0.65);
   sun.position.set(-3, 12, 6);
   sun.target.position.set(0, 0, -4);
   sun.castShadow = true;
@@ -150,8 +150,8 @@ export function createGalleryArchitecture({ reflectionSize, reflectionSamples, b
   sun.shadow.normalBias = 0.05;
   sun.shadow.bias = -0.00003;
   const fill = balancedLighting
-    ? new THREE.DirectionalLight(palette.daylight, 1.0)
-    : new THREE.RectAreaLight(palette.daylight, 2.2, 5, 6);
+    ? new THREE.DirectionalLight(palette.daylight, 0.48)
+    : new THREE.RectAreaLight(palette.daylight, 0.8, 5, 6);
   fill.position.set(6.5, 5, 4);
   if (fill.isDirectionalLight) {
     fill.target.position.set(2.2, 3, 0);
@@ -160,15 +160,15 @@ export function createGalleryArchitecture({ reflectionSize, reflectionSamples, b
   const sculptureLight = new THREE.PointLight(palette.warmLight, 6, 8, 1.7);
   sculptureLight.position.set(2.2, 3.2, 0.2);
   gallery.add(ambient, sun, sun.target, fill, sculptureLight);
-  const dayCeiling = coolLight.color.clone(), nightCeiling = new THREE.Color(palette.warmLight).multiplyScalar(0.75);
+  const dayCeiling = new THREE.Color(0x202029), nightCeiling = new THREE.Color(0x29161e).multiplyScalar(0.5);
   gallery.userData.setLighting = (level) => {
     const blend = Number(level);
     gallery.userData.lightLevel = blend;
     atmosphere.userData.setLighting(blend);
-    ambient.intensity = THREE.MathUtils.lerp(1.25, 0.6, blend);
-    sun.intensity = THREE.MathUtils.lerp(2.4, 0.35, blend);
-    fill.intensity = THREE.MathUtils.lerp(balancedLighting ? 1.0 : 2.2, balancedLighting ? 0.55 : 1.0, blend);
-    sculptureLight.intensity = THREE.MathUtils.lerp(6, 12, blend);
+    ambient.intensity = THREE.MathUtils.lerp(0.42, 0.24, blend);
+    sun.intensity = THREE.MathUtils.lerp(0.65, 0.22, blend);
+    fill.intensity = THREE.MathUtils.lerp(balancedLighting ? 0.48 : 0.8, balancedLighting ? 0.26 : 0.5, blend);
+    sculptureLight.intensity = THREE.MathUtils.lerp(8, 14, blend);
     vista.userData.setLighting(blend);
     coolLight.color.lerpColors(dayCeiling, nightCeiling, blend);
     exhibitLights.forEach((light) => (light.intensity = THREE.MathUtils.lerp(22, 26, blend)));

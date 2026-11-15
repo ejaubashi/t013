@@ -59,10 +59,10 @@ test("switches rooms from the island, preserves first person, and opens the coll
   page.on("console", message => { if (message.type() === "error") errors.push(message.text()); });
   await page.goto("/?view=spatial&room=pavilion");
   const canvas = page.locator(".spatial-canvas canvas"), navigator = page.getByRole("navigation", { name: "Move between rooms" });
-  await expect(navigator.getByRole("button", { name: "Go to Orbit Hall", exact: true })).toBeEnabled({ timeout: 60000 });
+  await expect(navigator.getByRole("button", { name: "Go to Scarlet Room", exact: true })).toBeEnabled({ timeout: 60000 });
   await expect(canvas).toHaveAttribute("data-navigation", "walk");
   await expect(canvas).toHaveAttribute("data-motion", "idle", { timeout: 45000 });
-  for (const [id, name] of [["orbit", "Orbit Hall"], ["garden", "Sky Garden"], ["prism", "Prism Chamber"]]) {
+  for (const [id, name] of [["orbit", "Scarlet Room"], ["garden", "Night Garden"], ["prism", "Obsidian Room"]]) {
     const button = navigator.getByRole("button", { name: `Go to ${name}`, exact: true });
     await button.focus(); await expect(button).toBeFocused(); await page.keyboard.press("Enter");
     await expect(canvas).toHaveAttribute("data-room", id);
@@ -102,11 +102,11 @@ test("morphs only the tool dock with native view transitions and keeps the fallb
   });
   await page.goto("/?view=spatial&room=pavilion");
   const canvas = page.locator(".spatial-canvas canvas");
-  await expect(page.getByRole("button", { name: "Switch to composed views", exact: true })).toBeEnabled({ timeout: 60000 });
+  await expect(page.getByRole("button", { name: "Start guided journey", exact: true })).toBeEnabled({ timeout: 60000 });
   await expect(canvas).toHaveAttribute("data-motion", "idle", { timeout: 45000 });
-  await page.getByRole("button", { name: "Switch to composed views", exact: true }).click();
-  await expect(canvas).toHaveAttribute("data-navigation", "views");
-  await expect(page.getByRole("toolbar", { name: "Choose a viewpoint" })).toBeVisible();
+  await page.getByRole("button", { name: "Start guided journey", exact: true }).click();
+  await expect(canvas).toHaveAttribute("data-navigation", "walk");
+  await expect(page.getByRole("complementary", { name: "Guided journey" })).toBeVisible();
   if (await page.evaluate(() => window.__dockNative)) {
     await expect.poll(() => page.evaluate(() => window.__dockTransitions[0]?.ready)).toBe(true).catch(async error => { console.log(await page.evaluate(() => window.__dockTransitions)); throw error; });
     const record = await page.evaluate(() => window.__dockTransitions[0]);
@@ -126,9 +126,9 @@ test("morphs only the tool dock with native view transitions and keeps the fallb
     Object.defineProperty(Element.prototype, "startViewTransition", { value: undefined, configurable: true });
     Object.defineProperty(Document.prototype, "startViewTransition", { value: undefined, configurable: true });
   });
-  await page.getByRole("button", { name: "Switch to composed views", exact: true }).click();
-  await expect(canvas).toHaveAttribute("data-navigation", "views");
-  await expect(page.getByRole("toolbar", { name: "Choose a viewpoint" })).toBeVisible();
+  await page.getByRole("button", { name: "Start guided journey", exact: true }).click();
+  await expect(canvas).toHaveAttribute("data-navigation", "walk");
+  await expect(page.getByRole("complementary", { name: "Guided journey" })).toBeVisible();
   await page.getByRole("button", { name: "Walk in first person", exact: true }).click();
   await expect(canvas).toHaveAttribute("data-navigation", "walk");
   await expect(canvas).toHaveAttribute("data-motion", "idle", { timeout: 20000 });

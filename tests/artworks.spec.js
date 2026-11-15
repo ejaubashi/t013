@@ -3,19 +3,19 @@ import { test, expect } from "@playwright/test";
 test.use({ trace: "off" });
 
 const works = [
-  { id: "monet-waterloo", title: "Waterloo Bridge, Effect of Fog", room: "pavilion", z: "-4.600" },
-  { id: "friedrich-sailing", title: "On a Sailing Ship", room: "pavilion", z: "3.600" },
-  { id: "kandinsky-composition", title: "Composition VI", room: "orbit", z: "-4.600" },
-  { id: "kandinsky-winter", title: "Winter Landscape", room: "orbit", z: "3.600" },
-  { id: "monet-garden", title: "Corner of the Garden at Montgeron", room: "garden", z: "-4.600" },
-  { id: "vangogh-lilac", title: "Lilac Bush", room: "garden", z: "3.600" },
-  { id: "matisse-red-room", title: "The Red Room (Harmony in Red)", room: "prism", z: "-4.600" },
-  { id: "cezanne-still-life", title: "Still Life with a Curtain", room: "prism", z: "3.600" },
+  { id: "rembrandt-red", title: "Portrait of an Old Man in Red", room: "pavilion", z: "-4.600" },
+  { id: "caravaggio-lute", title: "The Lute Player", room: "pavilion", z: "3.600" },
+  { id: "matisse-dance", title: "Dance", room: "orbit", z: "-4.600" },
+  { id: "kandinsky-murnau", title: "View of Murnau", room: "orbit", z: "3.600" },
+  { id: "renoir-black", title: "Woman in Black", room: "garden", z: "-4.600" },
+  { id: "matisse-coffeehouse", title: "Arab Coffeehouse", room: "garden", z: "3.600" },
+  { id: "rembrandt-return", title: "The Return of the Prodigal Son", room: "prism", z: "-4.600" },
+  { id: "leger-composition", title: "Composition", room: "prism", z: "3.600" },
 ];
 
 async function ready(page, motion = "reduce") {
   await page.emulateMedia({ reducedMotion: motion });
-  await page.goto("/?view=spatial");
+  await page.goto("/?view=spatial&room=pavilion");
   const canvas = page.locator(".spatial-canvas canvas");
   await expect(canvas).toHaveAttribute("data-motion", "idle", { timeout: 60000 });
   await expect(page.getByRole("button", { name: "Browse wall artworks" })).toBeEnabled({ timeout: 45000 });
@@ -39,13 +39,13 @@ test("filters the collection, reads labels, enlarges and pans an uncropped paint
   const dialog = page.getByRole("dialog");
   await expect(dialog.getByRole("heading", { name: "The art collection.", exact: true })).toBeVisible();
   await expect(dialog.locator(".art-collection-card")).toHaveCount(8);
-  await dialog.getByRole("group", { name: "Filter artworks by room" }).getByRole("button", { name: "Sky Garden", exact: true }).click();
+  await dialog.getByRole("group", { name: "Filter artworks by room" }).getByRole("button", { name: "Garden", exact: true }).click();
   await expect(dialog.locator(".art-collection-card")).toHaveCount(2);
-  const card = dialog.getByRole("button", { name: "Inspect Lilac Bush by Vincent van Gogh", exact: true });
+  const card = dialog.getByRole("button", { name: "Inspect Woman in Black by Pierre-Auguste Renoir", exact: true });
   await card.click();
-  await expect(dialog.getByRole("heading", { name: "Lilac Bush", exact: true })).toBeFocused();
-  await expect(dialog.getByRole("region", { name: "Artwork information" })).toContainText("Vincent van Gogh");
-  await expect(dialog.locator("dl")).toContainText("1889");
+  await expect(dialog.getByRole("heading", { name: "Woman in Black", exact: true })).toBeFocused();
+  await expect(dialog.getByRole("region", { name: "Artwork information" })).toContainText("Pierre-Auguste Renoir");
+  await expect(dialog.locator("dl")).toContainText("1876");
   await expect(dialog.locator("dl")).toContainText("Oil on canvas");
   await expect(dialog.locator("dl")).toContainText("State Hermitage Museum");
   const media = dialog.locator(".artwork-media"), image = media.locator("img");
@@ -73,9 +73,9 @@ test("filters the collection, reads labels, enlarges and pans an uncropped paint
   await dialog.getByRole("button", { name: "Fit artwork" }).click();
   await expect(media).not.toHaveClass(/is-zoomed/);
   await page.keyboard.press("ArrowRight");
-  await expect(dialog.getByRole("heading", { name: "Corner of the Garden at Montgeron", exact: true })).toBeVisible();
+  await expect(dialog.getByRole("heading", { name: "Arab Coffeehouse", exact: true })).toBeVisible();
   await dialog.getByRole("button", { name: "Previous artwork" }).click();
-  await expect(dialog.getByRole("heading", { name: "Lilac Bush", exact: true })).toBeVisible();
+  await expect(dialog.getByRole("heading", { name: "Woman in Black", exact: true })).toBeVisible();
   await dialog.getByRole("button", { name: "Back to art collection" }).click();
   await expect(card).toBeFocused();
   await page.keyboard.press("Escape");
@@ -88,7 +88,7 @@ test("visits and physically selects all eight paintings on the four gallery wall
   test.setTimeout(240000);
   const errors = collectErrors(page), canvas = await ready(page);
   await page.getByRole("button", { name: "Browse wall artworks" }).click();
-  await page.getByRole("button", { name: "Inspect Waterloo Bridge, Effect of Fog by Claude Monet", exact: true }).click();
+  await page.getByRole("button", { name: "Inspect Portrait of an Old Man in Red by Rembrandt van Rijn", exact: true }).click();
   for (let index = 0; index < works.length; index++) {
     const work = works[index], dialog = page.getByRole("dialog");
     await expect(dialog.getByRole("heading", { name: work.title, exact: true })).toBeVisible();
@@ -99,7 +99,7 @@ test("visits and physically selects all eight paintings on the four gallery wall
     await expect(canvas).toHaveAttribute("data-wall-artworks", "2");
     await expect(canvas).toHaveAttribute("data-artwork-view", work.id);
     await expect(canvas).toHaveAttribute("data-motion", "idle");
-    await expect(canvas).toHaveAttribute("data-camera", `-4.500,3.350,${work.z}`);
+    await expect(canvas).toHaveAttribute("data-camera", `-4.500,1.720,${work.z}`);
     const { width, height } = page.viewportSize(), point = { x: width / 2, y: height / 2 };
     expect(await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.tagName, point)).toBe("CANVAS");
     if (info.project.name === "mobile") await page.touchscreen.tap(point.x, point.y);
@@ -117,17 +117,17 @@ test("closes the artwork reader before a fluid room transfer and supports keyboa
   test.setTimeout(120000);
   const errors = collectErrors(page), canvas = await ready(page, "no-preference");
   await page.getByRole("button", { name: "Browse wall artworks" }).click();
-  await page.getByRole("button", { name: "Inspect Composition VI by Wassily Kandinsky", exact: true }).click();
+  await page.getByRole("button", { name: "Inspect Dance by Henri Matisse", exact: true }).click();
   await page.getByRole("button", { name: "View on the wall" }).click();
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await expect(canvas).toHaveAttribute("data-transition-route", "pavilion:orbit");
   await expect(canvas).toHaveAttribute("data-room-transition", "travelling");
   await page.getByRole("button", { name: "Skip room transition" }).click();
   await expect(canvas).toHaveAttribute("data-room-transition", "idle");
-  await expect(canvas).toHaveAttribute("data-camera", "-4.500,3.350,-4.600");
-  const marker = page.getByRole("button", { name: "View Composition VI by Wassily Kandinsky", exact: true });
+  await expect(canvas).toHaveAttribute("data-camera", "-4.500,1.720,-4.600");
+  const marker = page.getByRole("button", { name: "View Dance by Henri Matisse", exact: true });
   await marker.focus(); await page.keyboard.press("Enter");
-  await expect(page.getByRole("dialog", { name: "Composition VI", exact: true })).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "Dance", exact: true })).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).toHaveCount(0); await expect(marker).toBeFocused();
   expect(errors).toEqual([]);

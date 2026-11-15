@@ -1,12 +1,12 @@
-// Shared architectural materials. Artwork textures retain their own colours.
+// Nocturne: the architecture stays black; art carries the colour.
 export const galleryPalette = {
-  plaster: 0xf1eee7,
-  stone: 0xd9d3c7,
-  porcelain: 0xf5f2eb,
-  trim: 0xa6a094,
-  silver: 0xbebbb3,
-  charcoal: 0x393a35,
-  daylight: 0xfffcf5,
-  warmLight: 0xfff3e1,
-  sky: 0xeeeae1,
+  plaster: 0x111116,
+  stone: 0x08090d,
+  porcelain: 0x242229,
+  trim: 0x444048,
+  silver: 0xaca4aa,
+  charcoal: 0x040508,
+  daylight: 0xffe6cf,
+  warmLight: 0xf02b46,
+  sky: 0x03050a,
 };

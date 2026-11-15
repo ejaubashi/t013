@@ -2,6 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import * as THREE from "three";
 import { WalkController, eyeHeight, findWalkPath, isWalkable, walkPosition, walkSegment } from "../src/spatial/walkNavigation.js";
+import { viewpoints } from "../src/spatial/viewpoints.js";
+import { artworks, artworkView } from "../src/spatial/artworks.js";
 import { batchArchitecture } from "../src/spatial/batchArchitecture.js";
 
 const rig = (room = "pavilion") => {
@@ -62,4 +64,13 @@ test("batches architecture without changing world bounds or merging glass and in
   const glass = new THREE.Mesh(new THREE.BoxGeometry(), new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.2 }));
   const instance = new THREE.InstancedMesh(new THREE.BoxGeometry(), material, 2); root.add(glass, instance); batchArchitecture(root);
   assert(glass.parent === root); assert(instance.parent === root);
+});
+
+
+test("keeps every authored view and painting approach at a walkable standing position", () => {
+  for (const view of [...viewpoints, ...artworks.map(artworkView)]) {
+    assert.equal(view.walk, true, `${view.id} stays first person`);
+    assert.equal(view.position[1], eyeHeight, `${view.id} stays at eye level`);
+    assert.ok(isWalkable(new THREE.Vector3(...view.position), view.room || "pavilion"), `${view.id} is on navigable floor`);
+  }
 });

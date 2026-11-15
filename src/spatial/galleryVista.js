@@ -7,10 +7,10 @@ export function createGalleryVista() {
   canvas.width = 64; canvas.height = 512;
   const context = canvas.getContext("2d");
   const gradient = context.createLinearGradient(0, 0, 0, 512);
-  gradient.addColorStop(0, "#e4e3df");
-  gradient.addColorStop(0.55, "#eeece5");
-  gradient.addColorStop(0.8, "#f8f3e8");
-  gradient.addColorStop(1, "#d7d1c5");
+  gradient.addColorStop(0, "#03040a");
+  gradient.addColorStop(0.55, "#080814");
+  gradient.addColorStop(0.8, "#140b16");
+  gradient.addColorStop(1, "#04050a");
   context.fillStyle = gradient; context.fillRect(0, 0, 64, 512);
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
@@ -28,13 +28,13 @@ export function createGalleryVista() {
       shape.lineTo(x, y);
     }
     shape.lineTo(90, -18); shape.closePath();
-    const material = new THREE.MeshBasicMaterial({ color: [0xb6b2a8, 0xc5c0b5, 0xd5d0c4][layer] });
+    const material = new THREE.MeshBasicMaterial({ color: [0x08080e, 0x0e0c16, 0x16101c][layer] });
     const hills = new THREE.Mesh(new THREE.ShapeGeometry(shape), material);
     hills.position.z = -28 - layer * 5;
     hillMaterials.push({ material, day: material.color.clone() });
     vista.add(hills);
   }
-  const sunMaterial = new THREE.MeshBasicMaterial({ color: new THREE.Color(0xfff8eb), transparent: true });
+  const sunMaterial = new THREE.MeshBasicMaterial({ color: new THREE.Color(0xb8bfd4), transparent: true });
   const sun = new THREE.Mesh(new THREE.CircleGeometry(1.7, 96), sunMaterial);
   sun.position.set(-6, 9, -43);
   vista.add(sun);
@@ -52,7 +52,7 @@ export function createGalleryVista() {
   const halo = new THREE.Mesh(new THREE.PlaneGeometry(16, 16), glowMaterial);
   halo.position.set(-6, 9, -42.9);
   vista.add(halo);
-  const day = new THREE.Color(0xffffff), night = new THREE.Color(0x827c71);
+  const day = new THREE.Color(0xffffff), night = new THREE.Color(0x373141);
   vista.userData.setLighting = (level) => {
     skyMaterial.color.lerpColors(day, night, level);
     sunMaterial.opacity = 1 - level * 0.97;

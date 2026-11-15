@@ -1,0 +1,122 @@
+/* Nocturne is a material and lighting direction, not a filter over the art. */
+.spatial-stage { --gallery-paper: #101014; --gallery-ink: #ede7e9; --gallery-muted: #a398a3; --gallery-line: #ffffff20; --ui-glass: #111014e8; --p-accent: #dc3b55; background: #050509; color: var(--gallery-ink); }
+body:has(.spatial-stage) { background: #050509; }
+body:has(.spatial-stage) .site-header, body:has(.spatial-stage) .utility-bar, body:has(.spatial-stage) .header-about { color: #e8dfe4; }
+.spatial-fallback { background: #07070c; }
+.spatial-stage .spatial-vignette { opacity: 1; background: radial-gradient(ellipse at 50% 45%, transparent 40%, #02020770 100%); pointer-events: none; }
+.spatial-stage .spatial-topline { border-color: #ffffff18; }
+.spatial-stage .spatial-topline .spatial-kicker, .spatial-stage .spatial-original { color: #b3a5af; }
+.spatial-stage .spatial-kicker i { background: #d13c53; }
+.spatial-stage .room-caption, .spatial-stage .room-caption > span, .spatial-stage .room-listen, .spatial-stage .spatial-chapters { color: #c2b7c0; border-color: #ffffff24; }
+.spatial-stage .spatial-introduction, .spatial-stage .gallery-room-heading, .spatial-stage .room-view-label { display: none; }
+.room-navigator { color: #eee7eb; }
+.room-navigator-caption, .room-navigator-caption > span:last-child { color: #aa9aa8; }
+.room-navigator-island { background: #0f0e13e8; border-color: #ffffff22; box-shadow: 0 8px 28px #0005, inset 0 1px 0 #ffffff06; }
+.room-destination { color: #a397a3; }
+.room-destination[aria-current] { color: #fff2f4; background: #5d1827; box-shadow: inset 0 0 0 1px #d03a5540; }
+.room-destination:hover:not([aria-current]) { color: #f0e5eb; background: #ffffff0b; }
+.spatial-stage .room-navigator .atlas-launcher { color: #c3b6c0; border-color: #ffffff18; }
+.room-navigator-context { color: #cabcc6; }
+.room-navigator-context i, .room-navigator-context small { color: #928390; }
+.spatial-stage .gallery-navigation { background: #101015ec; border-color: #ffffff22; box-shadow: 0 14px 45px #0006, inset 0 1px 0 #ffffff05; }
+.spatial-stage .gallery-navigation > .gallery-collection-launch { color: #e3d9e1; background: transparent; border-color: #ffffff18; }
+.gallery-navigation > .gallery-collection-launch > .collection-dock-count { border-color: #ffffff30; }
+.spatial-stage .walk-mode-switch button { color: #ab9ca9; }
+.spatial-stage .walk-mode-switch button[aria-pressed="true"] { color: #fff2f5; background: #661b2a; }
+.spatial-stage .walk-mode-switch button:hover:not([aria-pressed="true"]) { color: #f0e6ed; background: #ffffff08; }
+.gallery-navigation .gallery-toolbox > summary { color: #d5c7d2; background: transparent; }
+.gallery-toolbox, .gallery-toolbox > summary > svg, .gallery-toolbox > summary > .controls-label, .gallery-toolbox > summary > .controls-symbol { color: #d5c7d2; }
+.spatial-stage .gallery-focus-toggle:not(.gallery-focus-exit), .spatial-stage .gallery-focus-exit { color: #d1c1cd; border-color: #ffffff22; background: #101015c9; }
+.spatial-stage .gallery-navigation .gallery-controls-panel, .spatial-stage .room-help { background: #121017fa; color: #e8dfe7; border-color: #ffffff24; box-shadow: 0 24px 60px #0009; }
+.controls-eyebrow, .spatial-stage .room-help p { color: #a997a6; }
+.gallery-controls-panel button, .gallery-controls-panel .room-lighting, .gallery-controls-panel .room-art-form, .gallery-controls-panel .spectrum-control, .gallery-controls-panel .walking-tour-action { color: #e4d9e2; border-color: #ffffff18; }
+.spatial-stage .room-tools > button, .spatial-stage .room-movement button { color: #d8c9d4; background: #24202a; border-color: #ffffff1a; }
+.spatial-stage .lighting-switch { background: #2b1b26; border-color: #9c3b504d; }
+.spatial-stage .lighting-switch::after, .spatial-stage.after-hours .lighting-switch::after { background: #e94c68; }
+.spatial-stage .room-art-form[data-form] .art-form-state { color: #ead5e1; background: #371923; border-color: #99425555; }
+.spectrum-control input { accent-color: #d43d5b; }
+.walk-invitation, .walk-invitation p, .walk-location { color: #dfd2dc; text-shadow: 0 1px 8px #0009; }
+.walk-location, .walk-desktop-hint, .walk-touch-hint { color: #ae9dab; }
+.walk-invitation button { color: #ebdfe7; background: #17121ce6; border-color: #ffffff24; }
+.walk-thumbstick { background: #0f0d14c9; border-color: #c8a4ba3b; color: #d8bdce; }
+.walk-thumb-knob { color: #f7eaf0; background: #6a2133; box-shadow: 0 5px 25px #0006; }
+.walk-thumb-guides > i { background: #d1acbd22; }
+.room-portal-hotspot { color: #bfa7b7; text-shadow: 0 2px 8px #000; }
+.room-portal-hotspot > span:first-child, .room-exhibit-hotspot { color: #e6d7e0; background: #17121cdb; border-color: #cf879d55; text-shadow: none; }
+.room-portal-hotspot:hover > span:first-child, .room-exhibit-hotspot:hover { color: #fff2f5; background: #8c233b; }
+.room-exhibit-hotspot .hotspot-title { color: #eadce6; background: #17121cf5; border-color: #ffffff24; }
+.spatial-stage .room-journey-card, .spatial-stage .room-transit-hud { background: #100d15eb; color: #eddee9; border-color: #ffffff24; box-shadow: 0 16px 45px #0007; }
+.room-journey-card p, .journey-actions button, .room-transit-hud p, .room-transit-hud button { color: #e1d0dd; border-color: #ffffff24; }
+.room-transit-hud > button { background: #4b1828; }
+.transit-label, .transit-origin, .transit-direction { color: #ac8d9f; }
+.journey-stops i { background: #ffffff16; } .journey-stops i.visited { background: #c83d59; }
+.spatial-stage .room-loader, .spatial-stage .room-loader-mark, .room-load-progress { color: #c6acbe; border-color: #8e3d57; }
+.spatial-stage .room-error, .capture-status { color: #ead9e5; background: #15101aee; border-color: #ffffff26; }
+.spatial-stage ~ .utility-bar .accessibility-button { color: #cdb9c7; background: #100d15c9; border-color: #ffffff22; }
+.spatial-stage ~ .utility-bar .sound-bars i { background: #b7627c; }
+/* The catalogue is a dark reading surface; reproductions retain their colour. */
+body:has(.spatial-stage) .gallery-atlas, body:has(.spatial-stage) .art-collection-dialog, body:has(.spatial-stage) .exhibit-dialog { color: #f1e8ed; background: #111015; border-color: #ffffff24; box-shadow: 0 24px 100px #000a; }
+.gallery-atlas::backdrop, .art-collection-dialog::backdrop, .exhibit-dialog::backdrop { background: #010105b8; backdrop-filter: blur(12px); }
+.atlas-header, .atlas-footer, .atlas-plan-section, .art-collection-header, .art-collection-filters, .art-collection-footer { border-color: #ffffff1c; }
+.atlas-header { background: #111015; }
+.atlas-eyebrow, .atlas-plan-heading, .atlas-map-number, .atlas-north, .atlas-plan-note, .atlas-card-number, .atlas-card-copy p, .atlas-footer small, .art-eyebrow, .art-card-location, .art-collection-card p, .art-collection-card p > span, .artwork-label dt, .artwork-rights, .artwork-image-tools > span, .art-collection-footer { color: #a798a4; }
+.atlas-close, .art-collection-close, .exhibit-close { color: #e4d4e0; background: #211923e8; border-color: #ffffff25; }
+.atlas-close:hover { background: #3d1827; }
+.atlas-plan { background-image: linear-gradient(#ffffff05 1px, transparent 1px),linear-gradient(90deg,#ffffff05 1px,transparent 1px); }
+.atlas-corridors { stroke: #82445a; }
+.atlas-map-room { color: #bba8b5; background: #19151e; border-color: #ffffff25; }
+.atlas-map-room.is-current, .atlas-map-room:hover { color: #ffeaf1; background: #411c2b; border-color: #9e3d5a; outline-color: #a3324b33; }
+.atlas-room-card, .atlas-room-card:last-child { color: #e7d7e2; background: #17131c; border-color: #ffffff20; }
+.atlas-room-card:hover, .atlas-room-card[aria-pressed="true"] { color: #f9e8f1; background: #291520; border-color: #975066; }
+.atlas-card-copy h3, .atlas-room-card:hover h3, .atlas-card-number i, .atlas-room-card > svg, .atlas-footer > span { color: #ebdae5; }
+.atlas-card-art, .atlas-orbit .atlas-card-art, .atlas-garden .atlas-card-art, .atlas-prism .atlas-card-art { color: #ae718c; background: #21151f; }
+.atlas-footer > button, .art-view-on-wall { color: #ffedf4; background: #8c2640; }
+.atlas-footer > button:hover { background: #ad314f; }
+.art-back, .artwork-description, .artwork-label dd, .artwork-sources a { color: #c5afbe; }
+.art-collection-filters button { color: #c3acbb; border-color: #ffffff2b; background: transparent; }
+.art-collection-filters button[aria-pressed="true"] { color: #fff0f6; border-color: #bd4c69; background: #641e34; }
+.art-collection-card { color: #e4d1df; border-color: #ffffff1c; background: #19141e; }
+.art-collection-card:hover { background: #281622; border-color: #7e3a52; }
+.art-collection-card > div, .artwork-media { background: #08070c; }
+.artwork-image-column, .exhibit-media { background: #08070c; }
+.artwork-image-tools { color: #e3cddd; }
+.artwork-image-tools button { border-color: #ffffff28; }
+.art-view-on-wall > svg { width: 18px; height: 18px; }
+.artwork-sources a > svg { display: inline-block; width: 11px; height: 11px; vertical-align: -2px; }
+.gallery-controls-panel .walking-tour-action { display: flex; align-items: center; justify-content: space-between; }
+.art-image-loading, .exhibit-copy p, .exhibit-footnote { color: #ac98a8; }
+.exhibit-copy .spatial-kicker, .exhibit-action { color: #c5a0b6; border-color: #ffffff29; }
+body:has(.spatial-stage) button:focus-visible, .artwork-media:focus-visible { outline-color: #e85b7d; }
+/* The entrance is already inside the building, at standing height. */
+.nocturne-entrance { position: absolute; z-index: 8; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; background: radial-gradient(ellipse at 50% 48%,#03030755 0%,#030307c7 85%); padding: 100px 24px; color: #eee5e9; }
+.nocturne-entry-index { font-size: 8px; letter-spacing: 2.2px; color: #b2a0ae; }
+.nocturne-entry-index > i { font-style: normal; color: #c44362; margin: 0 10px; }
+.nocturne-entrance h1 { margin: 24px 0 20px; font: 500 clamp(76px,10vw,158px)/.85 "Cormorant Garamond",Georgia,serif; letter-spacing: -4px; }
+.nocturne-entrance h1 > em { color: #bd3653; font-weight: 500; }
+.nocturne-entrance > p { color: #b8a5b2; font-size: 12px; line-height: 1.9; margin: 0 0 30px; }
+.nocturne-entry-actions { display: flex; align-items: center; gap: 12px; }
+.nocturne-entry-actions > button { display: flex; align-items: center; justify-content: center; gap: 24px; min-height: 48px; border-radius: 12px; padding: 12px 20px; font-size: 11px; }
+.nocturne-entry-actions > button:first-child { color: #fff1f5; background: #8d263f; border: 1px solid #cf4c6b66; }
+.nocturne-entry-actions > button:last-child { color: #c7b3c1; border: 1px solid #d3a6bf33; background: #100b14a6; }
+.nocturne-entry-actions svg { width: 16px; height: 16px; }
+.nocturne-entry-actions > button:disabled { opacity: .4; cursor: wait; }
+.nocturne-entrance > small { color: #897483; font-size: 8px; margin-top: 23px; letter-spacing: .5px; }
+.nocturne-entrance.is-leaving { pointer-events: none; animation: nocturne-entrance-leave 850ms cubic-bezier(.2,.7,.2,1) both; }
+@keyframes nocturne-entrance-leave { to { opacity: 0; } }
+.nocturne-audio-notice { position: absolute; z-index: 20; left: 50%; bottom: 146px; transform: translateX(-50%); max-width: calc(100% - 40px); color: #d3bacb; background: #1b111e; padding: 10px 15px; border-radius: 12px; font-size: 10px; }
+.spatial-stage.is-before-entry > :not(.spatial-canvas):not(.spatial-fallback):not(.spatial-vignette):not(.nocturne-entrance):not(.room-loader):not(.room-error) { visibility: hidden; pointer-events: none; }
+body:has(.spatial-stage.is-before-entry) .utility-bar { visibility: hidden; }
+.spatial-stage.is-before-entry .room-loader { top: auto; bottom: 90px; transform: translateX(-50%); }
+@media (max-width:600px) {
+ .spatial-stage .room-listen { top: 235px; left: 24px; right: auto; bottom: auto; width: 136px; }
+ .spatial-stage .room-caption { display: none; }
+ .nocturne-entry-index { font-size: 6px; letter-spacing: 1.3px; }
+ .nocturne-entrance h1 { font-size: 91px; letter-spacing: -3px; }
+ .nocturne-entrance > p { font-size: 11px; }
+ .nocturne-entry-actions { flex-direction: column; gap: 10px; width: 220px; }
+ .nocturne-entry-actions > button { width: 100%; }
+ .spatial-stage .walk-invitation:not(.is-arriving) { background: #100d15df; border-color: #c491ad2b; }
+ .spatial-stage .walk-invitation:not(.is-arriving) p { color: #d8c0d0; font-size: 17px; }
+}
+@media(prefers-reduced-motion:reduce) { .nocturne-entrance * { transition:none!important; } .nocturne-entrance.is-leaving { animation-duration: 1ms; } }
+.spatial-stage.is-before-entry .gallery-navigation-layer * { visibility: hidden !important; pointer-events: none !important; }

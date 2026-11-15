@@ -1,17 +1,17 @@
 export const rooms = [
-  { id: "pavilion", name: "Lumen Pavilion", short: "Pavilion", number: "01", entry: "arrival", description: "Memory, held in light.", portals: [
+  { id: "pavilion", name: "Nocturne Hall", short: "Nocturne", number: "01", entry: "arrival", description: "A face. A red cloak. A pool of light.", portals: [
     { to: "orbit", position: [-8.4, 2.7, -9.76] },
     { to: "garden", position: [8.4, 2.7, -9.76] },
   ] },
-  { id: "orbit", name: "Orbit Hall", short: "Orbit Hall", number: "02", entry: "orbit-arrival", description: "Satin forms. Quiet geometry.", portals: [
+  { id: "orbit", name: "Scarlet Room", short: "Scarlet", number: "02", entry: "orbit-arrival", description: "Satin geometry. Fields of red and blue.", portals: [
     { to: "pavilion", position: [-8.4, 2.7, -9.76] },
     { to: "garden", position: [8.4, 2.7, -9.76] },
   ] },
-  { id: "garden", name: "Sky Garden", short: "Sky Garden", number: "03", entry: "garden-arrival", description: "Soft daylight. A cloud of paper petals.", portals: [
+  { id: "garden", name: "Night Garden", short: "Garden", number: "03", entry: "garden-arrival", description: "Moonlight. Paper forms. A quieter colour.", portals: [
     { to: "pavilion", position: [-8.4, 2.7, -9.76] },
     { to: "prism", position: [8.4, 2.7, -9.76] },
   ] },
-  { id: "prism", name: "Prism Chamber", short: "Prism", number: "04", entry: "prism-arrival", description: "Frosted glass in a quiet white room.", portals: [
+  { id: "prism", name: "Obsidian Room", short: "Obsidian", number: "04", entry: "prism-arrival", description: "Dark glass. The last trace of colour.", portals: [
     { to: "garden", position: [-8.4, 2.7, -9.76] },
     { to: "pavilion", position: [8.4, 2.7, -9.76] },
   ] },

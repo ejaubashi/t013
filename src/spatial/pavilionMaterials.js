@@ -30,7 +30,7 @@ export function stoneTexture() {
 // Studio light cards, following the technique illustrated by drei Lightformer.
 export function createPavilionEnvironment() {
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0xede9e0);
+  scene.background = new THREE.Color(0x080910);
   const card = (color, intensity, position, scale) => {
     const material = new THREE.MeshBasicMaterial({
       color: new THREE.Color(color).multiplyScalar(intensity), side: THREE.DoubleSide,
@@ -41,9 +41,9 @@ export function createPavilionEnvironment() {
     mesh.lookAt(0, 2, 0);
     scene.add(mesh);
   };
-  card(0xfffaf0, 5, [-5, 5, 4], [5, 8, 1]);
-  card(0xffffff, 4, [5, 6, -5], [5, 6, 1]);
-  card(0xffffff, 8, [0, 10, 0], [4, 10, 1]);
-  card(0xfff4e5, 2, [1, 3, 8], [3, 7, 1]);
+  card(0xffe1cb, 2.2, [-5, 5, 4], [5, 8, 1]);
+  card(0xc7cbdc, 1.4, [5, 6, -5], [5, 6, 1]);
+  card(0xfff0dd, 3.2, [0, 10, 0], [4, 10, 1]);
+  card(0xb91f38, 1.6, [1, 3, 8], [3, 7, 1]);
   return scene;
 }

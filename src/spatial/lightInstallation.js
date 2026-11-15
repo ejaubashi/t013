@@ -76,7 +76,7 @@ export function createLightInstallation() {
   const right = new THREE.Vector3(), up = new THREE.Vector3(), normal = new THREE.Vector3();
   const basis = new THREE.Matrix4(), quaternion = new THREE.Quaternion();
   const identity = new THREE.Matrix4();
-  const top = new THREE.Color(0xf2eee5), bottom = new THREE.Color(0xc9c5bb);
+  const top = new THREE.Color(0xa89fa9), bottom = new THREE.Color(0x50454f);
   const colors = [];
   for (let column = 0; column < columns; column++) {
     const u = column / (columns - 1);
@@ -124,10 +124,10 @@ export function createLightInstallation() {
     aBloomRotation: new THREE.InstancedBufferAttribute(rotationC, 4),
   };
   const mirrors = new THREE.MeshStandardMaterial({
-    color: 0xffffff, metalness: 0.35, roughness: 0.62,
+    color: 0xffffff, metalness: 0.62, roughness: 0.38,
     envMapIntensity: 0.45, emissive: 0x000000, emissiveIntensity: 0,
   });
-  const light = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  const light = new THREE.MeshBasicMaterial({ color: 0xbb5265 });
   addMorph(mirrors, phase);
   addMorph(light, phase);
   const plateGeometry = new THREE.BoxGeometry(0.071, 0.091, 0.018);

@@ -630,6 +630,7 @@ function App() {
   const [overlay, setOverlay] = useState(null);
   const [info, setInfo] = useState(null);
   const [muted, setMuted] = useState(true);
+  const galleryAudio = useRef(null);
   const [languageOpen, setLanguageOpen] = useState(false);
   const [visited, setVisited] = useState(() => {
     try {
@@ -774,6 +775,8 @@ function App() {
                 } catch {}
               }}
               reducedMotion={reducedMotion}
+              soundControlRef={galleryAudio}
+              onSoundChange={enabled => setMuted(!enabled)}
             />
           )}
         </>
@@ -837,8 +840,8 @@ function App() {
             </div>
             <button
               className="sound-button"
-              onClick={() => setMuted(!muted)}
-              aria-label={muted ? "Enable sound for testimony" : "Mute sound"}
+              onClick={() => { if (!classic && view === "landing") galleryAudio.current?.toggle(); else setMuted(!muted); }}
+              aria-label={!classic && view === "landing" ? muted ? "Enable gallery soundscape" : "Mute gallery soundscape" : muted ? "Enable sound for testimony" : "Mute sound"}
               aria-pressed={!muted}
             >
               <SoundIcon muted={muted} />

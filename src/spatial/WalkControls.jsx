@@ -2,13 +2,13 @@ import { useEffect, useRef } from "react";
 
 const Steps = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.35" aria-hidden="true"><path d="m8 3 2 5-3 2-2-5Zm8 7 2 5-3 2-2-5ZM6 13l2 5-3 2-2-5Zm10 6 1 3" /></svg>;
 
-export function WalkModeSwitch({ mode, ready, onChange }) {
+export function WalkModeSwitch({ mode, ready, onChange, touring = false, onTour }) {
   return <div className={`walk-mode-switch mode-${mode}`} role="group" aria-label="Gallery navigation mode">
-    <button disabled={!ready} aria-label="Walk in first person" aria-pressed={mode === "walk"} onClick={() => onChange("walk")}>
+    <button disabled={!ready} aria-label="Walk in first person" aria-pressed={!touring} onClick={() => onChange("walk")}>
       <Steps /><span>Walk</span>
     </button>
-    <button disabled={!ready} aria-label="Switch to composed views" aria-pressed={mode === "views"} onClick={() => onChange("views")}>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.35" aria-hidden="true"><path d="M4 4h6v6H4zm10 0h6v6h-6zM4 14h6v6H4zm10 0h6v6h-6z" /></svg><span>Views</span>
+    <button disabled={!ready} aria-label={touring ? "Pause guided tour" : "Start guided journey"} aria-pressed={touring} onClick={onTour}>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.35" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="m10 8 6 4-6 4Z" /></svg><span>Tour</span>
     </button>
   </div>;
 }
@@ -33,8 +33,8 @@ export default function WalkControls({ arriving, learned, room, onMove, onSkip }
   return <>
     <div className={`walk-invitation ${arriving ? "is-arriving" : ""} ${learned && !arriving ? "is-learned" : ""}`}>
       <span className="walk-location">{room.number} / {room.name}</span>
-      {arriving ? <><p>Walk into the light.</p><button onClick={onSkip}>Explore now <span aria-hidden="true">↗</span></button></> :
-        <><p>Make the space your own.</p><span className="walk-desktop-hint">Drag to look · Scroll or click the floor to walk</span><span className="walk-touch-hint">Drag to look · Use the thumbstick to walk</span></>}
+      {arriving ? <><p>Follow the light.</p><button onClick={onSkip}>Explore now <span aria-hidden="true">↗</span></button></> :
+        <><p>A little closer to the art.</p><span className="walk-desktop-hint">Drag to look · Scroll or click the floor to walk</span><span className="walk-touch-hint">Drag to look · Use the thumbstick to walk</span></>}
     </div>
     <button ref={stick} className="walk-thumbstick" aria-label="Walking thumbstick. Drag to move." aria-describedby="walk-thumb-hint"
       onPointerDown={(event) => {

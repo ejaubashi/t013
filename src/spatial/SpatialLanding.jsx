@@ -11,6 +11,7 @@ import ViewDock from "./ViewDock";
 import RoomNavigator from "./RoomNavigator";
 import { useControlsMotion } from "./useControlsMotion";
 import { useDockMorph } from "./useDockMorph";
+import { useGalleryAudio } from "./useGalleryAudio";
 import { rooms, roomForView } from "./rooms";
 import "./spatial.css";
 import "./atrium.css";
@@ -23,6 +24,7 @@ import "./artworks.css";
 import "./walking.css";
 import "./minimal.css";
 import "./spatial-interface.css";
+import "./nocturne.css";
 
 const RoomCanvas = lazy(() => import("./RoomCanvas"));
 
@@ -52,6 +54,8 @@ export default function SpatialLanding({
   onChapters,
   onOriginal,
   reducedMotion,
+  soundControlRef,
+  onSoundChange,
 }) {
   const controls = useRef(null), dockLayer = useRef(null);
   const morphDock = useDockMorph(dockLayer, reducedMotion);
@@ -64,7 +68,7 @@ export default function SpatialLanding({
   const [loadingCapture, setLoadingCapture] = useState(false),
     [captureError, setCaptureError] = useState("");
   const [attempt, setAttempt] = useState(0);
-  const [night, setNight] = useState(false);
+  const [night, setNight] = useState(true);
   const [artForm, setArtForm] = useState(2);
   const [journeyStep, setJourneyStep] = useState(null);
   const [selectedExhibit, setSelectedExhibit] = useState(null);
@@ -83,6 +87,18 @@ export default function SpatialLanding({
   const [collection, setCollection] = useState(null);
   const [navigation, setNavigation] = useState({ mode: "walk", arriving: false });
   const [walkLearned, setWalkLearned] = useState(false);
+  const [entranceLeaving, setEntranceLeaving] = useState(false);
+  const [entered, setEntered] = useState(() => {
+    try { return sessionStorage.getItem("benno-nocturne-entered") === "1" || rooms.some(room => room.id === new URLSearchParams(location.search).get("room")); }
+    catch { return false; }
+  });
+  const audio = useGalleryAudio(soundControlRef, onSoundChange);
+  const enterGallery = withSound => {
+    audio.enable(withSound);
+    try { sessionStorage.setItem("benno-nocturne-entered", "1"); } catch {}
+    setEntranceLeaving(true); setEntered(true); controls.current?.beginVisit();
+    requestAnimationFrame(() => controls.current?.focus());
+  };
   const controlsMotion = useControlsMotion(toolboxRef, () => controls.current?.stopJourney());
   const closeFocus = () => { restoreArtFocus.current = true; setFocused(false); };
   useEffect(() => {
@@ -174,7 +190,7 @@ export default function SpatialLanding({
     setReady(false);
     setProgress(0);
     setCapture("");
-    setNight(false);
+    setNight(true);
     setArtForm(2);
     setJourneyStep(null);
     setSelectedExhibit(null);
@@ -189,13 +205,15 @@ export default function SpatialLanding({
     setAttempt((n) => n + 1);
   };
   return (
-    <main className={`spatial-stage gallery-${activeRoom} ${navigation.mode === "walk" && !capture ? "is-walking" : ""} ${focused ? "is-focus" : ""} ${interacting ? "is-interacting" : ""} ${travel ? "is-travelling" : ""} ${ready ? "room-ready" : ""} ${night ? "after-hours" : ""} ${journeyStep !== null ? "is-journey" : ""}`}>
+    <main data-sound={audio.enabled ? "on" : "off"} className={`spatial-stage ${entered ? "has-entered" : "is-before-entry"} gallery-${activeRoom} ${navigation.mode === "walk" && !capture ? "is-walking" : ""} ${focused ? "is-focus" : ""} ${interacting ? "is-interacting" : ""} ${travel ? "is-travelling" : ""} ${ready ? "room-ready" : ""} ${night ? "after-hours" : ""} ${journeyStep !== null ? "is-journey" : ""}`}>
       <div className="spatial-fallback" aria-hidden="true" />
       <Suspense fallback={null}>
         <RoomCanvas
           key={attempt}
           controlRef={controls}
           reducedMotion={reducedMotion}
+          entered={entered}
+          audioControl={audio}
           onReady={() => {
             setReady(true);
             const destination = new URLSearchParams(location.search).get("room");
@@ -212,12 +230,12 @@ export default function SpatialLanding({
           onExhibitSelect={openExhibit}
           onArtworkSelect={openCollection}
           onRoomChange={({ id, view }) => {
-            setActiveRoom(id); setActive(view); setHelp(false);
+            setActiveRoom(id); setActive(view); setHelp(false); audio.setRoom(id);
             if (toolboxRef.current) toolboxRef.current.open = false;
             setVisited((previous) => previous.includes(id) ? previous : [...previous, id]);
           }}
           onRoomTransition={(event) => {
-            setTravel(event.active ? event : null);
+            setTravel(event.active ? event : null); if (event.active) audio.passage();
             const destination = rooms.find((room) => room.id === event.to);
             setTravelNotice(event.active ? `Entering ${destination.name}. Press Escape to skip the transition.` : `You are now in ${destination.name}.`);
           }}
@@ -234,6 +252,18 @@ export default function SpatialLanding({
         />
       </Suspense>
       <div className="spatial-vignette" aria-hidden="true" />
+      {(!entered || entranceLeaving) && !error && <section className={`nocturne-entrance ${entranceLeaving ? "is-leaving" : ""}`} aria-labelledby="nocturne-title" inert={entered ? true : undefined} aria-hidden={entered || undefined} onAnimationEnd={event => { if (event.target === event.currentTarget && entranceLeaving) setEntranceLeaving(false); }}>
+        <span className="nocturne-entry-index">BENNO’S LIGHT <i>/</i> AN EXHIBITION AFTER DARK</span>
+        <h1 id="nocturne-title">After <em>hours.</em></h1>
+        <p>Black stone. A trace of red.<br />The art, a little closer.</p>
+        <div className="nocturne-entry-actions">
+          <button disabled={!ready} onClick={() => enterGallery(true)}>Enter with sound <Arrow /></button>
+          <button disabled={!ready} onClick={() => enterGallery(false)}>Enter quietly <Arrow /></button>
+        </div>
+        <small>{ready ? "A first-person visit. Take your time." : "The gallery is opening…"}</small>
+      </section>}
+      {audio.message && <span className="nocturne-audio-notice" role="status">{audio.message}</span>}
+
       <span className="sr-only" role="status" aria-live="polite">{travelNotice}</span>
       {travel && <aside className="room-transit-hud" aria-label="Room transition">
         <div><span className="transit-label">Moving through light</span><span className="transit-origin">{rooms.find((room) => room.id === travel.from).short}</span>
@@ -268,7 +298,7 @@ export default function SpatialLanding({
       )}
       <div className="spatial-topline">
         <span className="spatial-kicker">
-          <i /> A place for human memory
+          <i /> After hours / A place for human memory
         </span>
         <button onClick={onOriginal} className="spatial-original">
           Original view <Arrow />
@@ -395,15 +425,15 @@ export default function SpatialLanding({
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" aria-hidden="true"><path d="M3 5h18v14H3zM6 8h12v8H6z" /></svg>
             <span className="collection-dock-label">Collection</span><span className="collection-dock-count">{artworks.length}</span>
           </button>}
-          {!capture && <WalkModeSwitch mode={navigation.mode} ready={ready} onChange={(mode) => morphDock(() => controls.current?.setNavigation(mode))} />}
+          {!capture && <WalkModeSwitch mode={navigation.mode} ready={ready} touring={journeyStep !== null} onChange={() => morphDock(() => controls.current?.setNavigation("walk"))} onTour={() => morphDock(() => journeyStep !== null ? controls.current?.stopJourney() : controls.current?.startJourney())} />}
           {!capture && navigation.mode === "views" && <ViewDock views={roomViews} active={active} ready={ready} onSelect={choose} reducedMotion={reducedMotion} />}
           <details className="gallery-toolbox" ref={toolboxRef} onToggle={controlsMotion.onToggle} onKeyDown={controlsMotion.onKeyDown}>
             <summary aria-label="Gallery controls" onClick={controlsMotion.onSummaryClick}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" aria-hidden="true"><path d="M4 7h16M4 17h16M9 4v6m6 4v6" /></svg><span className="controls-label">Controls</span><span className="controls-symbol" aria-hidden="true">+</span></summary>
             <div className="gallery-controls-panel">
               <p className="controls-eyebrow">Light, movement & view</p>
-              {!capture && navigation.mode === "walk" && <button className="walking-tour-action" aria-label="Start guided journey" onClick={() => {
+              {!capture && navigation.mode === "walk" && <button className="walking-tour-action" aria-label="Start tour from the beginning" onClick={() => {
                 toolboxRef.current.open = false; controls.current?.startJourney();
-              }}>Take the guided journey ↗</button>}
+              }}>Take the guided journey <Arrow /></button>}
           {!capture && (
             <>
               <button
@@ -417,7 +447,7 @@ export default function SpatialLanding({
                 }}
               >
                 <span className="lighting-symbol" aria-hidden="true">{night ? "☾" : "☼"}</span>
-                {night ? "After hours" : "Daylight"}
+                {night ? "Nocturne lighting" : "Exhibition lighting"}
                 <span className="lighting-switch" aria-hidden="true" />
               </button>
               {activeRoom === "pavilion" && <button
@@ -443,7 +473,7 @@ export default function SpatialLanding({
                 <input type="range" min="0" max="100" value={Math.round(spectrum * 100)} aria-label="Spectrum position" onChange={(event) => {
                   const value = Number(event.target.value) / 100; setSpectrum(value); controls.current?.setSpectrum(value);
                 }} />
-                <small>A different spectrum, with every position.</small>
+                <small>Crimson, violet and a quieter light.</small>
               </label>}
           <div className="room-tools">
             <button
@@ -523,18 +553,18 @@ export default function SpatialLanding({
               <span className="spatial-kicker">Find your way</span>
               <h2>Take your time.</h2>
               <p>
-                In Walk, drag to turn your head. Scroll or select the floor to
+                Drag to turn your head at eye level. Scroll or select the floor to
                 walk, or use W A S D to move and Q E to turn. On a phone, move
                 the thumbstick while dragging with your other hand to look.
                 Pools, benches, and installations stay outside your walking route.
               </p>
               <p>
-                Choose Views for composed viewpoints and orbit controls. Walk
-                returns you to eye level. Reset returns you to the
+                Choose Tour for an eye-level route through the exhibition. Walk
+                returns control to you. Reset returns you to the
                 entrance. Shape the light transforms the installation between a
                 ribbon, constellation, and Bloom. Take the journey for a guided
                 camera route across all four rooms. Select a glowing doorway
-                or open the atlas to visit Orbit Hall, Sky Garden, and Prism Chamber.
+                or open the atlas to visit Scarlet Room, Night Garden, and Obsidian Room.
                 Select a photograph in the pavilion to open it.
               </p>
               <p className="room-provenance">
