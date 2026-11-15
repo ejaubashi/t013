@@ -1033,4 +1033,9 @@ function App() {
   );
 }
 
-createRoot(document.getElementById("root")).render(<App />);
+const root = createRoot(document.getElementById("root"));
+if (new URLSearchParams(location.search).get("view") === "motion") {
+  import("./motion/MotionLab").then(({ default: MotionLab }) => root.render(<MotionLab />));
+} else {
+  root.render(<App />);
+}

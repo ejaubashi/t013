@@ -2,6 +2,10 @@
 
 A responsive React experience based on the supplied Benno’s Light recordings. The opening is an interactive exhibition with four explorable rooms, sculptural light installations, and Gaussian-splat photographs. The saved paper cover, six-card chapter index, testimony player, and scrollable archive remain available.
 
+## Motion design studies
+
+Open `?view=motion` for the **Continuum** and **Lamina** transition proposals, developed in the gallery’s ivory-and-stone palette. They use TSL geometry on WebGPU with a WebGL 2 fallback. The player supports room pairing, playback, precise scrubbing, reduced motion, and an SVG storyboard download for Figma. These studies have their own renderer and leave the published gallery’s transition unchanged. See the [research, sources, and implementation boundaries](docs/research/signature-motion-studies.md).
+
 ## 3D archive experiment
 
 The default opening is a minimal art gallery with warm ivory plaster, pale limestone, quiet satin metal, and thin charcoal artwork frames. A clear skylight and soft neutral light replace the luminous canopy and coloured atmosphere. The central sculptures use a restrained scale and matte finishes; solid stone islands replace the dark reflecting floors. The catalogue, atlas, controls, and readers share a warm paper-and-charcoal palette. The paintings retain their own colours. See the [minimal gallery direction](docs/minimal-gallery.md).
