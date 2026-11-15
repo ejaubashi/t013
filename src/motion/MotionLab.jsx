@@ -19,7 +19,7 @@ export default function MotionLab() {
   const [playing, setPlaying] = useState(false), [exporting, setExporting] = useState(false);
   const [reduced, setReduced] = useState(() => matchMedia("(prefers-reduced-motion: reduce)").matches);
   const [backend, setBackend] = useState("");
-  const host = useRef(null), engine = useRef(null), position = useRef(0), timeline = useRef(null), output = useRef(null), autoPlayed = useRef(false);
+  const host = useRef(null), engine = useRef(null), position = useRef(0), timeline = useRef(null), output = useRef(null), autoPlayed = useRef(false), autoTimer = useRef(null);
   const study = studies.find(item => item.id === selected);
   const draw = p => {
     position.current = p; engine.current?.draw(p);
@@ -39,11 +39,11 @@ export default function MotionLab() {
   }, []);
   useEffect(() => {
     if (!ready) return;
-    setPlaying(false); engine.current.setStudy(selected); engine.current.setRooms(from, to); draw(0);
+    clearTimeout(autoTimer.current); setPlaying(false); engine.current.setStudy(selected); engine.current.setRooms(from, to); draw(0);
   }, [selected, from, to, ready]);
   useEffect(() => {
     if (!ready || reduced || autoPlayed.current || new URLSearchParams(location.search).get("autoplay") === "0") return;
-    autoPlayed.current = true; const timer = setTimeout(() => setPlaying(true), 500); return () => clearTimeout(timer);
+    autoPlayed.current = true; autoTimer.current = setTimeout(() => setPlaying(true), 500); return () => clearTimeout(autoTimer.current);
   }, [ready, reduced]);
   useEffect(() => {
     if (!playing || !ready) return;
@@ -62,13 +62,13 @@ export default function MotionLab() {
     const hidden = () => { if (document.hidden) setPlaying(false); };
     document.addEventListener("visibilitychange", hidden); return () => document.removeEventListener("visibilitychange", hidden);
   }, []);
-  const play = () => { if (playing) { setPlaying(false); return; } if (position.current > .999) draw(0); setPlaying(true); };
+  const play = () => { clearTimeout(autoTimer.current); if (playing) { setPlaying(false); return; } if (position.current > .999) draw(0); setPlaying(true); };
   const chooseRoom = (id, origin) => {
     if (origin) { setFrom(id); if (id === to) setTo(rooms[(rooms.findIndex(room => room.id === id) + 1) % 4].id); }
     else { setTo(id); if (id === from) setFrom(rooms[(rooms.findIndex(room => room.id === id) + 1) % 4].id); }
   };
   const exportStoryboard = async () => {
-    setPlaying(false); setExporting(true);
+    clearTimeout(autoTimer.current); setPlaying(false); setExporting(true);
     try {
       await new Promise(resolve => requestAnimationFrame(resolve));
       const before = position.current;
@@ -101,7 +101,7 @@ export default function MotionLab() {
           {error && <div className="motion-error" role="alert"><p>The live study could not open.</p><small>{error}</small><a href={`${base}?view=spatial`}>Return to the gallery <Symbol /></a></div>}
           {ready && <span className="motion-frame-label" aria-hidden="true">{study.number} / {study.title}</span>}
         </div>
-        <div className="motion-transport"><button disabled={!ready} aria-label={playing ? "Pause motion study" : "Play motion study"} onClick={play}><span aria-hidden="true"><Symbol name={playing ? "pause" : "play"} /></span>{playing ? "Pause" : "Play study"}</button><input ref={timeline} type="range" min="0" max="1000" defaultValue="0" aria-label="Transition progress" disabled={!ready} onInput={event => { setPlaying(false); draw(Number(event.target.value) / 1000); }} /><output ref={output} aria-live="off">0%</output><button disabled={!ready} aria-label="Restart motion study" onClick={() => { setPlaying(false); draw(0); }}><Symbol name="reset" /></button></div>
+        <div className="motion-transport"><button disabled={!ready} aria-label={playing ? "Pause motion study" : "Play motion study"} onClick={play}><span aria-hidden="true"><Symbol name={playing ? "pause" : "play"} /></span>{playing ? "Pause" : "Play study"}</button><input ref={timeline} type="range" min="0" max="1000" defaultValue="0" aria-label="Transition progress" disabled={!ready} onInput={event => { clearTimeout(autoTimer.current); setPlaying(false); draw(Number(event.target.value) / 1000); }} /><output ref={output} aria-live="off">0%</output><button disabled={!ready} aria-label="Restart motion study" onClick={() => { clearTimeout(autoTimer.current); setPlaying(false); draw(0); }}><Symbol name="reset" /></button></div>
         <p className="motion-scrub-hint">{reduced ? "Reduced motion is on. Use the timeline to inspect still frames." : "Drag the timeline to inspect any moment. One passage takes 3.2 seconds."}</p>
       </section>
     </div>

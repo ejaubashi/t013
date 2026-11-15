@@ -42,7 +42,7 @@ export async function createStudyRenderer(host, onReady) {
   const progress = uniform(0), aspect = uniform(1), cover = uniform(new THREE.Vector2(1, 1));
   const paper = vec3(.89, .875, .84), materials = [], meshes = [], textureNodes = [];
   const e = progress.mul(progress).mul(progress).mul(progress.mul(progress.mul(6).sub(15)).add(10));
-  const pulse = e.mul(PI).sin();
+  const pulse = e.mul(PI).sin().clamp(0, 1);
   const coverUv = coordinate => coordinate.sub(.5).mul(cover).add(.5);
   for (const study of studies) {
     const coordinate = uv(), center = attribute("aCenter", "float"), x = coordinate.x.sub(.5).mul(2).mul(aspect), y = coordinate.y.sub(.5).mul(2);
