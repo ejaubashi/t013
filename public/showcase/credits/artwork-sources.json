@@ -1,0 +1,191 @@
+{
+  "source_archive": "pmilovanov/hermitage-art",
+  "commit": "b8ead49c010eac0c8366bafc4ffaaf1f1a447805",
+  "reproduction_license": "CC0-1.0",
+  "works": [
+    {
+      "id": "rembrandt-red",
+      "file": "Rembrandt_Harmensz._van_Rijn_-_Portrait_of_an_Old_Man_in_Red.jpg",
+      "url": "https://raw.githubusercontent.com/pmilovanov/hermitage-art/b8ead49c010eac0c8366bafc4ffaaf1f1a447805/Rembrandt_Harmensz._van_Rijn_-_Portrait_of_an_Old_Man_in_Red.jpg",
+      "bytes": 29555955,
+      "sha256": "c16ab5ab8bafaaba8b8f4747acee4dabca6ed143f734af11f9f3e94326a91f7d",
+      "pixels": [
+        6203,
+        8132
+      ],
+      "versions": [
+        {
+          "role": "wall",
+          "width": 781,
+          "height": 1024
+        },
+        {
+          "role": "detail",
+          "width": 1678,
+          "height": 2200
+        }
+      ]
+    },
+    {
+      "id": "caravaggio-lute",
+      "file": "Caravaggio,_Michelangelo_Merisi_da_-_The_Lute-Player.jpg",
+      "url": "https://raw.githubusercontent.com/pmilovanov/hermitage-art/b8ead49c010eac0c8366bafc4ffaaf1f1a447805/Caravaggio%2C_Michelangelo_Merisi_da_-_The_Lute-Player.jpg",
+      "bytes": 18493231,
+      "sha256": "e2ad832c197365cd121e9f2823a55fb252e768c3328ac108fd3bc83e5cbdaaf1",
+      "pixels": [
+        8007,
+        6217
+      ],
+      "versions": [
+        {
+          "role": "wall",
+          "width": 1024,
+          "height": 795
+        },
+        {
+          "role": "detail",
+          "width": 2200,
+          "height": 1708
+        }
+      ]
+    },
+    {
+      "id": "matisse-dance",
+      "file": "Matisse,_Henri_-_The_Dance.jpg",
+      "url": "https://raw.githubusercontent.com/pmilovanov/hermitage-art/b8ead49c010eac0c8366bafc4ffaaf1f1a447805/Matisse%2C_Henri_-_The_Dance.jpg",
+      "bytes": 33965856,
+      "sha256": "2f13be265af456cd0d2c28c5dd36323c3abed2c61f9689b7327c9f3e7a0f0711",
+      "pixels": [
+        9567,
+        6425
+      ],
+      "versions": [
+        {
+          "role": "wall",
+          "width": 1024,
+          "height": 688
+        },
+        {
+          "role": "detail",
+          "width": 2200,
+          "height": 1477
+        }
+      ]
+    },
+    {
+      "id": "kandinsky-murnau",
+      "file": "Kandinsky,_Vasily_-_View_of_Murnau.jpg",
+      "url": "https://raw.githubusercontent.com/pmilovanov/hermitage-art/b8ead49c010eac0c8366bafc4ffaaf1f1a447805/Kandinsky%2C_Vasily_-_View_of_Murnau.jpg",
+      "bytes": 10666226,
+      "sha256": "a042ed0c0d58104a02ec135f610269f79049ca70e6b846f36f182bfae90d9339",
+      "pixels": [
+        4509,
+        3365
+      ],
+      "versions": [
+        {
+          "role": "wall",
+          "width": 1024,
+          "height": 764
+        },
+        {
+          "role": "detail",
+          "width": 2200,
+          "height": 1642
+        }
+      ]
+    },
+    {
+      "id": "renoir-black",
+      "file": "Renoir,_Pierre-Auguste_-_Woman_in_Black.jpg",
+      "url": "https://raw.githubusercontent.com/pmilovanov/hermitage-art/b8ead49c010eac0c8366bafc4ffaaf1f1a447805/Renoir%2C_Pierre-Auguste_-_Woman_in_Black.jpg",
+      "bytes": 13230719,
+      "sha256": "1b0c08eba99f9de3b88274d61fb1c3dcb09070f6927aefd58da493c095e65563",
+      "pixels": [
+        5332,
+        6342
+      ],
+      "versions": [
+        {
+          "role": "wall",
+          "width": 861,
+          "height": 1024
+        },
+        {
+          "role": "detail",
+          "width": 1850,
+          "height": 2200
+        }
+      ]
+    },
+    {
+      "id": "matisse-coffeehouse",
+      "file": "Matisse,_Henri_-_Arab_Coffeehouse.jpg",
+      "url": "https://raw.githubusercontent.com/pmilovanov/hermitage-art/b8ead49c010eac0c8366bafc4ffaaf1f1a447805/Matisse%2C_Henri_-_Arab_Coffeehouse.jpg",
+      "bytes": 34132410,
+      "sha256": "f66105f7ccc5eda43608fad01651804a974be6d734f6c2dfe2f47d6d1cc28f84",
+      "pixels": [
+        8124,
+        6803
+      ],
+      "versions": [
+        {
+          "role": "wall",
+          "width": 1024,
+          "height": 857
+        },
+        {
+          "role": "detail",
+          "width": 2200,
+          "height": 1842
+        }
+      ]
+    },
+    {
+      "id": "rembrandt-return",
+      "file": "Rembrandt_Harmensz._van_Rijn_-_The_Return_of_the_Prodigal_Son.jpg",
+      "url": "https://raw.githubusercontent.com/pmilovanov/hermitage-art/b8ead49c010eac0c8366bafc4ffaaf1f1a447805/Rembrandt_Harmensz._van_Rijn_-_The_Return_of_the_Prodigal_Son.jpg",
+      "bytes": 25461926,
+      "sha256": "0b93dc0f5c132d1866c44edc1d55e27ac3b409b39f61a51500911a8d8f41b1c4",
+      "pixels": [
+        6309,
+        8218
+      ],
+      "versions": [
+        {
+          "role": "wall",
+          "width": 786,
+          "height": 1024
+        },
+        {
+          "role": "detail",
+          "width": 1689,
+          "height": 2200
+        }
+      ]
+    },
+    {
+      "id": "leger-composition",
+      "file": "Leger,_Fernand_-_Composition.jpg",
+      "url": "https://raw.githubusercontent.com/pmilovanov/hermitage-art/b8ead49c010eac0c8366bafc4ffaaf1f1a447805/Leger%2C_Fernand_-_Composition.jpg",
+      "bytes": 5646062,
+      "sha256": "b7e3f8b4db6a936d200076543a0aa2a775662fd488e20f790f9e9629e4d2e6c0",
+      "pixels": [
+        3359,
+        4238
+      ],
+      "versions": [
+        {
+          "role": "wall",
+          "width": 812,
+          "height": 1024
+        },
+        {
+          "role": "detail",
+          "width": 1744,
+          "height": 2200
+        }
+      ]
+    }
+  ]
+}

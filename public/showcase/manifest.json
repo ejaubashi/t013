@@ -1,0 +1,150 @@
+{
+  "title": "Nocturne showcase pack",
+  "project_commit": "f8807ab8d23660e725b44b28eb432ff564d7e9ef",
+  "files": [
+    {
+      "path": "START-HERE.md",
+      "bytes": 1376,
+      "sha256": "c5aeae7b3aeac5c3a92a0f3c48086c72af8893984686a387f33240d4790d9cc3"
+    },
+    {
+      "path": "captions.txt",
+      "bytes": 591,
+      "sha256": "84d2ce34980c7079af08f5e5626e00a400f6362e489cbac8e6e243d775608921"
+    },
+    {
+      "path": "credits/CC0-1.0.txt",
+      "bytes": 7048,
+      "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499"
+    },
+    {
+      "path": "credits/README.md",
+      "bytes": 943,
+      "sha256": "11fbb71b76c2502be6b68b99488ec187bdfb0fb9a71895c2e3fe3fe25ee636be"
+    },
+    {
+      "path": "credits/artwork-sources.json",
+      "bytes": 5414,
+      "sha256": "5d284f4a61c696f9f581ac70c480c0f0bb054f465686909817ffc219c80201f7"
+    },
+    {
+      "path": "index.html",
+      "bytes": 6617,
+      "sha256": "5f85c343643446a3871d8afbb05eeb3f0969a58ea3bd501b79a53a34df573052"
+    },
+    {
+      "path": "photos/01-nocturne-hall.jpg",
+      "bytes": 364127,
+      "sha256": "6665d5a050f2a33d4108fca2895f815286c18fbf5d5ac1fee73e8afa7ad2d11d",
+      "width": 2560,
+      "height": 1440
+    },
+    {
+      "path": "photos/01-nocturne-hall.png",
+      "bytes": 777527,
+      "sha256": "f424a961167dab8390deff4b6e1133651ff44f75b73c7f270b9380fda5f83c91",
+      "width": 2560,
+      "height": 1440
+    },
+    {
+      "path": "photos/02-scarlet-room.jpg",
+      "bytes": 358172,
+      "sha256": "f56fd69fa3bed2256ec27c6727c1a16bfcf50a312ac988ac271e474bb5c3d9b8",
+      "width": 2560,
+      "height": 1440
+    },
+    {
+      "path": "photos/03-night-garden.jpg",
+      "bytes": 282324,
+      "sha256": "c0c8d1840668181daa05a6012c20b3ec444269c69a5359b4c3d81c2e260ba9dc",
+      "width": 2560,
+      "height": 1440
+    },
+    {
+      "path": "photos/04-obsidian-room.jpg",
+      "bytes": 287416,
+      "sha256": "6ce7c6572f0ba020844df901aa72e349e6176d83fd0d2c9a58f1cf19044935a2",
+      "width": 2560,
+      "height": 1440
+    },
+    {
+      "path": "photos/05-caravaggio-on-the-wall.jpg",
+      "bytes": 423343,
+      "sha256": "7dca6d3aec4d5f24d74f0cb6f979e337916fb3dc9a255c4d8f3eeacca0d02aaf",
+      "width": 2560,
+      "height": 1440
+    },
+    {
+      "path": "photos/06-matisse-dance.jpg",
+      "bytes": 447926,
+      "sha256": "fcdee878369b0a917548850f97408c1eaeac27cb28958d149226b25c9f3d0aab",
+      "width": 2560,
+      "height": 1440
+    },
+    {
+      "path": "photos/07-kinetic-light-detail.jpg",
+      "bytes": 610267,
+      "sha256": "5b4a0744166047335a8fc671dfbdc18c04b621bb06bac2d4ac0887cd4fa028a7",
+      "width": 2560,
+      "height": 1440
+    },
+    {
+      "path": "photos/07-kinetic-light-detail.png",
+      "bytes": 1105663,
+      "sha256": "a1491f32f1574245bcaf92828385382858708f5b668ffaea0335e45716350791",
+      "width": 2560,
+      "height": 1440
+    },
+    {
+      "path": "photos/08-gallery-interface.jpg",
+      "bytes": 526044,
+      "sha256": "dcc59994b7943a476aa1d14b6c7e14ab3385b6bd4540358dd2291932b1ab177f",
+      "width": 2560,
+      "height": 1440
+    },
+    {
+      "path": "preview.jpg",
+      "bytes": 140699,
+      "sha256": "b30afdba3775d7d5187f2a1550bc9bf3c92fe93d8dff211d331c9f005f50e633",
+      "width": 1440,
+      "height": 1120
+    },
+    {
+      "path": "social/nocturne-cover-feed.png",
+      "bytes": 347967,
+      "sha256": "ba1c1367ee8f664d8cdc1964e9b6efd1af87367e068ad220a88e63af37818d3b",
+      "width": 1080,
+      "height": 1350
+    },
+    {
+      "path": "social/nocturne-cover-story.png",
+      "bytes": 447196,
+      "sha256": "9af4db5b9be2adbba905085d6edf05a6b016ac4bdb1cdee25e55121c76b24e5a",
+      "width": 1080,
+      "height": 1920
+    },
+    {
+      "path": "videos/nocturne-reel-vertical.mp4",
+      "bytes": 7073500,
+      "sha256": "d7b2f12497bcc4d62f804b733cac1cf4d36b340a08a8c5ab0b2548dba4f70757",
+      "width": 1080,
+      "height": 1920,
+      "fps": "30/1",
+      "duration_seconds": 16.966667
+    },
+    {
+      "path": "videos/nocturne-showcase-landscape.mp4",
+      "bytes": 10034481,
+      "sha256": "58f2bcbd03c5a9c806c7e409191867ee4e4ac1819cda3fbb0ab715464f8f076e",
+      "width": 1920,
+      "height": 1080,
+      "fps": "30/1",
+      "duration_seconds": 25.9
+    }
+  ],
+  "archive": {
+    "path": "nocturne-showcase.zip",
+    "bytes": 22908787,
+    "sha256": "6978cb7bfd1b75c60b8579d265d20db03062bc71340eb8138c52ddec39e81199"
+  }
+}
