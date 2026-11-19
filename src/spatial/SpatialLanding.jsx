@@ -449,13 +449,15 @@ export default function SpatialLanding({
               >
                 <path d="M4 9a8 8 0 1 1 0 6M4 3v6h6" />
               </svg>
+              <span>Reset view</span>
             </button>
             <button
               aria-label="Room navigation help"
               aria-expanded={help}
               onClick={() => { controls.current?.stopJourney(); setHelp(!help); }}
             >
-              ?
+              <span className="room-tool-question" aria-hidden="true">?</span>
+              <span>How to move</span>
             </button>
             <button
               aria-label="Open a captured 3D scene"
@@ -471,6 +473,7 @@ export default function SpatialLanding({
               >
                 <path d="M12 15V3m-4 4 4-4 4 4M4 14v6h16v-6" />
               </svg>
+              <span>Open capture</span>
             </button>
             <input
               ref={inputRef}
@@ -494,6 +497,7 @@ export default function SpatialLanding({
                 >
                   <path d="M7 21V3m-4 4 4-4 4 4m6-4v18m-4-4 4 4 4-4" />
                 </svg>
+                <span>Flip capture</span>
               </button>
             )}
           </div>

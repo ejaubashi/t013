@@ -97,7 +97,7 @@
 .room-navigator {
   top: var(--visit-top);
   left: var(--visit-gutter);
-  width: min(400px, calc(100% - 365px));
+  width: min(400px, calc(100% - 415px));
   max-width: calc(100% - 2 * var(--visit-gutter));
   padding: 12px;
   border: 1px solid var(--visit-line);
@@ -199,6 +199,19 @@
 .spatial-stage .gallery-navigation .gallery-toolbox[open] > summary { background: #ffffff17; }
 .spatial-stage .gallery-navigation .gallery-controls-panel { border-radius: 15px; }
 .spatial-stage .gallery-controls-panel .controls-eyebrow { font-size: 10px; }
+.spatial-stage .gallery-controls-panel .room-tools { gap: 6px; }
+.spatial-stage .gallery-controls-panel .room-tools > button {
+  flex: 1 1 0;
+  min-width: 0;
+  height: auto;
+  min-height: 56px;
+  padding: 5px 4px;
+  align-content: center;
+  gap: 3px;
+  font: 400 9px/1.2 Archivo, sans-serif;
+}
+.room-tool-question { font-size: 16px; line-height: 1; }
+.spatial-stage .gallery-controls-panel .room-movement { flex-direction: row; justify-content: center; width: auto; margin-top: 14px; }
 .spatial-stage .room-art-form[data-form] .art-form-state { width: auto; min-width: 36px; padding: 3px 7px; border-radius: 6px; font-size: 10px; }
 
 .spatial-stage .walk-invitation,
