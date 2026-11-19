@@ -37,7 +37,7 @@ test("navigates the room island by keyboard, keeps its selection visible, and yi
   // The left wall now contains selectable paintings. Dismiss Controls on the
   // empty ceiling, preserving the separate painting-selection interaction.
   const viewport = page.viewportSize();
-  const outside = { x: viewport.width / 2, y: viewport.width < 600 ? 85 : viewport.height * 0.28 };
+  const outside = { x: viewport.width / 2, y: viewport.width <= 760 ? viewport.height * 0.385 : viewport.height * 0.28 };
   expect(await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.tagName, outside)).toBe("CANVAS");
   await page.mouse.click(outside.x, outside.y);
   await expect.poll(() => page.locator(".gallery-toolbox").evaluate((element) => element.open)).toBe(false);

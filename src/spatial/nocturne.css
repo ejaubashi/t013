@@ -87,36 +87,10 @@ body:has(.spatial-stage) .gallery-atlas, body:has(.spatial-stage) .art-collectio
 .art-image-loading, .exhibit-copy p, .exhibit-footnote { color: #ac98a8; }
 .exhibit-copy .spatial-kicker, .exhibit-action { color: #c5a0b6; border-color: #ffffff29; }
 body:has(.spatial-stage) button:focus-visible, .artwork-media:focus-visible { outline-color: #e85b7d; }
-/* The entrance is already inside the building, at standing height. */
-.nocturne-entrance { position: absolute; z-index: 8; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; background: radial-gradient(ellipse at 50% 48%,#03030755 0%,#030307c7 85%); padding: 100px 24px; color: #eee5e9; }
-.nocturne-entry-index { font-size: 8px; letter-spacing: 2.2px; color: #b2a0ae; }
-.nocturne-entry-index > i { font-style: normal; color: #c44362; margin: 0 10px; }
-.nocturne-entrance h1 { margin: 24px 0 20px; font: 500 clamp(76px,10vw,158px)/.85 "Cormorant Garamond",Georgia,serif; letter-spacing: -4px; }
-.nocturne-entrance h1 > em { color: #bd3653; font-weight: 500; }
-.nocturne-entrance > p { color: #b8a5b2; font-size: 12px; line-height: 1.9; margin: 0 0 30px; }
-.nocturne-entry-actions { display: flex; align-items: center; gap: 12px; }
-.nocturne-entry-actions > button { display: flex; align-items: center; justify-content: center; gap: 24px; min-height: 48px; border-radius: 12px; padding: 12px 20px; font-size: 11px; }
-.nocturne-entry-actions > button:first-child { color: #fff1f5; background: #8d263f; border: 1px solid #cf4c6b66; }
-.nocturne-entry-actions > button:last-child { color: #c7b3c1; border: 1px solid #d3a6bf33; background: #100b14a6; }
-.nocturne-entry-actions svg { width: 16px; height: 16px; }
-.nocturne-entry-actions > button:disabled { opacity: .4; cursor: wait; }
-.nocturne-entrance > small { color: #897483; font-size: 8px; margin-top: 23px; letter-spacing: .5px; }
 .nocturne-entrance.is-leaving { pointer-events: none; animation: nocturne-entrance-leave 850ms cubic-bezier(.2,.7,.2,1) both; }
 @keyframes nocturne-entrance-leave { to { opacity: 0; } }
 .nocturne-audio-notice { position: absolute; z-index: 20; left: 50%; bottom: 146px; transform: translateX(-50%); max-width: calc(100% - 40px); color: #d3bacb; background: #1b111e; padding: 10px 15px; border-radius: 12px; font-size: 10px; }
 .spatial-stage.is-before-entry > :not(.spatial-canvas):not(.spatial-fallback):not(.spatial-vignette):not(.nocturne-entrance):not(.room-loader):not(.room-error) { visibility: hidden; pointer-events: none; }
 body:has(.spatial-stage.is-before-entry) .utility-bar { visibility: hidden; }
-.spatial-stage.is-before-entry .room-loader { top: auto; bottom: 90px; transform: translateX(-50%); }
-@media (max-width:600px) {
- .spatial-stage .room-listen { top: 235px; left: 24px; right: auto; bottom: auto; width: 136px; }
- .spatial-stage .room-caption { display: none; }
- .nocturne-entry-index { font-size: 6px; letter-spacing: 1.3px; }
- .nocturne-entrance h1 { font-size: 91px; letter-spacing: -3px; }
- .nocturne-entrance > p { font-size: 11px; }
- .nocturne-entry-actions { flex-direction: column; gap: 10px; width: 220px; }
- .nocturne-entry-actions > button { width: 100%; }
- .spatial-stage .walk-invitation:not(.is-arriving) { background: #100d15df; border-color: #c491ad2b; }
- .spatial-stage .walk-invitation:not(.is-arriving) p { color: #d8c0d0; font-size: 17px; }
-}
 @media(prefers-reduced-motion:reduce) { .nocturne-entrance * { transition:none!important; } .nocturne-entrance.is-leaving { animation-duration: 1ms; } }
 .spatial-stage.is-before-entry .gallery-navigation-layer * { visibility: hidden !important; pointer-events: none !important; }

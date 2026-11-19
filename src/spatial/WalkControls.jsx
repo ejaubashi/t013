@@ -7,13 +7,13 @@ export function WalkModeSwitch({ mode, ready, onChange, touring = false, onTour 
     <button disabled={!ready} aria-label="Walk in first person" aria-pressed={!touring} onClick={() => onChange("walk")}>
       <Steps /><span>Walk</span>
     </button>
-    <button disabled={!ready} aria-label={touring ? "Pause guided tour" : "Start guided journey"} aria-pressed={touring} onClick={onTour}>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.35" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="m10 8 6 4-6 4Z" /></svg><span>Tour</span>
+    <button disabled={!ready} aria-label={touring ? "Stop guided tour" : "Start guided journey"} aria-pressed={touring} onClick={onTour}>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.35" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d={touring ? "M9 9h6v6H9z" : "m10 8 6 4-6 4Z"} /></svg><span>Tour</span>
     </button>
   </div>;
 }
 
-export default function WalkControls({ arriving, learned, room, onMove, onSkip }) {
+export default function WalkControls({ arriving, learned, onMove, onSkip }) {
   const stick = useRef(null), pointer = useRef(null);
   const move = useRef(onMove); move.current = onMove;
   const reset = () => {
@@ -32,9 +32,12 @@ export default function WalkControls({ arriving, learned, room, onMove, onSkip }
   };
   return <>
     <div className={`walk-invitation ${arriving ? "is-arriving" : ""} ${learned && !arriving ? "is-learned" : ""}`}>
-      <span className="walk-location">{room.number} / {room.name}</span>
-      {arriving ? <><p>Follow the light.</p><button onClick={onSkip}>Explore now <span aria-hidden="true">↗</span></button></> :
-        <><p>A little closer to the art.</p><span className="walk-desktop-hint">Drag to look · Scroll or click the floor to walk</span><span className="walk-touch-hint">Drag to look · Use the thumbstick to walk</span></>}
+      {arriving ? <button onClick={onSkip}>Skip arrival <span aria-hidden="true">→</span></button> : (
+        <>
+          <span className="walk-desktop-hint">Drag to look · Click the floor or use <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd></span>
+          <span className="walk-touch-hint">Drag to look · Use the thumbstick to walk</span>
+        </>
+      )}
     </div>
     <button ref={stick} className="walk-thumbstick" aria-label="Walking thumbstick. Drag to move." aria-describedby="walk-thumb-hint"
       onPointerDown={(event) => {

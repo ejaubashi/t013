@@ -71,7 +71,9 @@ test("switches rooms from the island, preserves first person, and opens the coll
     await expect(canvas).toHaveAttribute("data-navigation", "walk");
     expect((await canvas.getAttribute("data-camera")).split(",")[1]).toBe("1.720");
   }
-  await expect(navigator).toContainText("4 of 4 explored");
+  await navigator.getByRole("button", { name: "Open gallery atlas" }).click();
+  await expect(page.getByRole("dialog")).toContainText("4 of 4 rooms explored");
+  await page.keyboard.press("Escape");
   const collection = page.getByRole("button", { name: "Browse wall artworks", exact: true });
   await collection.click(); await expect(page.getByRole("dialog", { name: "The art collection." })).toBeVisible();
   await page.keyboard.press("Escape"); await expect(collection).toBeFocused();
