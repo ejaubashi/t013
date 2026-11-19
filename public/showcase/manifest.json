@@ -19,8 +19,8 @@
     },
     {
       "path": "credits/README.md",
-      "bytes": 943,
-      "sha256": "11fbb71b76c2502be6b68b99488ec187bdfb0fb9a71895c2e3fe3fe25ee636be"
+      "bytes": 880,
+      "sha256": "612d648037616d9b8d0a78168e39ade5f969fc499be287fc1550fb6a0a64ec43"
     },
     {
       "path": "credits/artwork-sources.json",
@@ -28,9 +28,34 @@
       "sha256": "5d284f4a61c696f9f581ac70c480c0f0bb054f465686909817ffc219c80201f7"
     },
     {
+      "path": "fonts/archivo-OFL.txt",
+      "bytes": 4503,
+      "sha256": "c3c8402eec0e31dc9a76851235b1c02a0bb821488b2db8e35bcc2ab60ca8fc2b"
+    },
+    {
+      "path": "fonts/archivo-latin-500-normal.woff2",
+      "bytes": 14600,
+      "sha256": "ab74eca5ad115fe4cfec82ba641e5d37e4d92c58dfb1bfc1e464e9039c9d17cf"
+    },
+    {
+      "path": "fonts/cormorant-garamond-OFL.txt",
+      "bytes": 4504,
+      "sha256": "732f37009943e7f4378cf37113c9bcc4716af002a8583511aa91ed5d37683e73"
+    },
+    {
+      "path": "fonts/cormorant-garamond-latin-500-italic.woff2",
+      "bytes": 23924,
+      "sha256": "4fb55a7a6d564d428061fe12c82c896264bcc8b7f0b52840bf88e0db5b91256f"
+    },
+    {
+      "path": "fonts/cormorant-garamond-latin-500-normal.woff2",
+      "bytes": 23312,
+      "sha256": "8197bf53615ddc8c423f444c7f0eec63b7fa0ba093fcfbec60dfdd28429b0fc8"
+    },
+    {
       "path": "index.html",
-      "bytes": 6617,
-      "sha256": "5f85c343643446a3871d8afbb05eeb3f0969a58ea3bd501b79a53a34df573052"
+      "bytes": 14318,
+      "sha256": "382ad4e387adfceda2d672d5d1a5dfeb9eb3d80a4615283597d0ce802f492e78"
     },
     {
       "path": "photos/01-nocturne-hall.jpg",
@@ -104,10 +129,27 @@
     },
     {
       "path": "preview.jpg",
-      "bytes": 140699,
-      "sha256": "b30afdba3775d7d5187f2a1550bc9bf3c92fe93d8dff211d331c9f005f50e633",
+      "bytes": 169521,
+      "sha256": "6da0c7420d70432466178c94dc2ba81bdf9343778f1561ada59bc937a4316f59",
       "width": 1440,
-      "height": 1120
+      "height": 1000
+    },
+    {
+      "path": "reel-poster.jpg",
+      "bytes": 29400,
+      "sha256": "9ea6dfcf035fddaaed2d37304edc40c261063ff17d3bb9dfaeadbdb4495a501e",
+      "width": 540,
+      "height": 960
+    },
+    {
+      "path": "showcase.css",
+      "bytes": 13476,
+      "sha256": "dde1c8b069ae8322e0233170fb55f6af7fc29ab46d40414cb4343fb065e944e9"
+    },
+    {
+      "path": "showcase.js",
+      "bytes": 3226,
+      "sha256": "ed5f6e4d28097666bd494546f3d69fa0740c07311e995409719139afcee28e31"
     },
     {
       "path": "social/nocturne-cover-feed.png",
@@ -144,7 +186,7 @@
   ],
   "archive": {
     "path": "nocturne-showcase.zip",
-    "bytes": 22908787,
-    "sha256": "6978cb7bfd1b75c60b8579d265d20db03062bc71340eb8138c52ddec39e81199"
+    "bytes": 23043732,
+    "sha256": "f2dc295c3f43f926b31d2f9ef536ee51b1d62e90483007dd40ddbf35515b3828"
   }
 }

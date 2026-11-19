@@ -8,4 +8,4 @@ Artists in the gallery collection: Rembrandt van Rijn, Caravaggio, Henri Matisse
 
 Historical photographs and Benno Kern's testimony belong to the original Benno's Light project and retain their original context and credits.
 
-Typography shown in the media uses Cormorant Garamond and Archivo, distributed under the SIL Open Font License. Fonts are rendered into the finished artwork and films; font software is not included in this pack.
+The media and preview page use Cormorant Garamond and Archivo. The bundled web fonts and their SIL Open Font licenses are in the `fonts/` directory.
